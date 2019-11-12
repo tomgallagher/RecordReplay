@@ -1,10 +1,10 @@
 {
   "manifest_version": 2,
 
-  "name": "__MSG_extTestName__",
-  "description": "__MSG_extDescription__",
+  "name": "RecordReplay",
+  "description": "Automated Testing Suite",
   "author": "Tom Gallagher",
-  "version": "1.2.2.3",
+  "version": "1.0.0.1",
   
   "default_locale": "en",
   "incognito": "not_allowed",
@@ -20,7 +20,7 @@
         "19": "images/grey_car_19.png",
         "38": "images/grey_car_38.png"
       },
-      "default_title": "__MSG_extBrowserActionTitle__"
+      "default_title": "Automated Testing Suite"
   },
   
   "options_page": "options.html",
