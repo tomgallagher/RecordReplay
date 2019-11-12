@@ -10,15 +10,15 @@
   "incognito": "not_allowed",
   
   "icons": {
-      "16" : "images/cyan_car_16.png",
-      "48" : "images/cyan_car_48.png",
-      "128" : "images/cyan_car_128.png"
+      "16" : "images/robot_black_16.png",
+      "48" : "images/robot_black_48.png",
+      "128" : "images/robot_black_128.png"
   },
   
   "browser_action": {
       "default_icon": {
-        "19": "images/grey_car_19.png",
-        "38": "images/grey_car_38.png"
+        "19": "images/robot_black_19.png",
+        "38": "images/robot_black_38.png"
       },
       "default_title": "Automated Testing Suite"
   },
@@ -31,129 +31,23 @@
       "open_in_tab": false
   },
   
-  "content_scripts": [
-    {
-      "matches": ["http://*/*", "https://*/*"],
-      "exclude_globs": ["*chrome://*", "*chrome-extension://*", "*ide.c9.io/tomgallagher/turboserver*", "*turbobrowser-eu.herokuapp.com*", "*console.aws.amazon.com*", "c9.io"],
-      "js": ["scripts/fastSettings.min.js", "utils/Rx.min.js", "scripts/mutation-summary.js"],
-      "run_at": "document_start"
-    },
-    {
-      "matches": ["http://*/*", "https://*/*"],
-      "exclude_globs": ["*chrome://*", "*chrome-extension://*", "*ide.c9.io/tomgallagher/turboserver*", "*turbobrowser-eu.herokuapp.com*", "*console.aws.amazon.com*", "c9.io"],
-      "js": ["scripts/font-optimizer.js"],
-      "run_at": "document_start"
-    },
-    {
-      "matches": ["http://*/*", "https://*/*"],
-      "exclude_globs": ["*chrome://*", "*chrome-extension://*", "*ide.c9.io/tomgallagher/turboserver*", "*turbobrowser-eu.herokuapp.com*", "*console.aws.amazon.com*", "c9.io"],
-      "js": ["scripts/style-optimizer.min.js"],
-      "run_at": "document_start"
-    },
-    {
-      "matches": ["http://*/*", "https://*/*"],
-      "exclude_globs": ["*chrome://*", "*chrome-extension://*", "*ide.c9.io/tomgallagher/turboserver*", "*turbobrowser-eu.herokuapp.com*", "*console.aws.amazon.com*", "c9.io"],
-      "js": ["scripts/script-optimizer.min.js"],
-      "run_at": "document_start"
-    },
-    {
-      "matches": ["http://*/*", "https://*/*"],
-      "exclude_globs": ["*chrome://*", "*chrome-extension://*", "*ide.c9.io/tomgallagher/turboserver*", "*turbobrowser-eu.herokuapp.com*", "*console.aws.amazon.com*", "c9.io"],
-      "js": ["scripts/imagesloaded.pkgd.min.js", "scripts/page-event-listener.min.js"],
-      "run_at": "document_start"
-    },
-    {
-      "matches": ["http://*/*", "https://*/*"],
-      "exclude_globs": ["*chrome://*", "*chrome-extension://*", "*ide.c9.io/tomgallagher/turboserver*", "*turbobrowser-eu.herokuapp.com*", "*console.aws.amazon.com*", "c9.io"],
-      "js": ["scripts/service-worker-monitor.min.js"],
-      "run_at": "document_idle"
-    },
-    {
-      "matches": ["http://*/*", "https://*/*"],
-      "exclude_globs": ["*chrome://*", "*chrome-extension://*", "*ide.c9.io/tomgallagher/turboserver*", "*turbobrowser-eu.herokuapp.com*", "*console.aws.amazon.com*", "*google*", "*mail.google*", "*www.bing*", "c9.io", "*ebay*", "*skype.com*", "*reuters.com*", "*wikipedia.org*"],
-      "js": ["scripts/site-sweep.min.js"],
-      "run_at": "document_idle"
-    }
-    
-  ],
-  
   "background": {
       "persistent": true,
       "scripts": [
-          "scripts/jquery-3.1.1.min.js", 
+          "utils/jquery-3.1.1.min.js", 
           "utils/Rx.min.js", 
-          "utils/dexie.min.js", 
-          "scripts/base64.min.js", 
-          "background/background.min.js", 
-          "utils/storage.min.js", 
-          "utils/encoding.min.js", 
-          "background/networkHandler.min.js", 
-          "background/cssHandler.min.js", 
-          "background/javascriptHandler.min.js", 
-          "background/adBlockHandler.min.js", 
-          "background/fontHandler.min.js", 
-          "background/imageHandler.min.js", 
-          "background/videoHandler.min.js", 
-          "background/ajaxCalls.min.js", 
-          "background/pageStatsHandler.min.js", 
-          "background/rightClickHandler.min.js", 
-          "background/serverHandler.min.js", 
-          "background/messaging.min.js", 
-          "background/privacyHandler.min.js", 
-          "utils/userHandler.min.js", 
-          "background/testsuite.js", 
-          "background/resemble.js"
+          "utils/dexie.min.js",
+          "utils/mutation-summary.js",
         ]
   },
 
   "permissions": [
-    "tabs",
-    "activeTab",
-    "gcm",
     "storage",
-    "cookies",
-    "privacy",
     "unlimitedStorage",
-    "webRequest",
-    "webRequestBlocking",
     "webNavigation",
-    "browsingData",
-    "history",
-    "contextMenus",
     "debugger",
     "<all_urls>"
-  ],
-  
-  "content_security_policy": "script-src 'self' https://checkout.stripe.com; object-src 'self'; child-src https://checkout.stripe.com",
-  
-  "web_accessible_resources": [
-      
-      "scripts/postscribe.max.js",
-      "scripts/jquery-3.1.1.min.js",
-      "scripts/turbo_placeholder.js",
-      "noises/PathfinderBlip.wav",
-      "images/greentick.png",
-      "images/my_green_car_256.png",
-      "images/redcross.png",
-      "images/turbo_placeholder.webp",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_2_publishertag.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_5_load.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_6_htw-gawker.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_9_300x250.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_10_widgets.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_13_chorus.ee34ee321953b009ffe4.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_14_unison_body.v0a5a23e7b4e0e6c2.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_15_chorus_ads.050f53dfac97a94610a1.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_21_sfp.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_22_OneSignalSDK.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_24_espn-critical-mobile.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_26_sfp.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_28_entryChunk-mobile-047357965fe8ac9a3414.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_29_vendor-mweb-04a902b54856bcb72e93.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_33_41mvwryey24rjl04u0hopdeexy5.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_34_jquery.min.js",
-      "data_files/extension_js_cache_files/optimised_JS_cache_entry_35_widgets.js"
-      
-    ]
+  ]
+
 }
 
