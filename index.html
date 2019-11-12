@@ -13,6 +13,7 @@
         <script src="utils/fontawesome-all.min.js"></script>
         <script src="user_interface/horizontalMenu.js"></script>
         <script src="user_interface/verticalMenu.js"></script>
+        <script src="user_interface/newProject.js"></script>
 
     </head>
 
@@ -91,7 +92,42 @@
                     </div>
 
                     <div class="ui newProject verticalTabMenu segment" style="display: none;">
-                        This is an stretched grid column for NEW PROJECT. This segment will always match the tab height
+
+                        <form id="newProjectForm" class="ui form">
+
+                            <div class="required field">
+
+                                <label>Project Name</label>
+
+                                <input type="text" name="projectName" placeholder="Please enter unique project name">
+                                
+                            </div>
+                            
+                            <div class="required field">
+                            
+                                <label>Project Description</label>
+                            
+                                <input type="text" name="projectDescription" placeholder="Add a description that helps to identify the project">
+                            
+                            </div>
+                            
+                            <div class="required field">
+                            
+                                <label>Project Author</label>
+                            
+                                <input type="text" name="projectAuthor" placeholder="Please add the owner of the project">
+                            
+                            </div>
+                            
+                            <div class="ui submit button">Create Project</div>
+                            <div class="ui error message"></div>
+                            <div class="ui success message">
+                                <div class="header">New Project Created</div>
+                                <p>Project Now Available For Adding Tests</p>
+                            </div>
+
+                        </form>
+
                     </div>
 
                     <div class="ui savedTests verticalTabMenu segment" style="display: none;">
