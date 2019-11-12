@@ -10,62 +10,94 @@
         <script src="utils/dexie.min.js"></script>
         <script src="utils/Rx.min.js"></script>
         <script src="utils/semantic.min.js"></script>
+        <script src="utils/fontawesome-all.min.js"></script>
+        <script src="user_interface/horizontalMenu.js"></script>
         <script src="user_interface/verticalMenu.js"></script>
 
     </head>
 
     <body>
 
-        <div class="ui padded grid">
+        <div class="mainSection" style="min-height: 100vh; background: #fff;">
 
-            <div class="four wide column">
+            <div class="ui fluid center aligned container">
+                        
+                <div class="ui stackable compact menu">
+                    
+                    <div class="link item">
+                        <i class="fas fa-robot" style="color:#6435c9"></i>
+                    </div>
 
-                <div class="ui vertical fluid violet tabular labeled icon menu">
+                    <a class="themeSettings item">
+                        THEME
+                    </a>
+                    
+                    <a class="emailIcon item">
+                        MAIL
+                    </a>
+                    
+                    <a class="giveIcon item" target="_blank" href="https://www.paypal.me/turbobrowser">
+                        DONATE
+                    </a>
                 
-                    <a class="active gettingStarted item">
-                        Getting Started
-                    </a>
-
-                    <a class="projects item">
-                        Projects
-                    </a>
-
-                    <a class="savedTests item">
-                        Saved Tests
-                    </a>
-
-                    <a class="newTest item">
-                        New Test
-                    </a>
-
-                    <a class="help item">
-                        Help
-                    </a>
-
                 </div>
-
+            
             </div>
 
-            <div class="twelve wide stretched column">
-              
-                <div class="ui gettingStarted verticalTabMenu segment" style="display: block;">
-                    This is an stretched grid column for GETTING STARTED. This segment will always match the tab height
+            <h1 class="ui center aligned block header" style="font-style: italic;">Record/Replay</h1>
+
+            <div class="ui padded grid">
+
+                <div class="four wide column">
+
+                    <div class="ui vertical fluid violet tabular labeled icon menu">
+                    
+                        <a class="active gettingStarted item">
+                            Getting Started
+                        </a>
+
+                        <a class="projects item">
+                            Projects
+                        </a>
+
+                        <a class="savedTests item">
+                            Saved Tests
+                        </a>
+
+                        <a class="newTest item">
+                            New Test
+                        </a>
+
+                        <a class="help item">
+                            Help
+                        </a>
+
+                    </div>
+
                 </div>
 
-                <div class="ui projects verticalTabMenu segment" style="display: none;">
-                    This is an stretched grid column for PROJECTS. This segment will always match the tab height
-                </div>
+                <div class="twelve wide stretched column">
+                
+                    <div class="ui gettingStarted verticalTabMenu segment" style="display: block;">
+                        This is an stretched grid column for GETTING STARTED. This segment will always match the tab height
+                    </div>
 
-                <div class="ui savedTests verticalTabMenu segment" style="display: none;">
-                    This is an stretched grid column for SAVED TESTS. This segment will always match the tab height
-                </div>
+                    <div class="ui projects verticalTabMenu segment" style="display: none;">
+                        This is an stretched grid column for PROJECTS. This segment will always match the tab height
+                    </div>
 
-                <div class="ui newTest verticalTabMenu segment" style="display: none;">
-                    This is an stretched grid column for NEW TESTS. This segment will always match the tab height
-                </div>
+                    <div class="ui savedTests verticalTabMenu segment" style="display: none;">
+                        This is an stretched grid column for SAVED TESTS. This segment will always match the tab height
+                    </div>
 
-                <div class="ui help verticalTabMenu segment" style="display: none;">
-                    This is an stretched grid column for HELP. This segment will always match the tab height
+                    <div class="ui newTest verticalTabMenu segment" style="display: none;">
+                        This is an stretched grid column for NEW TESTS. This segment will always match the tab height
+                    </div>
+
+                    <div class="ui help verticalTabMenu segment" style="display: none;">
+                        This is an stretched grid column for HELP. This segment will always match the tab height
+                    </div>
+
                 </div>
 
             </div>
