@@ -11,6 +11,7 @@ $(document).ready (function(){
         const classArray = $(this).attr('class').split(/\s+/);
         //then show the segment accordingly
         switch(true) {
+            //getting started shows on first load but after it reverts to projects
             case classArray.includes('gettingStarted'):
                 $('.ui.verticalTabMenu.gettingStarted.segment').css('display', 'block');
                 break;
