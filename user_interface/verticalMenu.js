@@ -15,8 +15,11 @@ $(document).ready (function(){
             case classArray.includes('gettingStarted'):
                 $('.ui.verticalTabMenu.gettingStarted.segment').css('display', 'block');
                 break;
-            case classArray.includes('projects'):
-                $('.ui.verticalTabMenu.projects.segment').css('display', 'block');
+            case classArray.includes('savedProjects'):
+                $('.ui.verticalTabMenu.savedProjects.segment').css('display', 'block');
+                break;
+            case classArray.includes('newProject'):
+                $('.ui.verticalTabMenu.newProject.segment').css('display', 'block');
                 break;
             case classArray.includes('savedTests'):
                 $('.ui.verticalTabMenu.savedTests.segment').css('display', 'block');
