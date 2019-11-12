@@ -2,11 +2,54 @@
 <html>
 
     <head>
-    
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+        <title>Record/Replay UI</title>
+        <link href="css/semantic.min.css" rel="stylesheet" type="text/css">
+        <script src="utils/jquery-3.1.1.min.js"></script>
+        <script src="utils/dexie.min.js"></script>
+        <script src="utils/Rx.min.js"></script>
+        <script src="utils/semantic.min.js"></script>
+
     </head>
 
     <body>
-    
+
+        <div class="ui grid">
+
+            <div class="four wide column">
+
+                <div class="ui vertical fluid tabular menu">
+                
+                    <a class="active item">
+                        Bio
+                    </a>
+
+                    <a class="item">
+                        Pics
+                    </a>
+
+                    <a class="item">
+                        Companies
+                    </a>
+
+                    <a class="item">
+                        Links
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="twelve wide stretched column">
+              
+                <div class="ui segment">
+                    This is an stretched grid column. This segment will always match the tab height
+                </div>
+
+            </div>
+
+        </div>
         
     </body>
 

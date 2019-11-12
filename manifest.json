@@ -6,7 +6,6 @@
   "author": "Tom Gallagher",
   "version": "1.0.0.1",
   
-  "default_locale": "en",
   "incognito": "not_allowed",
   
   "icons": {
@@ -32,12 +31,13 @@
   },
   
   "background": {
-      "persistent": true,
+      "persistent": false,
       "scripts": [
+          "background/background.js",
           "utils/jquery-3.1.1.min.js", 
           "utils/Rx.min.js", 
           "utils/dexie.min.js",
-          "utils/mutation-summary.js",
+          "utils/mutation-summary.js"
         ]
   },
 
