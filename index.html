@@ -10,31 +10,36 @@
         <script src="utils/dexie.min.js"></script>
         <script src="utils/Rx.min.js"></script>
         <script src="utils/semantic.min.js"></script>
+        <script src="user_interface/verticalMenu.js"></script>
 
     </head>
 
     <body>
 
-        <div class="ui grid">
+        <div class="ui padded grid">
 
             <div class="four wide column">
 
-                <div class="ui vertical fluid tabular menu">
+                <div class="ui vertical fluid violet tabular labeled icon menu">
                 
-                    <a class="active item">
-                        Bio
+                    <a class="active gettingStarted item">
+                        Getting Started
                     </a>
 
-                    <a class="item">
-                        Pics
+                    <a class="projects item">
+                        Projects
                     </a>
 
-                    <a class="item">
-                        Companies
+                    <a class="savedTests item">
+                        Saved Tests
                     </a>
 
-                    <a class="item">
-                        Links
+                    <a class="newTest item">
+                        New Test
+                    </a>
+
+                    <a class="help item">
+                        Help
                     </a>
 
                 </div>
@@ -43,8 +48,24 @@
 
             <div class="twelve wide stretched column">
               
-                <div class="ui segment">
-                    This is an stretched grid column. This segment will always match the tab height
+                <div class="ui gettingStarted verticalTabMenu segment" style="display: block;">
+                    This is an stretched grid column for GETTING STARTED. This segment will always match the tab height
+                </div>
+
+                <div class="ui projects verticalTabMenu segment" style="display: none;">
+                    This is an stretched grid column for PROJECTS. This segment will always match the tab height
+                </div>
+
+                <div class="ui savedTests verticalTabMenu segment" style="display: none;">
+                    This is an stretched grid column for SAVED TESTS. This segment will always match the tab height
+                </div>
+
+                <div class="ui newTest verticalTabMenu segment" style="display: none;">
+                    This is an stretched grid column for NEW TESTS. This segment will always match the tab height
+                </div>
+
+                <div class="ui help verticalTabMenu segment" style="display: none;">
+                    This is an stretched grid column for HELP. This segment will always match the tab height
                 </div>
 
             </div>
