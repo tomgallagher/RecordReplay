@@ -6,13 +6,15 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
         <title>Record/Replay UI</title>
         <link href="css/semantic.min.css" rel="stylesheet" type="text/css">
-        <script src="utils/jquery-3.1.1.min.js"></script>
-        <script src="utils/dexie.min.js"></script>
-        <script src="utils/Rx.min.js"></script>
-        <script src="utils/semantic.min.js"></script>
-        <script src="utils/fontawesome-all.min.js"></script>
+        <link href="css/userInterface.css" rel="stylesheet" type="text/css">
+        <script src="third_party/jquery-3.1.1.min.js"></script>
+        <script src="third_party/dexie.min.js"></script>
+        <script src="third_party/Rx.min.js"></script>
+        <script src="third_party/semantic.min.js"></script>
+        <script src="third_party/fontawesome-all.min.js"></script>
         <script src="user_interface/horizontalMenu.js"></script>
         <script src="user_interface/verticalMenu.js"></script>
+        <script src="user_interface/projects.js"></script>
         <script src="user_interface/newProject.js"></script>
         <script src="user_interface/newTest.js"></script>
 
@@ -95,7 +97,101 @@
                     </div>
 
                     <div class="ui savedProjects verticalTabMenu segment" style="display: none;">
-                        This is an stretched grid column for SAVED PROJECTS. This segment will always match the tab height
+
+                        <table class="ui violet celled striped single line four column projectsTable table">
+                            
+                            <thead>
+                                <tr>      
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Author</th>
+                                    <th class="center aligned">Action</th>
+                                </tr>
+                            </thead>
+                            
+                            <tbody>
+                                <div>
+                                    <tr>
+                                        <td data-label="projectName">James</td>
+                                        <td data-label="projectDescription">24</td>
+                                        <td data-label="projectAuthor">Engineer</td>
+                                        <td data-label="projectDelete" class="center aligned">
+                                            <div class="ui mini buttons">
+                                                <button class="ui editProject button">Edit</button>
+                                                <div class="or"></div>
+                                                <button class="ui deleteProject negative button" data-tooltip="To delete project and all associated tests">Delete</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </div>
+                                <tr>
+                                    <td data-label="projectName">Jill</td>
+                                    <td data-label="projectDescription">26</td>
+                                    <td data-label="projectAuthor">Engineer</td>
+                                    <td data-label="projectDelete">
+                                        
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td data-label="projectName">Elyse</td>
+                                    <td data-label="projectDescription">24</td>
+                                    <td data-label="projectAuthor">Designer</td>
+                                    <td data-label="projectDelete">
+                                        
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                            <tfoot class="full-width editProjectFooter" style="display: none;">
+                                    
+                                <tr>
+
+                                    <th colspan="16">
+                                            
+                                        <form class="ui editProjectForm form">
+
+                                            <div class="required field">
+                        
+                                                <label>Project Name</label>
+                
+                                                <input type="text" name="projectName" placeholder="Please enter unique project name">
+                                                
+                                            </div>
+                                            
+                                            <div class="required field">
+                                            
+                                                <label>Project Description</label>
+                                            
+                                                <input type="text" name="projectDescription" placeholder="Add a description that helps to identify the project">
+                                            
+                                            </div>
+                                            
+                                            <div class="required field">
+                                            
+                                                <label>Project Author</label>
+                                            
+                                                <input type="text" name="projectAuthor" placeholder="Please add the owner of the project">
+                                            
+                                            </div>
+                                            
+                                            <div class="ui violet inverted submit button">Edit Project</div>
+                                            <div class="ui error message"></div>
+                                            <div class="ui success message">
+                                                <div class="header">New Project Created</div>
+                                                <p>Project Now Available For Adding Tests</p>
+                                            </div>
+                
+                                        </form>
+
+                                    </th>
+
+                                </tr>
+                            
+                            </tfoot>
+                          
+                        </table>
+
                     </div>
 
                     <div class="ui newProject verticalTabMenu segment" style="display: none;">
@@ -332,11 +428,26 @@
 
         <div class="templateSection" style="display: none;">
         
-            <div class="projectTemplate">
-        
+            <div class="projectTableRowTemplate">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td data-label="projectName">Template Project Name</td>
+                            <td data-label="projectDescription">Template Project Description</td>
+                            <td data-label="projectAuthor">Template Project Author</td>
+                            <td data-label="projectDelete" class="center aligned">
+                                <div class="ui mini buttons">
+                                    <button class="ui editProject button" data-project-id="0">Edit</button>
+                                    <div class="or"></div>
+                                    <button class="ui deleteProject negative button" data-project-id="0" data-tooltip="To delete project and all associated tests">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
-            <div class="testTemplate">
+            <div class="testTableRowTemplate">
         
             </div>
 

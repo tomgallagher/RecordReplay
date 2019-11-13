@@ -1,0 +1,6 @@
+/*need an override here so inverted vertical menu works OK in black*/
+.ui.vertical.tabular.menu .active.item {
+
+    background: transparent !important;
+
+}

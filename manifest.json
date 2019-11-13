@@ -34,10 +34,10 @@
       "persistent": false,
       "scripts": [
           "background/background.js",
-          "utils/jquery-3.1.1.min.js", 
-          "utils/Rx.min.js", 
-          "utils/dexie.min.js",
-          "utils/mutation-summary.js"
+          "third_party/jquery-3.1.1.min.js", 
+          "third_party/Rx.min.js", 
+          "third_party/dexie.min.js",
+          "third_party/mutation-summary.js"
         ]
   },
 

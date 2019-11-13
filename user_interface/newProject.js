@@ -1,5 +1,6 @@
 $(document).ready (function(){
 
+    //validation for the new project form
     $('.ui.newProjectForm.form')
         .form({
             on: 'blur',

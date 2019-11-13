@@ -14,8 +14,8 @@ $(document).ready (function(){
                     //then we change the background colour
                     $( ".mainSection" ).css( "background-color", "black" );
                     //then we change the vertical menu colour to grey
-                    $( ".ui.vertical.fluid.tabular.menu" ).removeClass( "violet" );
-                    $( ".ui.vertical.fluid.tabular.menu" ).addClass( "grey" );
+                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table" ).removeClass( "violet" );
+                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table" ).addClass( "black" );
                     //then save the marker to local storage on the page
                     localStorage.setItem("ThemeInverted", "true");
                 } else {
@@ -24,8 +24,8 @@ $(document).ready (function(){
                     //then we change the background colour of the whole project
                     $( ".mainSection" ).css( "background-color", "#fff" );
                     //then we change the vertical menu colour back to violet
-                    $( ".ui.vertical.fluid.tabular.menu" ).removeClass( "grey" );
-                    $( ".ui.vertical.fluid.tabular.menu" ).addClass( "violet" );
+                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table" ).removeClass( "black" );
+                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table" ).addClass( "violet" );
                     //then save the marker to local storage on the page
                     localStorage.setItem("ThemeInverted", "false");
                 }
