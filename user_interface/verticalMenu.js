@@ -1,3 +1,9 @@
+function enableVerticalMenuButtonsWhenDataAllows() {
+
+    //so this function will enable tests when projects > 0, recordings when tests > 0, replays when recordings > 0
+
+}
+
 $(document).ready (function(){
     //menu operations are not handled automatically by semantic - we handle it ourselves
     $('.ui.vertical.fluid.tabular.menu .item').on('mousedown', function() {
@@ -17,6 +23,9 @@ $(document).ready (function(){
                 break;
             case classArray.includes('savedProjects'):
                 $('.ui.verticalTabMenu.savedProjects.segment').css('display', 'block');
+                //then reset the form to the point at which the page loaded, where it has neither a success nor an error state
+                $('.ui.editProjectForm.form').removeClass('success');
+                $('.ui.editProjectForm.form').removeClass('error');
                 break;
             case classArray.includes('newProject'):
                 //show the form to create a new project
@@ -27,6 +36,8 @@ $(document).ready (function(){
                 break;
             case classArray.includes('savedTests'):
                 $('.ui.verticalTabMenu.savedTests.segment').css('display', 'block');
+                $('.ui.editTestForm.form').removeClass('success');
+                $('.ui.editTestForm.form').removeClass('error');
                 break;
             case classArray.includes('newTest'):
                 //show the form to create a new project
@@ -34,6 +45,18 @@ $(document).ready (function(){
                 //then reset the form to the point at which the page loaded, where it has neither a success nor an error state
                 $('.ui.newTestForm.form').removeClass('success');
                 $('.ui.newTestForm.form').removeClass('error');
+                break;
+            case classArray.includes('savedRecordings'):
+                $('.ui.verticalTabMenu.savedRecordings.segment').css('display', 'block');
+                break;
+            case classArray.includes('newRecording'):
+                $('.ui.verticalTabMenu.newRecording.segment').css('display', 'block');
+                break;
+            case classArray.includes('savedReplays'):
+                $('.ui.verticalTabMenu.savedReplays.segment').css('display', 'block');
+                break;
+            case classArray.includes('newReplay'):
+                $('.ui.verticalTabMenu.newReplay.segment').css('display', 'block');
                 break;
             case classArray.includes('help'):
                 $('.ui.verticalTabMenu.help.segment').css('display', 'block');

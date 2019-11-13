@@ -26,8 +26,17 @@ $(document).ready (function(){
             },
             onSuccess(event, fields) {
                 event.preventDefault();
+                //add the loading indicator to the button
+                $('.ui.newProject.submit.button').addClass('loading');
                 console.log(fields);
+                //TO DO - save project to the database
+                
+                //remove the loading indicator from the button
+                $('.ui.newProject.submit.button').removeClass('loading');
+                //clear the form to eliminate any confusion
                 $('.ui.newProjectForm.form').form('clear');
+                //then run the function that enables the buttons
+                enableVerticalMenuButtonsWhenDataAllows();
             }
         });
 

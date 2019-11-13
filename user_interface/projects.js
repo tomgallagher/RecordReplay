@@ -2,7 +2,7 @@ function updateProjectsTable() {
 
     //add the loading indicator to the segment
     $('.ui.savedProjects.verticalTabMenu.segment').addClass('loading');
-    //empty the table body
+    //empty the projects table body so we can add the updated information
     $('.ui.celled.projectsTable.table tbody').empty();
     //target our table row template first, we only need to find the template once
     let targetNode = document.querySelector('.projectTableRowTemplate');
@@ -44,10 +44,10 @@ function updateProjectsTable() {
     //then we need to attach the clone of the template node to our container fragment
     docFrag.appendChild(tempNode);
 
-    //then we find the relevant table, using docuement.querySelector which helpfully returns the first Element within the document that matches the specified selector
+    //then we find the relevant table, using docuement.querySelector which helpfully returns the first Element within the document that matches the specified selector - MAYBE OUTSIDE LOOP
     let projectsTable = document.querySelector('.ui.celled.projectsTable.table tbody');
     
-    //then we append each of the project fragments to the table
+    //then we append each of the project fragments to the table - MAYBE OUTSIDE LOOP
     projectsTable.appendChild(docFrag);
     
     //then once all the work has been done remove class - OUTSIDE LOOP
@@ -59,7 +59,7 @@ $(document).ready (function(){
 
     //edit project button click handler
     $('.ui.editProject.button').on('mousedown', function(){
-        //find the project in the database by id, using data-project-id from the template
+        //TODO find the project in the database by id, using data-project-id from the template
 
         //fill the form fields with the saved project data
         $('.ui.editProjectForm.form input[name=projectName]').val('big');
@@ -110,6 +110,7 @@ $(document).ready (function(){
                 $('.ui.editProjectForm.form').form('clear');
                 //hide the edit project form container
                 $('.editProjectFooter').css("display", "none");
+                //TO DO we need to redraw the table as well here, after we have saved changes
             }
         });
 
