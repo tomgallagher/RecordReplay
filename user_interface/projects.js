@@ -8,14 +8,14 @@ function updateProjectsTable() {
     let targetNode = document.querySelector('.projectTableRowTemplate');
     //we need to do more work as we have to save the template in a table, which we don't need, we just want the row
     let targetRow = targetNode.querySelector('tr');
+    //then create a document fragment that we will use as a container for each looped template
+    let docFrag = document.createDocumentFragment();
 
     //TO DO - get all the current projects from the database, as an array, then loop through the array to update the UI
 
     //ALL FOLLOWS INSIDE LOOP
     //for (let item in projectStorageArray) { console.log(item); }
 
-    //then create a document fragment that we will use as a container for each looped template
-    let docFrag = document.createDocumentFragment();
     //then we make a clone of the row, that will serve the purpose
     let tempNode = targetRow.cloneNode(true);
     
