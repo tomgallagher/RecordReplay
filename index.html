@@ -14,6 +14,7 @@
         <script src="user_interface/horizontalMenu.js"></script>
         <script src="user_interface/verticalMenu.js"></script>
         <script src="user_interface/newProject.js"></script>
+        <script src="user_interface/newTest.js"></script>
 
     </head>
 
@@ -30,58 +31,64 @@
                     </div>
 
                     <a class="themeSettings item">
-                        THEME
+                        <strong>THEME</strong>
                     </a>
                     
                     <a class="emailIcon item">
-                        MAIL
+                        <strong>MAIL</strong>
                     </a>
                     
                     <a class="giveIcon item" target="_blank" href="https://www.paypal.me/turbobrowser">
-                        DONATE
+                        <strong>DONATE</strong>
                     </a>
                 
                 </div>
             
             </div>
 
-            <h1 class="ui center aligned block header" style="font-style: italic;">Record/Replay</h1>
+            <h1 class="ui center aligned block header" style="font-style: italic; text-decoration: underline; text-decoration-color: #6435c9; text-decoration-style: dashed;">
+                Record-Replay
+            </h1>
 
             <div class="ui padded grid">
 
-                <div class="four wide column">
+                <div class="three wide column">
 
-                    <div class="ui vertical fluid violet tabular labeled icon menu">
+                    <div class="ui vertical fluid violet tabular menu">
                     
                         <a class="active gettingStarted item">
-                            Getting Started
+                            <strong>Getting Started</strong>
                         </a>
 
                         <a class="savedProjects item">
-                            Projects
+                            <strong>Projects</strong>
                         </a>
                         
                         <a class="newProject item">
-                            New Project
+                            <strong>New Project</strong>
                         </a>
 
                         <a class="savedTests item">
-                            Tests
+                            <strong>Tests</strong>
                         </a>
 
                         <a class="newTest item">
-                            New Test
+                            <strong>New Test</strong>
+                        </a>
+                        
+                        <a class="runTest item">
+                            <strong>Run Tests</strong>
                         </a>
 
                         <a class="help item">
-                            Help
+                            <strong>Help</strong>
                         </a>
 
                     </div>
 
                 </div>
 
-                <div class="twelve wide stretched column">
+                <div class="thirteen wide stretched column">
                 
                     <div class="ui gettingStarted verticalTabMenu segment" style="display: block;">
                         This is an stretched grid column for GETTING STARTED. This segment will always match the tab height
@@ -93,9 +100,9 @@
 
                     <div class="ui newProject verticalTabMenu segment" style="display: none;">
 
-                        <form id="newProjectForm" class="ui form">
+                        <form class="ui newProjectForm form">
 
-                            <div class="required field">
+                            <div class="newProjectForm required field">
 
                                 <label>Project Name</label>
 
@@ -103,7 +110,7 @@
                                 
                             </div>
                             
-                            <div class="required field">
+                            <div class="newProjectForm required field">
                             
                                 <label>Project Description</label>
                             
@@ -111,7 +118,7 @@
                             
                             </div>
                             
-                            <div class="required field">
+                            <div class="newProjectForm required field">
                             
                                 <label>Project Author</label>
                             
@@ -119,7 +126,7 @@
                             
                             </div>
                             
-                            <div class="ui submit button">Create Project</div>
+                            <div class="ui violet inverted submit button">Create Project</div>
                             <div class="ui error message"></div>
                             <div class="ui success message">
                                 <div class="header">New Project Created</div>
@@ -135,7 +142,182 @@
                     </div>
 
                     <div class="ui newTest verticalTabMenu segment" style="display: none;">
-                        This is an stretched grid column for NEW TEST. This segment will always match the tab height
+
+                        <form class="ui newTestForm form">
+
+                            <div class="two fields">
+
+                                <div class="required field">
+
+                                    <label>Test Name</label>
+
+                                    <input type="text" name="testName" placeholder="Enter unique test name">
+                                    
+                                </div>
+                                
+                                <div class="field">
+                                
+                                    <label>Test Description</label>
+                                
+                                    <input type="text" name="testDescription" placeholder="Add a description that describes the test">
+                                
+                                </div>
+
+                            </div>
+                            
+                            <div class="two fields">
+
+                                <div class="required field">
+                        
+                                    <label>For Project</label>
+                                    
+                                    <div class="ui fluid selection dropdown">
+                                        
+                                        <input type="hidden" name="testBandwidth">
+                                        
+                                        <div class="default text">Select Project</div>
+                                        
+                                        <i class="dropdown icon"></i>
+                                        
+                                        <div class="menu">
+    
+                                            <div class="item" data-value="1">Projects will appear here</div>
+    
+                                        </div>
+                                    
+                                    </div>
+                                    
+                                </div>
+
+                                <div class="field">
+                                
+                                    <label>Test Author</label>
+                                
+                                    <input type="text" name="testAuthor" placeholder="Add test designer name">
+                                
+                                </div>
+
+                            </div>
+                            
+                            <div class="required field">
+                            
+                                <label>Start URL</label>
+                            
+                                <input type="text" name="testStartUrl" placeholder="Please add the full starting url of the test, including protocol">
+                            
+                            </div>
+                            
+                            <div class="two fields">
+                                    
+                                <div class="required field">
+                                        
+                                    <label>Bandwidth</label>
+                                    
+                                    <div class="ui fluid selection dropdown">
+                                        
+                                        <input type="hidden" name="testBandwidth">
+                                        
+                                        <div class="default text">Select Desired Bandwidth</div>
+                                        
+                                        <i class="dropdown icon"></i>
+                                        
+                                        <div class="menu">
+
+                                            <div class="item" data-value="187500">1.5 MegaBits / second</div>
+                                            <div class="item" data-value="375000">3 MegaBits / second</div>
+                                            <div class="item" data-value="625000">5 MegaBits / second</div>
+                                            <div class="item" data-value="875000">7 MegaBits / second</div>
+                                            <div class="item" data-value="1250000">10 MegaBits / second</div>
+
+                                        </div>
+                                    
+                                    </div>
+                                    
+                                </div>
+                                    
+                                <div class="required field">
+                                      
+                                    <label>Latency</label>
+                                                
+                                    <div class="ui fluid selection dropdown">
+                                        
+                                        <input type="hidden" name="testLatency">
+                                    
+                                        <div class="default text">Select Desired Latency</div>
+                                        
+                                        <i class="dropdown icon"></i>
+                                        
+                                        <div class="menu">
+    
+                                            <div class="item" data-value="40">40ms latency</div>
+                                            <div class="item" data-value="50">50ms latency</div>
+                                            <div class="item" data-value="100">100ms latency</div>
+                                            <div class="item" data-value="150">150ms latency</div>
+                                            <div class="item" data-value="200">200ms latency</div>
+                                            <div class="item" data-value="300">300ms latency</div>
+                                            <div class="item" data-value="400">400ms latency</div>
+                                            <div class="item" data-value="500">500ms latency</div>
+
+                                        </div>
+                                                
+                                    </div>
+                                                                                  
+                                </div>
+                                       
+                            </div>
+
+                            <div class="field">
+                                
+                                <label>Additional Reporting</label>
+
+                                <div class="three fields">
+                                
+                                    <div class="field">
+                                        
+                                        <div class="ui checkbox">
+                                                
+                                            <input type="checkbox" name="testPerformance" class="hidden">
+                                            <label>Include Performance Timings</label>
+                                                
+                                        </div>
+
+                                    </div>
+
+                                    <div class="field">
+
+                                        <div class="ui checkbox">
+                                                    
+                                            <input type="checkbox" name="testResourceTypes" class="hidden">
+                                            <label>Include Resource Loads by Type</label>
+                                                    
+                                        </div>
+
+                                    </div>
+
+                                    <div class="field">
+
+                                        <div class="ui checkbox">
+                                                    
+                                            <input type="checkbox" name="testScreenShot" class="hidden">
+                                            <label>Take Screenshot When Finished</label>
+                                                    
+                                        </div>
+
+                                    </div>
+
+                                </div>   
+                                
+                            </div> 
+
+                            <div class="ui violet inverted submit button">Create Test</div>
+                            <div class="ui error message"></div>
+                            <div class="ui success message">
+                                <div class="header">New Test Created</div>
+                                <p>Test Now Available For Running</p>
+                            </div>
+
+                        </form>
+
                     </div>
 
                     <div class="ui help verticalTabMenu segment" style="display: none;">

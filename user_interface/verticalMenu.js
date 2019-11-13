@@ -19,13 +19,21 @@ $(document).ready (function(){
                 $('.ui.verticalTabMenu.savedProjects.segment').css('display', 'block');
                 break;
             case classArray.includes('newProject'):
+                //show the form to create a new project
                 $('.ui.verticalTabMenu.newProject.segment').css('display', 'block');
+                //then reset the form to the point at which the page loaded, where it has neither a success nor an error state
+                $('.ui.newProjectForm.form').removeClass('success');
+                $('.ui.newProjectForm.form').removeClass('error');
                 break;
             case classArray.includes('savedTests'):
                 $('.ui.verticalTabMenu.savedTests.segment').css('display', 'block');
                 break;
             case classArray.includes('newTest'):
+                //show the form to create a new project
                 $('.ui.verticalTabMenu.newTest.segment').css('display', 'block');
+                //then reset the form to the point at which the page loaded, where it has neither a success nor an error state
+                $('.ui.newTestForm.form').removeClass('success');
+                $('.ui.newTestForm.form').removeClass('error');
                 break;
             case classArray.includes('help'):
                 $('.ui.verticalTabMenu.help.segment').css('display', 'block');

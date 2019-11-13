@@ -8,7 +8,7 @@ $(document).ready (function(){
             //getting started shows on first load but after it should revert to projects
             case classArray.includes('themeSettings'):
                 //check to see if we are predominantly not inverted
-                if ($(".ui.inverted").length == 0) { 
+                if ($(".ui.inverted").length < 10) { 
                     //if so, then we invert each of our semantic components 
                     $( ".ui" ).addClass( "inverted" );
                     //then we change the background colour
@@ -20,7 +20,7 @@ $(document).ready (function(){
                     localStorage.setItem("ThemeInverted", "true");
                 } else {
                     //otherwise we revert each of our semantic components 
-                    $( ".ui" ).removeClass( "inverted" );
+                    $( ".ui:not(.violet.submit.button)" ).removeClass( "inverted" );
                     //then we change the background colour of the whole project
                     $( ".mainSection" ).css( "background-color", "#fff" );
                     //then we change the vertical menu colour back to violet
