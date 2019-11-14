@@ -12,6 +12,8 @@
         <script src="third_party/Rx.min.js"></script>
         <script src="third_party/semantic.min.js"></script>
         <script src="third_party/fontawesome-all.min.js"></script>
+        <script src="utils/storage.js"></script>
+        <script src="models/projectModel.js"></script>
         <script src="user_interface/horizontalMenu.js"></script>
         <script src="user_interface/verticalMenu.js"></script>
         <script src="user_interface/projects.js"></script>
@@ -63,7 +65,7 @@
                             <strong>Getting Started</strong>
                         </a>
 
-                        <a class="savedProjects item">
+                        <a class="savedProjects disabled item">
                             <strong>Projects</strong>
                         </a>
                         
@@ -71,32 +73,32 @@
                             <strong>New Project</strong>
                         </a>
 
-                        <a class="savedTests item">
+                        <a class="savedTests disabled item">
                             <strong>Tests</strong>
                         </a>
 
-                        <a class="newTest item">
+                        <a class="newTest disabled item">
                             <strong>New Test</strong>
                         </a>
                         
-                        <a class="savedRecordings item">
+                        <a class="savedRecordings disabled item">
                             <strong>Recordings</strong>
                         </a>
 
-                        <a class="newRecording item">
+                        <a class="newRecording disabled item">
                             <strong>New Recording</strong>
                         </a>
 
-                        <a class="savedReplays item">
+                        <a class="savedReplays disabled item">
                             <strong>Replays</strong>
                         </a>
     
-                        <a class="newReplay item">
+                        <a class="newReplay disabled item">
                             <strong>New Replay</strong>
                         </a>
 
                         <a class="help item">
-                            <strong>Help</strong>
+                            <strong>Tips and Tricks</strong>
                         </a>
 
                     </div>
@@ -123,19 +125,6 @@
                             </thead>
                             
                             <tbody>
-                                <tr>
-                                    <td data-label="projectName">James</td>
-                                    <td data-label="projectDescription">24</td>
-                                    <td data-label="projectAuthor">Engineer</td>
-                                    <td data-label="projectDelete" class="center aligned">
-                                        <div class="ui mini buttons">
-                                            <button class="ui editProject button">Edit</button>
-                                            <div class="or"></div>
-                                            <button class="ui deleteProject negative button" data-tooltip="To delete project and all associated tests, recordings and replays" data-position="left center">Delete</button>
-                                        </div>
-                                    </td>
-                                </tr>
-
                             </tbody>
 
                             <tfoot class="full-width editProjectFooter" style="display: none;">
@@ -145,6 +134,12 @@
                                     <th colspan="16">
                                             
                                         <form class="ui editProjectForm form">
+                                            
+                                            <div class="field" style="display: none;">
+                                                
+                                                <input type="text" name="hiddenProjectId">
+                                            
+                                            </div>
 
                                             <div class="required field">
                         
