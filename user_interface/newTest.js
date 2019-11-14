@@ -45,7 +45,13 @@ $(document).ready (function(){
                 event.preventDefault();
                 //add the loading indicator to the button
                 $('.ui.newTest.submit.button').addClass('loading');
+                //log the fields we are getting from the submit event
                 console.log(fields);
+                //get the text values of the three new test form dropdowns
+                const projectText = $('.ui.newTestForm .ui.project.dropdown').dropdown('get text');
+                const bandwidthText = $('.ui.newTestForm .ui.bandwidth.dropdown').dropdown('get text');
+                const latencyText = $('.ui.newTestForm .ui.latency.dropdown').dropdown('get text');
+                console.log(projectText, bandwidthText, latencyText);
                 //TO DO - save test to the database
                 
                 //remove the loading indicator from the button

@@ -82,6 +82,9 @@ $(document).ready (function(){
     $('.ui.editTest.button').on('mousedown', function(){
         //TODO find the test in the database by id, using data-test-id from the template
 
+        //fill the hidden form field with the test id number, so we can retrieve after validation has been passed
+        $('.ui.editTestForm.form input[name=hiddenTestId]').val("2");
+
         //fill the form fields with the saved test data
         $('.ui.editTestForm.form input[name=testName]').val('big');
         $('.ui.editTestForm.form input[name=testDescription]').val('hairy');
@@ -151,6 +154,14 @@ $(document).ready (function(){
             onSuccess(event, fields) {
                 event.preventDefault();
                 console.log(fields);
+                //get the text values of the three edit test form dropdowns
+                const projectText = $('.ui.editTestForm .ui.project.dropdown').dropdown('get text');
+                const bandwidthText = $('.ui.editTestForm .ui.bandwidth.dropdown').dropdown('get text');
+                const latencyText = $('.ui.editTestForm .ui.latency.dropdown').dropdown('get text');
+                console.log(projectText, bandwidthText, latencyText);
+                
+                //TODO update the test in the database 
+
                 //clear the edit project form
                 $('.ui.editTestForm.form').form('clear');
                 //hide the edit project form container
