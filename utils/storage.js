@@ -9,7 +9,8 @@ StorageUtils.openModelObjectDatabaseConnection = function(caller) {
         var db = new Dexie("modelObjectDatabase");
         //set up the database with the required fields - this is where we add fields in a second version so we can update users' databases
         db.version(1).stores({
-            projects: "++id,projectName,projectDescription,projectAuthor"
+            projects: "++id,projectName,projectDescription,projectAuthor",
+            tests: "++id,testName,testDescription,testAuthor,testProjectId,testProjectName,testStartUrl,testBandwidthValue,testBandwidthName,testLatencyValue,testLatencyName,testPerformanceTimings,testResourceLoads,testScreenshot"
         });
         //report that the database connection is open
         console.log(`${caller} has opened modelObjectDatabase Connection`);
@@ -27,13 +28,13 @@ StorageUtils.getRecordsCount = function() {
         //open the database connection
         StorageUtils.openModelObjectDatabaseConnection("Storage")
         //then get all the records as a promise all, just projects at the moment
-            .then(db => Promise.all( [ db.projects.count() ] ) )
+            .then(db => Promise.all( [ db.projects.count(), db.tests.count() ] ) )
             //then we return each of them as a value array
             .then(valuesArray => {
                 const countResponse = {
                     //start with projects and zeros for undefined tables
                     projects: valuesArray[0],
-                    tests: 0,
+                    tests: valuesArray[1],
                     recordings: 0,
                     replays: 0
                 };
@@ -140,7 +141,7 @@ StorageUtils.getAllObjectsInDatabaseTable = function(caller, table) {
 //return a single model object from the database
 StorageUtils.getSingleObjectFromDatabaseTable = function(caller, key, table) {
 
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
 
         const checkedKey = StorageUtils.standardiseKey(key);
         //open the database connection
@@ -171,7 +172,7 @@ StorageUtils.standardiseKey = function(key) {
         const adjustedKey = Number(key);
         //then test that conversion has happened and return
         if (typeof adjustedKey == 'number' && adjustedKey % 1 === 0) { return adjustedKey }
-        if (Number.isNaN(adjustedKey)) { throw "StorageUtils.standardiseKey: Incoming Key is not a number!"; }
+        if (Number.isNaN(adjustedKey)) { throw `StorageUtils.standardiseKey: Incoming Key: ${typeof key} Adjusted Key: ${adjustedKey} is not a number!`; }
     }
 
 }

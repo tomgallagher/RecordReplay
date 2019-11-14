@@ -1,7 +1,7 @@
 function addProjectTableButtonListeners() {
 
     //edit project button click handler
-    $('.ui.editProject.button').on('mousedown', function(event){
+    $('.ui.editProject.button:not(submit)').on('mousedown', function(event){
         
         //find the project in the database by id, using data-project-id from the template
         const projectKey = $(this).attr("data-project-id");
@@ -146,7 +146,7 @@ $(document).ready (function(){
                     //then we have nothing returned so we just make the adjustments
                     .then( () => {
                         //remove the loading indicator from the button, to indicate saving of the project to the database complete
-                        $('.ui.editProjectForm ui.submit.button').addClass('loading');
+                        $('.ui.editProjectForm ui.submit.button').removeClass('loading');
                         //then redraw the table
                         updateProjectsTable();
                         //clear the edit project form

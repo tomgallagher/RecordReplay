@@ -90,12 +90,19 @@ $(document).ready (function(){
                 break;
             case classArray.includes('savedTests'):
                 $('.ui.verticalTabMenu.savedTests.segment').css('display', 'block');
+                //make sure the tests table shows an updated account of the tests in storage, using function from tests.js which adds loading indicator
+                updateTestsTable();
+                //make sure the edit test project dropdown shows an updated account of the projects in storage, using function from tests.js
+                refreshEditTestProjectDropdown();
+                //then reset the form to the point at which the page loaded, where it has neither a success nor an error state
                 $('.ui.editTestForm.form').removeClass('success');
                 $('.ui.editTestForm.form').removeClass('error');
                 break;
             case classArray.includes('newTest'):
                 //show the form to create a new project
                 $('.ui.verticalTabMenu.newTest.segment').css('display', 'block');
+                //make sure the new test project dropdown shows an updated account of the projects in storage, using function from newTest.js
+                refreshNewTestProjectDropdown();
                 //then reset the form to the point at which the page loaded, where it has neither a success nor an error state
                 $('.ui.newTestForm.form').removeClass('success');
                 $('.ui.newTestForm.form').removeClass('error');
