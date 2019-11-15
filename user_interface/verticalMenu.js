@@ -111,7 +111,13 @@ $(document).ready (function(){
                 $('.ui.verticalTabMenu.savedRecordings.segment').css('display', 'block');
                 break;
             case classArray.includes('newRecording'):
+                //show the form to create a new recording
                 $('.ui.verticalTabMenu.newRecording.segment').css('display', 'block');
+                //make sure the new recording test dropdwon shows an updated account of the tests in storage, using function from newRecording.js
+                refreshNewRecordingTestDropdown();
+                //then reset the form to the point at which the page loaded, with neither success or error
+                $('.ui.newRecordingForm.form').removeClass('success');
+                $('.ui.newRecordingForm.form').removeClass('error');
                 break;
             case classArray.includes('savedReplays'):
                 $('.ui.verticalTabMenu.savedReplays.segment').css('display', 'block');
@@ -123,5 +129,7 @@ $(document).ready (function(){
                 $('.ui.verticalTabMenu.help.segment').css('display', 'block');
                 break;
         }
+
     });
+
 }); 

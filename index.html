@@ -21,6 +21,7 @@
         <script src="user_interface/newProject.js"></script>
         <script src="user_interface/tests.js"></script>
         <script src="user_interface/newTest.js"></script>
+        <script src="user_interface/newRecording.js"></script>
 
     </head>
 
@@ -120,7 +121,7 @@
                                 
                                     <div class="title">Projects</div>
                                 
-                                    <div class="description">Manage your testing workflow among teams</div>
+                                    <div class="description">Manage your testing workflow in project folders</div>
                               
                                 </div>
                             
@@ -128,7 +129,7 @@
                             
                             <div class="step">
                               
-                                <i class="sitemap icon" style="color:#6435c9"></i>
+                                <i class="tasks icon" style="color:#6435c9"></i>
                               
                                 <div class="content">
                                 
@@ -170,9 +171,188 @@
                           
                         </div>
                         
-                        <div class="ui attached segment">
+                        <div class="ui segment">
                             
-                          
+                            <div class="ui tiny header">
+                                
+                                <i class="folder open outline icon" style="color:#6435c9"></i>
+
+                                <div class="content">Create your first project</div>
+
+                            </div>
+
+                            <div class="ui small relaxed animated divided list">
+                                
+                                <div class="item">
+
+                                    <i class="angle right icon"></i>
+
+                                    <div class="content">
+                                        Organising your testing workflow into projects allows for <strong>quick search, update and delete</strong> of saved tests 
+                                    </div>
+
+                                </div>
+
+                                <div class="item">
+
+                                    <i class="angle right icon"></i>
+
+                                    <div class="content">
+                                        Project workflow allows for <strong>easy sharing </strong> of testing environments among large teams  
+                                    </div>
+
+                                </div>
+
+                                <div class="item">
+
+                                    <i class="angle right icon"></i>
+
+                                    <div class="content">
+                                        Once you have completed input to <strong>save your first project</strong>, you can start adding new tests
+                                    </div>
+
+                                </div>
+                                  
+                            </div>
+
+                        </div>
+
+                        <div class="ui segment">
+                            
+                            <div class="ui tiny header">
+                                
+                                <i class="tasks icon" style="color:#6435c9"></i>
+
+                                <div class="content">Set up your first test</div>
+
+                            </div>
+
+                            <div class="ui small relaxed animated divided list">
+                                    
+                                <div class="item">
+
+                                    <i class="angle right icon"></i>
+
+                                    <div class="content">
+                                        Tests are linked to a <strong>single starting url</strong> and can contain many individual recordings 
+                                    </div>
+
+                                </div>
+
+                                <div class="item">
+
+                                    <i class="angle right icon"></i>
+
+                                    <div class="content">
+                                        Tests allow <strong>bandwidth and latency throttling</strong>, when run individually or as a group  
+                                    </div>
+
+                                </div>
+
+                                <div class="item">
+
+                                    <i class="angle right icon"></i>
+
+                                    <div class="content">
+                                        Once you have completed input to <strong>save your first test</strong>,, you can start adding new recordings
+                                    </div>
+
+                                </div>
+                                    
+                            </div>
+
+                        </div>
+
+                        <div class="ui segment">
+                            
+                            <div class="ui tiny header">
+                                
+                                <i class="circle outline icon" style="color:#6435c9"></i>
+
+                                <div class="content">Start your first recording</div>
+
+                            </div>
+
+                            <div class="ui small relaxed animated divided list">
+                                    
+                                <div class="item">
+
+                                    <i class="angle right icon"></i>
+
+                                    <div class="content">
+                                        
+                                    </div>
+
+                                </div>
+
+                                <div class="item">
+
+                                    <i class="angle right icon"></i>
+
+                                    <div class="content">
+                                          
+                                    </div>
+
+                                </div>
+
+                                <div class="item">
+
+                                    <i class="angle right icon"></i>
+
+                                    <div class="content">
+                                        Once you have finished recording user interactions and responses, <strong>save your first recording</strong> for later replay
+                                    </div>
+
+                                </div>
+                                    
+                            </div>
+
+                        </div>
+
+                        <div class="ui segment">
+                            
+                            <div class="ui tiny header">
+                                
+                                <i class="play circle outline icon" style="color:#6435c9"></i>
+
+                                <div class="content">Replay your first recording</div>
+
+                            </div>
+
+                            <div class="ui small relaxed animated divided list">
+                                    
+                                <div class="item">
+
+                                    <i class="angle right icon"></i>
+
+                                    <div class="content">
+                                        
+                                    </div>
+
+                                </div>
+
+                                <div class="item">
+
+                                    <i class="angle right icon"></i>
+
+                                    <div class="content">
+                                        
+                                    </div>
+
+                                </div>
+
+                                <div class="item">
+
+                                    <i class="angle right icon"></i>
+
+                                    <div class="content">
+                                        If the replay matches your recording, <strong>download your recording or test</strong> for inclusion in testing suites
+                                    </div>
+
+                                </div>
+                                    
+                            </div>
+
                         </div>
                     
                     </div>
@@ -278,7 +458,7 @@
                             
                             </div>
                             
-                            <div class="ui violet inverted newProject submit button">Create Project</div>
+                            <div class="ui violet inverted submit button">Create Project</div>
                             <div class="ui error message"></div>
                             <div class="ui success message">
                                 <div class="header">New Project Created</div>
@@ -407,7 +587,7 @@
                                                     
                                                 <div class="required field">
                                                         
-                                                    <label>Bandwidth</label>
+                                                    <label>Bandwidth Throttling</label>
                                                     
                                                     <div class="ui fluid selection bandwidth dropdown">
                                                         
@@ -424,6 +604,7 @@
                                                             <div class="item" data-value="625000">5 Mbps</div>
                                                             <div class="item" data-value="875000">7 Mbps</div>
                                                             <div class="item" data-value="1250000">10 Mbps</div>
+                                                            <div class="item" data-value="-1">None</div>
                 
                                                         </div>
                                                     
@@ -433,7 +614,7 @@
                                                             
                                                 <div class="required field">
                                                         
-                                                    <label>Latency</label>
+                                                    <label>Minimum Latency</label>
                                                                 
                                                     <div class="ui fluid selection latency dropdown">
                                                         
@@ -444,7 +625,8 @@
                                                         <i class="dropdown icon"></i>
                                                         
                                                         <div class="menu">
-                    
+                                                            
+                                                            <div class="item" data-value="0">None</div>
                                                             <div class="item" data-value="40">40ms</div>
                                                             <div class="item" data-value="50">50ms</div>
                                                             <div class="item" data-value="100">100ms</div>
@@ -590,7 +772,7 @@
                                     
                                 <div class="required field">
                                         
-                                    <label>Bandwidth</label>
+                                    <label>Bandwidth Throttling</label>
                                     
                                     <div class="ui fluid selection bandwidth dropdown">
                                         
@@ -607,6 +789,7 @@
                                             <div class="item" data-value="625000">5 Mbps</div>
                                             <div class="item" data-value="875000">7 Mbps</div>
                                             <div class="item" data-value="1250000">10 Mbps</div>
+                                            <div class="item" data-value="-1">None</div>
 
                                         </div>
                                     
@@ -616,7 +799,7 @@
                                     
                                 <div class="required field">
                                       
-                                    <label>Latency</label>
+                                    <label>Minimum Latency</label>
                                                 
                                     <div class="ui fluid selection latency dropdown">
                                         
@@ -627,7 +810,8 @@
                                         <i class="dropdown icon"></i>
                                         
                                         <div class="menu">
-    
+                                            
+                                            <div class="item" data-value="0">None</div>
                                             <div class="item" data-value="40">40ms</div>
                                             <div class="item" data-value="50">50ms</div>
                                             <div class="item" data-value="100">100ms</div>
@@ -688,7 +872,7 @@
                                 
                             </div> 
 
-                            <div class="ui violet inverted newTest submit button">Create Test</div>
+                            <div class="ui violet inverted submit button">Create Test</div>
                             <div class="ui error message"></div>
                             <div class="ui success message">
                                 <div class="header">New Test Created</div>
@@ -703,8 +887,214 @@
                         This is an stretched grid column for SAVED RECORDINGS. This segment will always match the tab height
                     </div>
                         
-                    <div class="ui newRecording verticalTabMenu segment" style="display: none; overflow-x: auto;">
-                        This is an stretched grid column for NEW RECORDING. This segment will always match the tab height
+                    <div class="ui newRecording verticalTabMenu segment" style="display: none; ">
+
+                        <form class="ui newRecordingForm form">
+
+                            <div class="field" style="display: none;">
+                                            
+                                <input type="text" name="recordingProjectId">
+                            
+                            </div>
+
+                            <div class="field" style="display: none;">
+                                            
+                                <input type="text" name="recordingProjectName">
+                            
+                            </div>
+
+                            <div class="field" style="display: none;">
+                                            
+                                <input type="text" name="recordingTestId">
+                                
+                            </div>
+                            
+                            <div class="field" style="display: none;">
+                                            
+                                <input type="text" name="recordingTestName">
+                            
+                            </div>
+
+                            <div class="field" style="display: none;">
+                                            
+                                <input type="text" name="recordingTestBandwidthValue">
+                            
+                            </div>
+
+                            <div class="field" style="display: none;">
+                                            
+                                <input type="text" name="recordingTestBandwidthName">
+                            
+                            </div>
+
+                            <div class="field" style="display: none;">
+                                            
+                                <input type="text" name="recordingTestLatencyValue">
+                            
+                            </div>
+
+                            <div class="field" style="display: none;">
+                                            
+                                <input type="text" name="recordingTestLatencyName">
+                            
+                            </div>
+
+                            <div class="field" style="display: none;">
+                                            
+                                <input type="text" name="recordingTestPerformanceTimings">
+                            
+                            </div>
+
+                            <div class="field" style="display: none;">
+                                            
+                                <input type="text" name="recordingTestResourceLoads">
+                            
+                            </div>
+
+                            <div class="field" style="display: none;">
+                                            
+                                <input type="text" name="recordingTestScreenshot">
+                            
+                            </div>
+
+                            <div class="three fields">
+        
+                                <div class="required field">
+
+                                    <label>Recording Name</label>
+
+                                    <input type="text" name="recordingName" placeholder="Enter unique recording name">
+                                    
+                                </div>
+                                        
+                                <div class="field">
+                                
+                                    <label>Recording Description</label>
+                                
+                                    <input type="text" name="recordingDescription" placeholder="Add a recording description">
+                                
+                                </div>
+
+                                <div class="field">
+                                
+                                    <label>Recording Author</label>
+                                
+                                    <input type="text" name="recordingAuthor" placeholder="Add an author">
+                                
+                                </div>
+        
+                            </div>
+                                    
+                            <div class="two fields">
+        
+                                <div class="required field">
+                                
+                                    <label>For Test</label>
+                                            
+                                    <div class="ui fluid selection newRecording test dropdown">
+                                                
+                                        <input type="hidden" name="recordingTestId">
+                                                
+                                        <div class="default text">Select Test</div>
+                                                
+                                        <i class="dropdown icon"></i>
+                                                
+                                        <div class="menu"></div>
+                                            
+                                    </div>
+                                            
+                                </div>
+        
+                                <div class="required disabled field">
+                                        
+                                    <label>Test Start Url</label>
+                                        
+                                    <input type="text" name="recordingTestStartUrl" placeholder="Filled on test select">
+                                        
+                                </div>
+        
+                            </div>
+
+                            <div class="two fields">
+        
+                                <div class="required four wide field">
+                                
+                                    <label>For Device</label>
+                                            
+                                    <div class="inline fields">
+                                            
+                                        <div class="field">
+                                                
+                                            <div class="ui radio device checkbox">
+                                                
+                                                <input type="radio" name="device" checked="checked" id="computer">
+                                                
+                                                <label>Computer</label>
+                                                
+                                            </div>
+                                            
+                                        </div>
+                                            
+                                        <div class="field">
+                                                
+                                            <div class="ui radio device checkbox">
+                                                
+                                                <input type="radio" name="device" id="mobile">
+                                                
+                                                <label>Mobile</label>
+                                                
+                                            </div>
+                                            
+                                        </div>
+                                                
+                                    </div>
+                                            
+                                </div>
+            
+                                <div class="disabled orientation field">
+                                            
+                                    <label>Device Orientation</label>
+                                            
+                                    <div class="inline fields">
+                                            
+                                        <div class="field">
+                                              
+                                            <div class="ui radio checkbox">
+                                                
+                                                <input type="radio" name="orientation" checked="checked">
+                                                
+                                                <label>Portrait</label>
+                                              
+                                            </div>
+                                            
+                                        </div>
+                                            
+                                        <div class="field">
+                                              
+                                            <div class="ui radio checkbox">
+                                                
+                                                <input type="radio" name="orientation">
+                                                
+                                                <label>Landscape</label>
+                                              
+                                            </div>
+                                            
+                                        </div>
+                                              
+                                    </div>
+                                            
+                                </div>
+            
+                            </div>
+                            
+                            <div class="ui violet inverted submit button">Create Recording</div>
+                            <div class="ui error message"></div>
+                            <div class="ui success message">
+                                <div class="header">New Recording Created</div>
+                                <p>Press Run to Start Recording</p>
+                            </div>
+        
+                        </form>
                     </div>
 
                     <div class="ui savedReplays verticalTabMenu segment" style="display: none; overflow-x: auto;">
