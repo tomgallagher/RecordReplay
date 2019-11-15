@@ -4,7 +4,7 @@ function refreshNewRecordingTestDropdown() {
     StorageUtils.getAllObjectsInDatabaseTable('newRecording.js', 'tests')
         //once we have the array then we can start populating the new test form projects dropdwon by looping through the array
         .then(testStorageArray => {
-
+            
             //get a reference to the drop down in the new recording form
             var newRecordingDropDownMenu = $('.ui.fluid.selection.newRecording.test.dropdown .menu');
             //empty the dropdown of existing items
@@ -15,7 +15,30 @@ function refreshNewRecordingTestDropdown() {
                 newRecordingDropDownMenu.append(`<div class="item" data-value=${testStorageArray[test].id}>${testStorageArray[test].testName}</div>`);
             }
             //then after the entire loop has been executed we need to initialise the dropdown with the updated items
-            $('.ui.fluid.selection.newRecording.test.dropdown').dropdown();
+            $('.ui.fluid.selection.newRecording.test.dropdown').dropdown({
+                onChange: function(value) {
+                    //data value always returns a string and we need the id in number form
+                    const testId = Number(value);
+                    //then we need to get the right item from the array so we can populate the test start url field in the visible form
+                    const test = testStorageArray.find(item => item.id == testId);
+                    //populate the visible form but leave it disabled - it's readable but the form does not mutate and require reseting
+                    $('.ui.newRecordingForm.form input[name=recordingTestStartUrl]').val(test.testStartUrl);
+                    //populate the invisible fields
+                    $('.ui.newRecordingForm.form input[name=recordingProjectId]').val(test.testProjectId);
+                    $('.ui.newRecordingForm.form input[name=recordingProjectName]').val(test.testProjectName);
+                    $('.ui.newRecordingForm.form input[name=recordingTestId]').val(test.id);
+                    $('.ui.newRecordingForm.form input[name=recordingTestName]').val(test.testName);
+                    $('.ui.newRecordingForm.form input[name=recordingTestBandwidthValue]').val(test.testBandwidthValue);
+                    $('.ui.newRecordingForm.form input[name=recordingTestBandwidthName]').val(test.testBandwidthName);
+                    $('.ui.newRecordingForm.form input[name=recordingTestLatencyValue]').val(test.testLatencyValue);
+                    $('.ui.newRecordingForm.form input[name=recordingTestLatencyName]').val(test.testLatencyName);
+                    $('.ui.newRecordingForm.form input[name=recordingTestPerformanceTimings]').val(test.testPerformanceTimings);
+                    $('.ui.newRecordingForm.form input[name=recordingTestResourceLoads]').val(test.testResourceLoads);
+                    $('.ui.newRecordingForm.form input[name=recordingTestScreenshot]').val(test.testScreenshot);
+                    
+                }
+
+            });
 
         });  
 
@@ -33,7 +56,7 @@ $(document).ready (function(){
         }
     });
 
-    $('.ui.newTestForm.form')
+    $('.ui.newRecordingForm.form')
         .form({
             on: 'blur',
             fields: {
@@ -49,10 +72,10 @@ $(document).ready (function(){
                         { type : 'empty', prompt : 'Please select a test for recording' }
                     ]
                 },
-                recordingTestId: {
+                recordingTestStartUrl: {
                     identifier : 'recordingTestStartUrl',
                     rules: [
-                        { type : 'empty', prompt : 'Please enter test start url' }
+                        { type : 'empty', prompt : 'Please enter test start url by selecting a test' }
                     ]
                 },
             },
@@ -61,6 +84,7 @@ $(document).ready (function(){
                 event.preventDefault();
                 //just keep track of field names - they must be the same as model attributes when we create a new class object
                 console.log(fields);
+                //TO DO - adjust the fields to undo all the stringification involved in writing to data values
             }
 
         });

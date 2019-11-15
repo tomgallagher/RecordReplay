@@ -40,6 +40,12 @@ $(document).ready (function(){
                         { type : 'empty', prompt : 'Please enter test name' }
                     ]
                 },
+                testProjectId: {
+                    identifier : 'testProjectId',
+                    rules: [
+                        { type : 'empty', prompt : 'Please select a project for test' }
+                    ]
+                },
                 testStartUrl: {
                     identifier: 'testStartUrl',
                     rules: [
@@ -47,20 +53,14 @@ $(document).ready (function(){
                         { type : 'regExp', value: /(?:^|\s)((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)/i, prompt : 'Please enter valid test start url' },
                     ]
                 },
-                testProject: {
-                    identifier : 'testProject',
-                    rules: [
-                        { type : 'empty', prompt : 'Please select a project for test' }
-                    ]
-                },
-                testBandwidth: {
-                    identifier : 'testBandwidth',
+                testBandwidthValue: {
+                    identifier : 'testLatencyValue',
                     rules: [
                         { type : 'empty', prompt : 'Please select a bandwidth value' }
                     ]
                 },
-                testLatency: {
-                    identifier : 'testLatency',
+                testLatencyValue: {
+                    identifier : 'testBandwidthValue',
                     rules: [
                         { type : 'empty', prompt : 'Please select a latency value' }
                     ]
