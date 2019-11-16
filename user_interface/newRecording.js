@@ -35,8 +35,8 @@ function refreshNewRecordingTestDropdown() {
 $(document).ready (function(){
 
     //just need a simple handler for the check box to state computer or mobile emulation
-    $('.ui.newRecordingForm.form .ui.radio.device.checkbox').on('click', function(event) {
-        if (event.target.id == "mobile") {
+    $('.ui.newRecordingForm.form .ui.radio.device.checkbox').change(function(event){
+        if (event.target.value == "mobile") {
             $('.ui.newRecordingForm.form .orientation.field').removeClass('disabled');
         } else { 
             $('.ui.newRecordingForm.form .orientation.field').addClass('disabled'); 
@@ -84,8 +84,8 @@ $(document).ready (function(){
                             recordingName: fields.recordingName,
                             recordingDescription: fields.recordingDescription,
                             recordingAuthor: fields.recordingDescription,
-                            recordingIsMobile: fields.mobile == false ? false : true,
-                            recordingMobileOrientation: fields.landscape == false ? "portrait" : "landscape",
+                            recordingIsMobile: fields.device == "computer" ? false : true,
+                            recordingMobileOrientation: fields.orientation,
                             recordingTestStartUrl: fields.recordingTestStartUrl,
                             //inherited defaults from storage table queried by string recordingTestId selection drop down
                             recordingProjectId: test.testProjectId,
@@ -100,13 +100,13 @@ $(document).ready (function(){
                             recordingTestResourceLoads: test.testResourceLoads,
                             recordingTestScreenshot: test.testScreenshot,
                         });
-                        
+                        console.log(newRecording);
                         //then we need to save to the database
                         //StorageUtils.addModelObjectToDatabaseTable('newRecordiing.js', newRecording, 'recordings')
                             //which does not return anything but we don't need it as we fetch from database directly to update the projects table
                             //.then( () => {
                                 //remove the loading indicator from the button
-                                //$('.ui.newRecordingForm .ui.submit.button').removeClass('loading');
+                                $('.ui.newRecordingForm .ui.submit.button').removeClass('loading');
                                 //then run the function that enables the buttons
                                 //enableVerticalMenuButtonsWhenDataAllows();
                         //});
