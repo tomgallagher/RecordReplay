@@ -5,7 +5,7 @@ class Recording {
         
         // set default values for the project class - these should be matched by the storage class
         const defaults = {
-            //static recording defaults before recording first run
+            //static recording defaults before recording first run - easy
             recordingName: 'N/A',
             recordingDescription: 'N/A',
             recordingAuthor: 'N/A',
