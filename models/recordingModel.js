@@ -1,4 +1,4 @@
-class Test {
+class Recording {
 
     //pass in an options object with the values we are looking for
     constructor(options) {

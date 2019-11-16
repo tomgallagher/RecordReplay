@@ -23,19 +23,6 @@ function refreshNewRecordingTestDropdown() {
                     const test = testStorageArray.find(item => item.id == testId);
                     //populate the visible form but leave it disabled - it's readable but the form does not mutate and require reseting
                     $('.ui.newRecordingForm.form input[name=recordingTestStartUrl]').val(test.testStartUrl);
-                    //populate the invisible fields
-                    $('.ui.newRecordingForm.form input[name=recordingProjectId]').val(test.testProjectId);
-                    $('.ui.newRecordingForm.form input[name=recordingProjectName]').val(test.testProjectName);
-                    $('.ui.newRecordingForm.form input[name=recordingTestId]').val(test.id);
-                    $('.ui.newRecordingForm.form input[name=recordingTestName]').val(test.testName);
-                    $('.ui.newRecordingForm.form input[name=recordingTestBandwidthValue]').val(test.testBandwidthValue);
-                    $('.ui.newRecordingForm.form input[name=recordingTestBandwidthName]').val(test.testBandwidthName);
-                    $('.ui.newRecordingForm.form input[name=recordingTestLatencyValue]').val(test.testLatencyValue);
-                    $('.ui.newRecordingForm.form input[name=recordingTestLatencyName]').val(test.testLatencyName);
-                    $('.ui.newRecordingForm.form input[name=recordingTestPerformanceTimings]').val(test.testPerformanceTimings);
-                    $('.ui.newRecordingForm.form input[name=recordingTestResourceLoads]').val(test.testResourceLoads);
-                    $('.ui.newRecordingForm.form input[name=recordingTestScreenshot]').val(test.testScreenshot);
-                    
                 }
 
             });
@@ -84,7 +71,36 @@ $(document).ready (function(){
                 event.preventDefault();
                 //just keep track of field names - they must be the same as model attributes when we create a new class object
                 console.log(fields);
-                //TO DO - adjust the fields to undo all the stringification involved in writing to data values
+                // eg { computer: "on", landscape: false, mobile: false, portrait: "on", recordingAuthor: "", recordingDescription: "", recordingName: "efe", recordingTestId: "1", recordingTestStartUrl: "https://turbobrowser.eu/" }
+                // so we need to merge the recording with its matched test
+                StorageUtils.getSingleObjectFromDatabaseTable('newRecording.js', fields.recordingTestId, 'tests')
+                    //then we have a returned js object with the test details
+                    .then(test => {
+                        //create our new recording object
+                        const newRecording =  new Recording({
+                            //displayed fields from form 
+                            recordingName: fields.recordingName,
+                            recordingDescription: fields.recordingDescription,
+                            recordingAuthor: fields.recordingDescription,
+                            recordingIsMobile: fields.mobile == false ? false : true,
+                            recordingMobileOrientation: fields.landscape == false ? "portrait" : "landscape",
+                            recordingTestStartUrl: fields.recordingTestStartUrl,
+                            //inherited defaults from storage table queried by string recordingTestId selection drop down
+                            recordingProjectId: test.testProjectId,
+                            recordingProjectName: test.testProjectName,
+                            recordingTestId: test.id,
+                            recordingTestName: test.testName,
+                            recordingTestBandwidthValue: test.testBandwidthValue,
+                            recordingTestBandwidthName: test.testBandwidthName,
+                            recordingTestLatencyValue: test.testLatencyValue,
+                            recordingTestLatencyName: test.testLatencyName,
+                            recordingTestPerformanceTimings: test.testPerformanceTimings,
+                            recordingTestResourceLoads: test.testResourceLoads,
+                            recordingTestScreenshot: test.testScreenshot,
+                        });
+                        console.log(newRecording);
+                    });
+                
             }
 
         });
