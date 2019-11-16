@@ -69,6 +69,8 @@ $(document).ready (function(){
             onSuccess(event, fields) {
                 //always need to have this with a submit button otherwise the entire page reloads
                 event.preventDefault();
+                //add the loading indicator to the button, to indicate saving of the test to the database
+                $('.ui.newRecordingForm .ui.submit.button').addClass('loading');
                 //just keep track of field names - they must be the same as model attributes when we create a new class object
                 console.log(fields);
                 // eg { computer: "on", landscape: false, mobile: false, portrait: "on", recordingAuthor: "", recordingDescription: "", recordingName: "efe", recordingTestId: "1", recordingTestStartUrl: "https://turbobrowser.eu/" }
@@ -98,7 +100,17 @@ $(document).ready (function(){
                             recordingTestResourceLoads: test.testResourceLoads,
                             recordingTestScreenshot: test.testScreenshot,
                         });
-                        console.log(newRecording);
+                        
+                        //then we need to save to the database
+                        //StorageUtils.addModelObjectToDatabaseTable('newRecordiing.js', newRecording, 'recordings')
+                            //which does not return anything but we don't need it as we fetch from database directly to update the projects table
+                            //.then( () => {
+                                //remove the loading indicator from the button
+                                //$('.ui.newRecordingForm .ui.submit.button').removeClass('loading');
+                                //then run the function that enables the buttons
+                                //enableVerticalMenuButtonsWhenDataAllows();
+                        //});
+
                     });
                 
             }

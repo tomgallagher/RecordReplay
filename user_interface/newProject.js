@@ -28,7 +28,7 @@ $(document).ready (function(){
                 //always need to have this with a submit button otherwise the entire page reloads
                 event.preventDefault();
                 //add the loading indicator to the button, to indicate saving of the project to the database
-                $('.ui.newProject.submit.button').addClass('loading');
+                $('.ui.newProjectForm .ui.submit.button').addClass('loading');
                 //just keep track of field names - they must be the same as model attributes when we create a new class object
                 console.log(fields);
                 //create a new project with the fields from the form
@@ -38,7 +38,7 @@ $(document).ready (function(){
                     //which does not return anything but we don't need it as we fetch from database directly to update the projects table
                     .then( () => {
                         //remove the loading indicator from the button
-                        $('.ui.newProject.submit.button').removeClass('loading');
+                        $('.ui.newProjectForm .ui.submit.button').removeClass('loading');
                         //clear the form to eliminate any confusion
                         $('.ui.newProjectForm.form').form('clear');
                         //then run the function that enables the buttons

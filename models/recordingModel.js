@@ -13,7 +13,7 @@ class Recording {
             recordingMobileOrientation: 'portrait',
             //displayed defaults from selected test
             recordingTestStartUrl: 'N/A',
-            //inherited defaults from test selection drop down filling in hidden form fields
+            //inherited defaults from test selection lookup in local storage
             recordingProjectId: 0,
             recordingProjectName: 'N/A',
             recordingTestId: 0,
