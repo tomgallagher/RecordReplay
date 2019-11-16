@@ -118,6 +118,59 @@ StorageUtils.deleteModelObjectInDatabaseTable = function(caller, key, table) {
 
 };
 
+//delete all items from all tables related to a specific project id
+StorageUtils.cascadeDeleteByProjectID = function(caller, key) {
+
+    return new Promise(resolve => {
+
+        const checkedKey = StorageUtils.standardiseKey(key);
+        //open the database connection
+        StorageUtils.openModelObjectDatabaseConnection("Storage")
+            //then with the opened database connection, update the existing object to the database, using the object shorthand to get the right database
+            .then(db => Promise.all([
+                db.projects.delete(checkedKey),
+                db.tests.filter(obj => obj.testProjectId == checkedKey).delete(),
+                db.recordings.filter(obj => obj.recordingProjectId == checkedKey).delete()
+                //TO DO - add bulk replay deletes by project id
+            ]))
+            .then(counts => {
+                if (counts[0] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[0]} projects for ${caller}.`); }
+                if (counts[1] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[1]} tests for ${caller}.`); }
+                if (counts[2] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[2]} recordings for ${caller}.`); }
+                //TO DO - add bulk replay delete reporting
+                resolve();
+            });
+            
+    });
+
+};
+
+//delete all items from all tables related to a specific test id
+StorageUtils.cascadeDeleteByTestID = function(caller, key) {
+
+    return new Promise(resolve => {
+
+        const checkedKey = StorageUtils.standardiseKey(key);
+        //open the database connection
+        StorageUtils.openModelObjectDatabaseConnection("Storage")
+            //then with the opened database connection, update the existing object to the database, using the object shorthand to get the right database
+            .then(db => Promise.all([
+                db.tests.delete(checkedKey),
+                db.recordings.filter(obj => obj.recordingTestId == checkedKey).delete()
+                //TO DO - add bulk replay deletes by test id
+            ]))
+            .then(counts => {
+                if (counts[0] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[0]} tests for ${caller}.`); }
+                if (counts[1] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[1]} recordings for ${caller}.`); }
+                //TO DO - add bulk replay delete reporting
+                resolve();
+            })
+            .catch(err => console.log(`cascadeDeleteByTestID: ${err.message}`)); 
+    
+    });
+
+};
+
 //return an array of model objects from the database
 StorageUtils.getAllObjectsInDatabaseTable = function(caller, table) {
 
