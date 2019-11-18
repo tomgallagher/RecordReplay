@@ -102,33 +102,36 @@ var EventRecorder = {
 
 EventRecorder.startRecordingEvents = () => {
 
+    //ALL OF OUR SEPARATE EVENTS REQUIRE AN UNADULTERATED LOCATOR that generates css selectors
+    //so we query the latest mouse location, which we collect by referring to the mouseover events
+    const MouseLocater = Rx.Observable.merge(...EventRecorder.mouseLocationEventObervables)
+        //the mouse location observables are many - we currently only want the mouseover events
+        .filter(event => event.type == "mouseover")
+        //then we only want to have the new event when a new element is first entered, no multiple iterations as that can catch mutations following click
+        .distinctUntilChanged((previousEvent, currentEvent) => 
+            //here we get unique elements according to their position on the screen
+            (previousEvent.target.offsetTop == currentEvent.target.offsetTop) && (previousEvent.target.offsetLeft == currentEvent.target.offsetLeft)
+        )
+        //then log for useful debugging
+        //.do(x => console.log(x))
+        //then we get the selectors for the pre-action event element, so it is not mutated
+        .map(event => {
+            return {
+                eventCssSelectorPath: EventRecorder.getCssSelectorPath(event.target),
+                eventCssDomPath: EventRecorder.getCssDomPath(event.target),
+                eventCssSimmerPath: EventRecorder.getCssSimmerPath(event.target),
+                eventXPath: EventRecorder.getXPath(event.target)
+            }
+        })
+        //then we share this with many individual events
+        .share();
+
     //MOUSE EVENTS
     Rx.Observable.merge(...EventRecorder.mouseActionEventObervables)
         //then we only want mouse events to activate on non-input elements because we have a separate handler for them
         .filter(event => event.target instanceof HTMLInputElement == false)
         //then as each action occurs, we want to know the state of the element BEFORE the action took place
-        .withLatestFrom(
-            //so we query the latest mouse location, which we collect by referring to the mouseover events
-            Rx.Observable.merge(...EventRecorder.mouseLocationEventObervables)
-                //the mouse location observables are many - we currently only want the mouseover events
-                .filter(event => event.type == "mouseover")
-                //then we only want to have the new event when a new element is first entered, no multiple iterations as that can catch mutations following click
-                .distinctUntilChanged((previousEvent, currentEvent) => 
-                    //here we get unique elements according to their position on the screen
-                    (previousEvent.target.offsetTop == currentEvent.target.offsetTop) && (previousEvent.target.offsetLeft == currentEvent.target.offsetLeft)
-                )
-                //then log for useful debugging
-                //.do(x => console.log(x))
-                //then we get the selectors for the pre-action event element, so it is not mutated
-                .map(event => {
-                    return {
-                        eventCssSelectorPath: EventRecorder.getCssSelectorPath(event.target),
-                        eventCssDomPath: EventRecorder.getCssDomPath(event.target),
-                        eventCssSimmerPath: EventRecorder.getCssSimmerPath(event.target),
-                        eventXPath: EventRecorder.getXPath(event.target)
-                    }
-                })
-        )
+        .withLatestFrom(MouseLocater)
         //then map the event to the Recording Event type
         .map(([actionEvent, locationEvent])=> {
             const newEvent = new RecordingEvent({
