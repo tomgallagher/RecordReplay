@@ -38,9 +38,7 @@ var element = newPath.select();
 		return root + node.name + ':nth-child(' + (node.index + 1) + ')';
 	};
 
-    class DomPath {
-        constructor(node) { this.node = node; }
-    }
+	var DomPath = function(node) { this.node = node; };
 	DomPath.prototype = {
 		toCSS: function() {
 			return getSelector(this.node);
@@ -79,6 +77,5 @@ var element = newPath.select();
 		}
 
 		return idx;
-    };
-    
+	};
 })(window, document);

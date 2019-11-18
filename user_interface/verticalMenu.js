@@ -58,15 +58,17 @@ $(document).ready (function(){
     enableVerticalMenuButtonsWhenDataAllows();
 
     //menu operations are not handled automatically by semantic - we handle it ourselves
-    $('.ui.vertical.fluid.tabular.menu .item').on('mousedown', function() {
+    $('.ui.vertical.fluid.tabular.menu .item').on('click', function() {
+        //get the classes of the active item as a list
+        const classArray = $(this).attr('class').split(/\s+/);
+        //if the button is disabled we don't want anything doing
+        if (classArray.includes('disabled')) { return; } 
         //remove the active class from all menu items
         $('.ui.vertical.fluid.tabular.menu .item').removeClass('active');
-        //then add the active class to the menu item that has been clicked
-        $(this).addClass('active');
         //then hide all the segments
         $('.ui.verticalTabMenu.segment').css('display', 'none');
-        //then get the classes of the active item as a list
-        const classArray = $(this).attr('class').split(/\s+/);
+        //then add the active class to the menu item that has been clicked
+        $(this).addClass('active');
         //then show the segment accordingly
         switch(true) {
             //getting started shows on first load but after it should revert to projects

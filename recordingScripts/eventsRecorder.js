@@ -1,56 +1,194 @@
+//A LIST OF ALL WINDOW EVENTS FOR TOTAL USER INTERACTION COVERAGE
+
 //The onsearch event occurs when a user presses the "ENTER" key or clicks the "x" button in an <input> element with type="search"
 //The oninput event occurs when an element gets user input - similar to the onchange event. The difference is that the oninput event 
 //occurs immediately after the value of an element has changed, while onchange occurs when the element loses focus, after the content has been changed. 
 //The oninvalid event occurs when a submittable <input> element is invalid.
-const inputEvents = ["onsearch", "onchange", "oninput", "oninvalid"];
+const inputEvents = ["search", "change", "input", "invalid"];
 
 //The onchange event occurs when a user changes the selected option of a <select> element
-const selectEvents = ["onchange"];
+const selectEvents = ["change"];
 
 //blur and focus events
 //The onscroll event occurs when an element's scrollbar is being scrolled.
 //The onselect event occurs after some text has been selected in an element.
 //The selectstart event fires when the user starts to make a new text selection on a webpage.
 //The selectionchange event fires when the text selected on a webpage changes
-const attentionEvents = ["onblur", "onfocus", "onscroll", "onselect", "onselectstart", "selectionchange"];
+const attentionEvents = ["blur", "focus", "scroll", "select", "selectstart", "selectionchange"];
 
 //The cancel event fires when the user indicates a wish to dismiss a <dialog>
 //The close event fires when the user closes a <dialog>.
-const dialogEvents = ["oncancel", "onclose"];
+const dialogEvents = ["cancel", "close"];
 
 //The contextmenu event typically fires when the right mouse button is clicked on the window
 //The onsubmit event occurs when a form is submitted.
 //The ontoggle event occurs when the user opens or closes the <details> element.
 //The onwheel event occurs when the mouse wheel is rolled up or down over an element.
 //The auxclick event is raised when a non-primary button has been pressed on an input device (e.g., a middle mouse button).
-const mouseEvents = [
-    "onclick", "oncontextmenu", "ondblclick", 
-    "onmousedown", "onmouseenter", "onmouseleave", 
-    "onmousemove", "onmouseout", "onmouseover", 
-    "onmouseup", "onmousewheel", "onpointerdown",
-    "onpointermove", "onpointerup", "onpointercancel",
-    "onpointerover", "onpointerout", "onpointerenter",
-    "onpointerleave", "onpointerrawupdate", "onsubmit",
-    "ontoggle", "onwheel", "onauxclick", "ondrag", 
-    "ondragend", "ondragenter", "ondragleave", 
-    "ondragover", "ondragstart", "ondrop"
+const mouseLocationEvents = [
+    "mouseenter", "mouseleave", "mousemove", 
+    "mouseout", "mouseover", "pointermove", 
+    "pointerover", "pointerout", "pointerenter",
+    "pointerleave", "pointercancel", "pointerrawupdate"
 ];
 
-const keyboardEvents = ["onkeydown", "onkeypress", "onkeyup"];
+const mouseActionEvents = [
+    "click", "contextmenu", "dblclick", 
+    "mousedown", "mouseup", "mousewheel", 
+    "pointerdown", "pointerup", "submit",
+    "toggle", "wheel", "auxclick", "drag", 
+    "dragend", "dragenter", "dragleave", 
+    "dragover", "dragstart", "drop"
+];
+
+const keyboardEvents = ["keydown", "keypress", "keyup"];
 
 //The onpagehide event is sometimes used instead of the onunload event, as the onunload event causes the page to not be cached.
 //The onpageshow event is similar to the onload event, except that it occurs after the onload event when the page first loads. 
 //Also, the onpageshow event occurs every time the page is loaded, whereas the onload event does not occur when the page is loaded from the cache.
-const browserWindowEvents = ["onresize", "onpagehide", "onpageshow"];
+const browserWindowEvents = ["resize", "pagehide", "pageshow"];
 
 //when subscribing to events, collect all events under a single subscribe loop into an object, then emit the object each time
 //then add an event property to object with outerhtml event.target.outerHTML, as well as event.target.offsetTop and event.target.offsetLeft, then add the details of the event
 //can add the css and xpath identifiers later, after blur event
 
 
+var EventRecorder = {
+    //we want to record location events so we know the state of any element BEFORE action occurs
+    mouseLocationEventObervables: mouseLocationEvents.filter(item => item == "mouseover")
+        //we map each string array item to an observable
+        .map(eventName => Rx.Observable.fromEvent(document, eventName)),
+    //we want to record action events so we know when user action occurs
+    mouseActionEventObervables: mouseActionEvents
+        //then we are interested in only certain types of mouse events
+        .filter(item => item == "click" || item == "contextmenu" || item == "dblclick")
+        //we map each string array item to an observable
+        .map(eventName => Rx.Observable.fromEvent(window, eventName)),
+    //we need to have instance of CSS selector generator class instantiated at the time of creation
+    cssSelectorClass: new CssSelectorGenerator,
+    //then we need a function that returned the CSS selector path
+    getCssSelectorPath: element => EventRecorder.cssSelectorClass.getSelector(element),
+    //then we get a function that returns the Dompath CSS selector
+    getCssDomPath: element => { const path = new dompath(element); return path.toCSS(); },
+    //then a function that returns the Simmer Css selector
+    getCssSimmerPath: element => window.Simmer(element),
+    //then a function that returns xpath of element
+    getXPath: element => {
+        var allNodes = document.getElementsByTagName('*'); 
+        for (var segs = []; element && element.nodeType == 1; element = element.parentNode) {
+             if (element.hasAttribute('id')) {
+                var uniqueIdCount = 0;
+                for (var n=0; n < allNodes.length; n++) {
+                    if (allNodes[n].hasAttribute('id') && allNodes[n].id == element.id) uniqueIdCount++;
+                    if (uniqueIdCount > 1) break;
+                }
+                if ( uniqueIdCount == 1) {
+                    segs.unshift("//*[@id='" + element.getAttribute('id') + "']");
+                    return segs.join('/');
+                } else {
+                    segs.unshift(element.localName.toLowerCase() + '[@id="' + element.getAttribute('id') + '"]');
+                }
+            } else {
+                for (var i = 1, sib = element.previousSibling; sib; sib = sib.previousSibling) {
+                    if (sib.localName == element.localName)  i++; 
+                }
+                segs.unshift(element.localName.toLowerCase() + '[' + i + ']');
+            }
+         }
+         return segs.length ? '/' + segs.join('/') : null;
+     }
+    
+}
+
+EventRecorder.startRecordingEvents = () => {
+
+    //MOUSE EVENTS
+    Rx.Observable.merge(...EventRecorder.mouseActionEventObervables)
+        //then we only want mouse events to activate on non-input elements because we have a separate handler for them
+        .filter(event => event.target instanceof HTMLInputElement == false)
+        //then as each action occurs, we want to know the state of the element BEFORE the action took place
+        .withLatestFrom(
+            //so we query the latest mouse location, which we collect by referring to the mouseover events
+            Rx.Observable.merge(...EventRecorder.mouseLocationEventObervables)
+                //the mouse location observables are many - we currently only want the mouseover events
+                .filter(event => event.type == "mouseover")
+                //then we only want to have the new event when a new element is first entered, no multiple iterations as that can catch mutations following click
+                .distinctUntilChanged((previousEvent, currentEvent) => 
+                    //here we get unique elements according to their position on the screen
+                    (previousEvent.target.offsetTop == currentEvent.target.offsetTop) && (previousEvent.target.offsetLeft == currentEvent.target.offsetLeft)
+                )
+                //then log for useful debugging
+                //.do(x => console.log(x))
+                //then we get the selectors for the pre-action event element, so it is not mutated
+                .map(event => {
+                    return {
+                        eventCssSelectorPath: EventRecorder.getCssSelectorPath(event.target),
+                        eventCssDomPath: EventRecorder.getCssDomPath(event.target),
+                        eventCssSimmerPath: EventRecorder.getCssSimmerPath(event.target),
+                        eventXPath: EventRecorder.getXPath(event.target)
+                    }
+                })
+        )
+        //then map the event to the Recording Event type
+        .map(([actionEvent, locationEvent])=> {
+            const newEvent = new RecordingEvent({
+                recordingEventContext: window.location.origin,
+                recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                recordingEventCategory: "Mouse",
+                recordingEventType: actionEvent.type,
+                recordingEventOuterHTML: actionEvent.target.outerHTML,
+                recordingEventCssSelectorPath: locationEvent.eventCssSelectorPath,
+                recordingEventCssDomPath: locationEvent.eventCssDomPath,
+                recordingEventCssSimmerPath: locationEvent.eventCssSimmerPath,
+                recordingEventXPath: locationEvent.eventXPath,
+            });
+            return newEvent;
+        })
+        .subscribe(recordingEvent => console.log(recordingEvent));
+
+}
+
+
+
+
+//send message according to the enviroment
+EventRecorder.sendEvent = recordingEvent => {
+    //if we are in an iframe rather than the content script environment, then this will return true
+    if (typeof chrome.runtime.getManifest == 'undefined' && EventRecorder.contextIsIframe()) {
+        //then we need to send a special kind of message, which uses window.postMessage and is relayed by content script, remember wildcard so anyone can hear it
+        window.parent.postMessage(recordingEvent, "*");
+    } else {
+        //just the standard message passing from extension
+        chrome.runtime.sendMessage(recordingEvent, function(response) {
+            console.log(response);
+        });
+    }
+}
 
 //UTILITY FUNCTIONS
 
+EventRecorder.contextIsIframe = () => { 
+    try { return window.self !== window.top; } 
+    catch (e) { return true; } 
+}
+    
 //use position on the screen and outerHTML to provide a unique identifier for each event target
-const quickUniqueID = element => { return `offsetTop:${element.offsetTop}|offsetLeft:${element.offsetLeft}|outerHTML:${element.outerHTML}`; }
+EventRecorder.quickUniqueID = element => { return `offsetTop:${element.offsetTop}|offsetLeft:${element.offsetLeft}|outerHTML:${element.outerHTML}`; }
+
+//START FUNCTION
+//WE ONLY WANT TO START IN IFRAME OR CONTENT SCRIPT CONTEXT
+//IF THIS IS INJECTED INTO MAIN FRAME BY DEBUGGER, WE WILL HAVE DOUBLE REPORTING
+switch(true) {
+    //if we are an iframe we need to report and start
+    case EventRecorder.contextIsIframe():
+        console.log(`%cEvent Recorder activated in iframe with origin ${window.origin}`, 'color: green');
+        EventRecorder.startRecordingEvents();
+        break;
+    case typeof chrome.runtime.getManifest != 'undefined':
+        console.log(`%cEvent Recorder activated in main frame with origin ${window.origin}`, 'color: blue');
+        EventRecorder.startRecordingEvents();
+        break;
+    default:
+        console.log(`%cEvent Recorder NOT activated in main frame with origin ${window.origin}`, 'color: dimgrey');
+}
 

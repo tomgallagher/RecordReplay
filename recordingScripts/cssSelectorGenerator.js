@@ -27,29 +27,21 @@ my_selector_generator.setOptions(custom_options);
   
     CssSelectorGenerator = (function() {
       
-        CssSelectorGenerator.prototype.default_options = {
-        
-            selectors: ['id', 'class', 'tag', 'nthchild'],
-        
-            prefix_tag: false,
-        
-            attribute_blacklist: [],
-        
-            attribute_whitelist: [],
-        
-            quote_attribute_when_needed: false,
-        
-            id_blacklist: [],
-        
-            class_blacklist: []
-      
-        };
-  
-      
         class CssSelectorGenerator {
 
             constructor(options) {
                 
+                //set default options
+                this.default_options  = {
+                    selectors: ['id', 'class', 'tag', 'nthchild'],
+                    prefix_tag: false,
+                    attribute_blacklist: [],
+                    attribute_whitelist: [],
+                    quote_attribute_when_needed: false,
+                    id_blacklist: [],
+                    class_blacklist: []
+                };
+
                 if (options == null) {
                     options = {};
                 }
