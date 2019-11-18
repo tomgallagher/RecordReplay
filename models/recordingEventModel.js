@@ -9,6 +9,8 @@ class RecordingEvent {
             recordingEventIsIframe: false,
             recordingEventCategory: '',
             recordingEventType: '',
+            recordingEventValue: null,
+            recordingEventElementType: null,
             recordingEventOuterHTML: '',
             recordingEventCssSelectorPath: '',
             recordingEventCssDomPath: '',

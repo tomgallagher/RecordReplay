@@ -64,6 +64,16 @@ var EventRecorder = {
         .filter(item => item == "click" || item == "contextmenu" || item == "dblclick")
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(window, eventName)),
+    inputLocationEventObservables: inputEvents
+        //then we are only interests in certain types of input events
+        .filter(item => item == "input")
+        //we map each string array item to an observable
+        .map(eventName => Rx.Observable.fromEvent(window, eventName)),
+    inputActionEventObservables: inputEvents
+        //then we are only interests in certain types of input events
+        .filter(item => item == "change")
+        //we map each string array item to an observable
+        .map(eventName => Rx.Observable.fromEvent(window, eventName)),
     //we need to have instance of CSS selector generator class instantiated at the time of creation
     cssSelectorClass: new CssSelectorGenerator,
     //then we need a function that returned the CSS selector path
@@ -102,9 +112,10 @@ var EventRecorder = {
 
 EventRecorder.startRecordingEvents = () => {
 
-    //ALL OF OUR SEPARATE EVENTS REQUIRE AN UNADULTERATED LOCATOR that generates css selectors
+    //ALL OF OUR SEPARATE EVENTS REQUIRE AN UNADULTERATED LOCATOR that generates css selectors BEFORE ACTION
+    
     //so we query the latest mouse location, which we collect by referring to the mouseover events
-    const MouseLocater = Rx.Observable.merge(...EventRecorder.mouseLocationEventObervables)
+    const MouseLocator = Rx.Observable.merge(...EventRecorder.mouseLocationEventObervables)
         //the mouse location observables are many - we currently only want the mouseover events
         .filter(event => event.type == "mouseover")
         //then we only want to have the new event when a new element is first entered, no multiple iterations as that can catch mutations following click
@@ -122,16 +133,30 @@ EventRecorder.startRecordingEvents = () => {
                 eventCssSimmerPath: EventRecorder.getCssSimmerPath(event.target),
                 eventXPath: EventRecorder.getXPath(event.target)
             }
-        })
-        //then we share this with many individual events
-        .share();
+        });
+
+    //then we also query the latest inpute location, which we collect by referrring to the input events
+    const InputLocator = Rx.Observable.merge(...EventRecorder.inputLocationEventObservables)
+        //the mouse location observables are many - we currently only want the mouseover events
+        .filter(event => event.type == "input")
+        //then log for useful debugging
+        //.do(x => console.log(x))
+        //then we get the selectors for the pre-action event element, so it is not mutated
+        .map(event => {
+            return {
+                eventCssSelectorPath: EventRecorder.getCssSelectorPath(event.target),
+                eventCssDomPath: EventRecorder.getCssDomPath(event.target),
+                eventCssSimmerPath: EventRecorder.getCssSimmerPath(event.target),
+                eventXPath: EventRecorder.getXPath(event.target)
+            }
+        });
 
     //MOUSE EVENTS
     Rx.Observable.merge(...EventRecorder.mouseActionEventObervables)
         //then we only want mouse events to activate on non-input elements because we have a separate handler for them
         .filter(event => event.target instanceof HTMLInputElement == false)
         //then as each action occurs, we want to know the state of the element BEFORE the action took place
-        .withLatestFrom(MouseLocater)
+        .withLatestFrom(MouseLocator)
         //then map the event to the Recording Event type
         .map(([actionEvent, locationEvent])=> {
             const newEvent = new RecordingEvent({
@@ -139,6 +164,29 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 recordingEventCategory: "Mouse",
                 recordingEventType: actionEvent.type,
+                recordingEventOuterHTML: actionEvent.target.outerHTML,
+                recordingEventCssSelectorPath: locationEvent.eventCssSelectorPath,
+                recordingEventCssDomPath: locationEvent.eventCssDomPath,
+                recordingEventCssSimmerPath: locationEvent.eventCssSimmerPath,
+                recordingEventXPath: locationEvent.eventXPath,
+            });
+            return newEvent;
+        })
+        .subscribe(recordingEvent => console.log(recordingEvent));
+    
+    //INPUT EVENTS
+    Rx.Observable.merge(...EventRecorder.inputActionEventObservables)
+        //then as each action occurs, we want to know the state of the element BEFORE the action took place
+        .withLatestFrom(InputLocator)
+        //then map the event to the Recording Event type
+        .map(([actionEvent, locationEvent])=> {
+            const newEvent = new RecordingEvent({
+                recordingEventContext: window.location.origin,
+                recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                recordingEventCategory: "Input",
+                recordingEventType: actionEvent.type,
+                recordingEventValue: actionEvent.target.value,
+                recordingEventElementType: actionEvent.target.type,
                 recordingEventOuterHTML: actionEvent.target.outerHTML,
                 recordingEventCssSelectorPath: locationEvent.eventCssSelectorPath,
                 recordingEventCssDomPath: locationEvent.eventCssDomPath,
