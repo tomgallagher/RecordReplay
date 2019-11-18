@@ -9,15 +9,15 @@
   "incognito": "not_allowed",
   
   "icons": {
-      "16" : "images/robot_black_16.png",
-      "48" : "images/robot_black_48.png",
-      "128" : "images/robot_black_128.png"
+      "16" : "images/robot_violet_16.png",
+      "48" : "images/robot_violet_48.png",
+      "128" : "images/robot_violet_128.png"
   },
   
   "browser_action": {
       "default_icon": {
-        "19": "images/robot_black_19.png",
-        "38": "images/robot_black_38.png"
+        "19": "images/robot_violet_19.png",
+        "38": "images/robot_violet_38.png"
       },
       "default_title": "Automated Testing Suite"
   },
