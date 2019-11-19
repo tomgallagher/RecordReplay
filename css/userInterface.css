@@ -14,3 +14,22 @@
 .ui.vertical.inverted.menu .item.disabled, .ui.vertical.inverted.menu .item.disabled:hover {
     color: dimgrey !important;
 }
+
+.ui.inverted.block.header {
+
+    background: #545454 linear-gradient(transparent,rgba(0,0,0,.5)) !important;
+
+}
+
+.ui.inverted.form input:not([type]), .ui.inverted.form input[type=date], .ui.inverted.form input[type=datetime-local], .ui.inverted.form input[type=email], .ui.inverted.form input[type=file], .ui.inverted.form input[type=number], .ui.inverted.form input[type=password], .ui.inverted.form input[type=search], .ui.inverted.form input[type=tel], .ui.inverted.form input[type=text], .ui.inverted.form input[type=time], .ui.inverted.form input[type=url] {
+    background: black !important;
+    color: white !important;
+}
+
+.ui.selection.inverted.dropdown {
+    background: dimgray !important;
+}
+
+.ui.inverted.dropdown .menu>.item {
+    background: darkgray !important;
+}
