@@ -2,5 +2,15 @@
 .ui.vertical.tabular.menu .active.item {
 
     background: transparent !important;
+    border-right: 2px solid white !important;
 
+}
+.ui.vertical.inverted.tabular.menu .active.item {
+
+    border-right: 2px solid black !important;
+
+}
+
+.ui.vertical.inverted.menu .item.disabled, .ui.vertical.inverted.menu .item.disabled:hover {
+    color: dimgrey !important;
 }

@@ -38,7 +38,11 @@ function updateRecordingsTable() {
                 var additionalReportsArray = [];
                 recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push('Mobile') : additionalReportsArray.push('Computer');
                 recordingAdditionalReportingNode.textContent = additionalReportsArray.join(',');
+
                 //TO DO add mobile / portrait
+                
+                
+                
                 let recordingEditButton = tempNode.querySelector('.ui.editRecording.button');
                 recordingEditButton.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
                 let recordingDeleteButton = tempNode.querySelector('.ui.deleteRecording.button');
@@ -55,6 +59,9 @@ function updateRecordingsTable() {
             recordingsTable.appendChild(docFrag);
             //then once all the work has been done remove class
             $('.ui.savedRecordings.verticalTabMenu.segment').removeClass('loading');
+
+
+            
             //TO DO add the listeners for the buttons built into the form
 
         });
