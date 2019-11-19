@@ -111,6 +111,8 @@ $(document).ready (function(){
                 break;
             case classArray.includes('savedRecordings'):
                 $('.ui.verticalTabMenu.savedRecordings.segment').css('display', 'block');
+                //make sure the recordings table shows an updated account of the tests in storage, using function from recordings.js which adds loading indicator
+                updateRecordingsTable();
                 break;
             case classArray.includes('newRecording'):
                 //show the form to create a new recording
