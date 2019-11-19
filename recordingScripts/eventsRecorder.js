@@ -160,15 +160,15 @@ EventRecorder.startRecordingEvents = () => {
         //then map the event to the Recording Event type
         .map(([actionEvent, locationEvent])=> {
             const newEvent = new RecordingEvent({
-                recordingEventContext: window.location.origin,
-                recordingEventIsIframe: EventRecorder.contextIsIframe(),
-                recordingEventCategory: "Mouse",
-                recordingEventType: actionEvent.type,
-                recordingEventOuterHTML: actionEvent.target.outerHTML,
+                recordingEventAction: 'Mouse',
+                recordingEventHTMLElement: actionEvent.target.constructor.name,
+                recordingEventHTMLTag: actionEvent.target.tagName,
                 recordingEventCssSelectorPath: locationEvent.eventCssSelectorPath,
                 recordingEventCssDomPath: locationEvent.eventCssDomPath,
                 recordingEventCssSimmerPath: locationEvent.eventCssSimmerPath,
                 recordingEventXPath: locationEvent.eventXPath,
+                recordingEventLocation: window.location.origin,
+                recordingEventIsIframe: EventRecorder.contextIsIframe(),
             });
             return newEvent;
         })
@@ -181,17 +181,19 @@ EventRecorder.startRecordingEvents = () => {
         //then map the event to the Recording Event type
         .map(([actionEvent, locationEvent])=> {
             const newEvent = new RecordingEvent({
-                recordingEventContext: window.location.origin,
-                recordingEventIsIframe: EventRecorder.contextIsIframe(),
-                recordingEventCategory: "Input",
-                recordingEventType: actionEvent.type,
-                recordingEventValue: actionEvent.target.value,
-                recordingEventElementType: actionEvent.target.type,
-                recordingEventOuterHTML: actionEvent.target.outerHTML,
+                //general properties
+                recordingEventAction: 'Input',
+                recordingEventHTMLElement: actionEvent.target.constructor.name,
+                recordingEventHTMLTag: actionEvent.target.tagName,
                 recordingEventCssSelectorPath: locationEvent.eventCssSelectorPath,
                 recordingEventCssDomPath: locationEvent.eventCssDomPath,
                 recordingEventCssSimmerPath: locationEvent.eventCssSimmerPath,
                 recordingEventXPath: locationEvent.eventXPath,
+                recordingEventLocation: window.location.origin,
+                recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                //information specific to input events
+                recordingEventInputType: actionEvent.type,
+                recordingEventInputValue: actionEvent.target.type
             });
             return newEvent;
         })

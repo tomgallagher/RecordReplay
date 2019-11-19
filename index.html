@@ -68,7 +68,7 @@
 
             <div class="ui padded grid">
 
-                <div class="three wide column">
+                <div class="two wide column">
 
                     <div class="ui vertical fluid violet tabular menu">
                     
@@ -116,7 +116,7 @@
 
                 </div>
 
-                <div class="thirteen wide stretched column">
+                <div class="fourteen wide stretched column">
                 
                     <div class="ui gettingStarted verticalTabMenu segment" style="display: block; ">
 
@@ -253,7 +253,7 @@
                                     <i class="angle right icon"></i>
 
                                     <div class="content">
-                                        Tests allow <strong>bandwidth and latency throttling</strong>, when run individually or as a group  
+                                        Tests allow <strong>bandwidth and latency throttling</strong>, as well as taking screenshots  
                                     </div>
 
                                 </div>
@@ -263,7 +263,7 @@
                                     <i class="angle right icon"></i>
 
                                     <div class="content">
-                                        Once you have completed input to <strong>save your first test</strong>,, you can start adding new recordings
+                                        Once you have completed input to <strong>save your first test</strong>, you can start adding new recordings
                                     </div>
 
                                 </div>
@@ -289,7 +289,17 @@
                                     <i class="angle right icon"></i>
 
                                     <div class="content">
-                                        
+                                        Recordings capture and save all user <strong>mouse and keyboard</strong> actions until stopped, as well as page timing and resource loads
+                                    </div>
+
+                                </div>
+
+                                <div class="item">
+
+                                    <i class="angle right icon"></i>
+                                
+                                    <div class="content">
+                                        Recordings can be edited in a simple <strong>drag and drop interface</strong>, with final output saved to local storage
                                     </div>
 
                                 </div>
@@ -299,17 +309,7 @@
                                     <i class="angle right icon"></i>
 
                                     <div class="content">
-                                          
-                                    </div>
-
-                                </div>
-
-                                <div class="item">
-
-                                    <i class="angle right icon"></i>
-
-                                    <div class="content">
-                                        Once you have finished recording user interactions and responses, <strong>save your first recording</strong> for later replay
+                                        User selections can be qualified with assertions or verifications, then <strong>save your first recording</strong> for later replay
                                     </div>
 
                                 </div>
@@ -499,24 +499,6 @@
                             </thead>
                                     
                             <tbody>
-                                        
-                                <tr>
-                                    <td data-label="testName">James</td>
-                                    <td data-label="testDescription">24</td>
-                                    <td data-label="testAuthor">Engineer</td>
-                                    <td data-label="projectName">Some Project</td>
-                                    <td data-label="testStartUrl" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
-                                    <td data-label="testBandwidth">1.5 Mbps</td>
-                                    <td data-label="testLatency">40ms</td>
-                                    <td data-label="testAdditionalReporting">Performance Timings, Resource Loads</td>
-                                    <td data-label="testDelete" class="center aligned">
-                                        <div class="ui mini compact buttons">
-                                            <button class="ui editTest button" data-test-id="0">Edit</button>
-                                            <div class="or"></div>
-                                            <button class="ui deleteTest negative button" data-test-id="0" data-tooltip="To delete test and all associated recordings and replays" data-position="left center">Delete</button>
-                                        </div>
-                                    </td>
-                                </tr>   
         
                             </tbody>
 
@@ -1039,6 +1021,82 @@
                             </div>
         
                         </form>
+
+                        <div class="ui center aligned segment" style="overflow-x: auto;">
+
+                            <h3 class="ui dividing header">
+                                Recording Events
+                            </h3>
+
+                            <table class="ui violet small single line center aligned compact newRecordingEventsTable table">
+                            
+                                <thead>
+                                        
+                                   <tr> 
+                                        <th style="display: none;">ID</th>
+                                        <th>Origin</th>
+                                        <th>Action</th>
+                                        <th>Element</th>
+                                        <th>Tag</th>
+                                        <th>Selector(s)</th>
+                                        <th>Input</th>
+                                        <th>Value</th>
+                                        <th>Location</th>
+                                        <th style="display: none;">Iframe</th>
+                                        <th>Recorded</th>
+                                        <th>Action</th>
+                                        <th>Assertion(s)</th>
+                                    </tr>
+                                        
+                                </thead>
+                                
+                                <tbody>
+                                            
+                                    <tr>
+                                        <td data-field="recordingEventId" style="display: none;">recordingEvent001</td> 
+                                        <td data-field="recordingEventOrigin">User</td>
+                                        <td data-field="recordingEventAction">Click</td>
+                                        <td data-field="recordingEventHTMLElement">HTMLElement</td>
+                                        <td data-field="recordingEventHTMLTag">BUTTON</td>
+                                        <td data-field="recordingEventCssSelectorPath" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">div:nth-child(1) > div:nth-child(3) > div:nth-child(1) > div:nth-child(1) > a:nth-child(7) > strong:nth-child(1)</td>
+                                        <td data-field="recordingEventInputType">N/A</td>
+                                        <td data-field="recordingEventInputValue">N/A</td>
+                                        <td data-field="recordingEventLocation" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
+                                        <td data-field="recordingEventIsIframe" style="display: none;">false</td>
+                                        <td data-field="recordingEventCreated">Some time</td>
+                                        <td data-field="recordingEventAction" class="center aligned">
+                                            <div class="ui mini divided horizontal list">
+                                                <div class="item">
+                                                    <div class="disabled content">
+                                                        <a>Edit</a>
+                                                    </div>    
+                                                </div>
+                                                <div class="item">
+                                                    <div class="content">
+                                                        <a style="color: green">Assert</a>
+                                                    </div>    
+                                                </div>
+                                                <div class="item">
+                                                    <div class="content" >
+                                                        <a style="color: red">Delete</a>
+                                                    </div>    
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td data-label="recordingEventAddAssertion" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">Assert that title = something</td>
+                                        
+                                    </tr>
+                                          
+                                </tbody>
+
+                                <tfoot>
+
+                                </tfoot>
+
+                            </table>
+
+                        </div>
+
                     </div>
 
                     <div class="ui savedReplays verticalTabMenu segment" style="display: none; overflow-x: auto;">
@@ -1073,7 +1131,7 @@
 
                                     If you are testing as you are developing, <strong>attach id attributes to elements you want to action or to verify</strong>.
                                     Great care is taken to ensure that recordings can be reliably replayed in any circumstance and with any selectors. 
-                                    You can still ease your reading of test output and speed things up by adding a <strong>unique</strong> id to each element you want to test.
+                                    You can still bomb-proof your tests and ease your reading of output by adding a <strong>unique</strong> id to each element you want to test.
                               
                                 </div>
                             
@@ -1085,7 +1143,8 @@
                                     
                                     <i class="angle right icon"></i>
 
-                                    Semantic uses arbitrary default values for image sizes from mini to massive. It is recommended to update these with values used in your project in image.variables.
+                                    Be careful when editing existing tests or recordings. Changing bandwidth and mobile emulation parameters can lead to unpredictable results.
+                                    Our advice is to create <strong>separate mobile and computer recordings</strong> for the same test, thereby ensuring that the testing environments remain constant.  
                               
                                 </div>
                             

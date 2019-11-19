@@ -5,19 +5,23 @@ class RecordingEvent {
   
         // set default values for the recording event class 
         const defaults = {
-            recordingEventContext: '',
-            recordingEventIsIframe: false,
-            recordingEventCategory: '',
-            recordingEventType: '',
-            recordingEventValue: null,
-            recordingEventElementType: null,
-            recordingEventOuterHTML: '',
+            //general information applicable to all events
+            recordingEventId: `recordingEvent#${(Math.floor(Math.random() * 90000) + 10000)}#${Date.now()}`,
+            recordingEventOrigin: 'User',
+            recordingEventAction: '',
+            recordingEventHTMLElement: 'HTMLElement',
+            recordingEventHTMLTag: '',
             recordingEventCssSelectorPath: '',
             recordingEventCssDomPath: '',
             recordingEventCssSimmerPath: '',
             recordingEventXPath: '',
+            recordingEventLocation: '',
+            recordingEventIsIframe: false,
             recordingEventCreated: Date.now(),
-            recordingEventEdited: 0
+            recordingEventEdited: 0,
+            //information specific to input events
+            recordingEventInputType: 'N/A',
+            recordingEventInputValue: 'N/A'
         };      
         
         // create a new object with the defaults over-ridden by the options passed in
