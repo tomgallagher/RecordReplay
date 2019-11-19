@@ -94,8 +94,8 @@ $(document).ready (function(){
                         const newRecording =  new Recording({
                             //displayed fields from form 
                             recordingName: fields.recordingName,
-                            recordingDescription: fields.recordingDescription,
-                            recordingAuthor: fields.recordingDescription,
+                            recordingDescription: fields.recordingDescription || "N/A",
+                            recordingAuthor: fields.recordingDescription || "N/A",
                             recordingIsMobile: fields.device == "computer" ? false : true,
                             recordingMobileOrientation: fields.orientation,
                             recordingTestStartUrl: fields.recordingTestStartUrl,
