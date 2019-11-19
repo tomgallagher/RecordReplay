@@ -257,7 +257,7 @@ EventRecorder.startRecordingEvents = () => {
         //then as each action occurs, we want to know the state of the element BEFORE the action took place
         .withLatestFrom(MouseLocator)
         //then map the event to the Recording Event type
-        .map(([textEvent, mouseEvent])=> {
+        .map(([_, mouseEvent])=> {
             const newEvent = new RecordingEvent({
                 //general properties
                 recordingEventAction: 'TextSelect',
