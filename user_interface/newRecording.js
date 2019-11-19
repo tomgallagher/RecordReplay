@@ -114,15 +114,15 @@ $(document).ready (function(){
                         });
                         console.log(newRecording);
                         //then we need to save to the database
-                        //StorageUtils.addModelObjectToDatabaseTable('newRecordiing.js', newRecording, 'recordings')
+                        StorageUtils.addModelObjectToDatabaseTable('newRecording.js', newRecording, 'recordings')
                             //which does not return anything but we don't need it as we fetch from database directly to update the projects table
-                            //.then( () => {
+                            .then( () => {
                                 //remove the loading indicator from the button
                                 $('.ui.newRecordingForm .ui.submit.button').removeClass('loading');
                                 $('.ui.recordingEvents.segment').css('display', 'block');
                                 //then run the function that enables the buttons
-                                //enableVerticalMenuButtonsWhenDataAllows();
-                        //});
+                                enableVerticalMenuButtonsWhenDataAllows();
+                        });
 
                     });
                 

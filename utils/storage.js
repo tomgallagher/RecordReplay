@@ -10,7 +10,8 @@ StorageUtils.openModelObjectDatabaseConnection = function(caller) {
         //set up the database with the required fields - this is where we add fields in a second version so we can update users' databases
         db.version(1).stores({
             projects: "++id,projectName,projectDescription,projectAuthor",
-            tests: "++id,testName,testDescription,testAuthor,testProjectId,testProjectName,testStartUrl,testBandwidthValue,testBandwidthName,testLatencyValue,testLatencyName,testPerformanceTimings,testResourceLoads,testScreenshot"
+            tests: "++id,testName,testDescription,testAuthor,testProjectId,testProjectName,testStartUrl,testBandwidthValue,testBandwidthName,testLatencyValue,testLatencyName,testPerformanceTimings,testResourceLoads,testScreenshot",
+            recordings: "++id,recordingName,recordingDescription,recordingAuthor,recordingIsMobile,recordingMobileOrientation,recordingTestStartUrl,recordingProjectId,recordingProjectName,recordingTestId,recordingTestName,recordingTestBandwidthValue,recordingTestBandwidthName,recordingTestLatencyValue,recordingTestLatencyName,recordingTestPerformanceTimings,recordingTestResourceLoads,recordingTestScreenshot,recordingEventArray"
         });
         //report that the database connection is open
         console.log(`${caller} has opened modelObjectDatabase Connection`);
@@ -28,14 +29,14 @@ StorageUtils.getRecordsCount = function() {
         //open the database connection
         StorageUtils.openModelObjectDatabaseConnection("Storage")
         //then get all the records as a promise all, just projects at the moment
-            .then(db => Promise.all( [ db.projects.count(), db.tests.count() ] ) )
+            .then(db => Promise.all( [ db.projects.count(), db.tests.count(), db.recordings.count(), ] ) )
             //then we return each of them as a value array
             .then(valuesArray => {
                 const countResponse = {
                     //start with projects and zeros for undefined tables
                     projects: valuesArray[0],
                     tests: valuesArray[1],
-                    recordings: 0,
+                    recordings: valuesArray[2],
                     replays: 0
                 };
                 resolve(countResponse);
