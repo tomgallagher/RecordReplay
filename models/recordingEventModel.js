@@ -21,7 +21,9 @@ class RecordingEvent {
             recordingEventEdited: 0,
             //information specific to input events
             recordingEventInputType: 'N/A',
-            recordingEventInputValue: 'N/A'
+            recordingEventInputValue: 'N/A',
+            //information specific to text select events
+            recordingEventTextSelectTargetAsJSON: 'N/A'
         };      
         
         // create a new object with the defaults over-ridden by the options passed in

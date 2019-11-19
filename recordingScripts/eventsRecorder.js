@@ -54,16 +54,19 @@ const browserWindowEvents = ["resize", "pagehide", "pageshow"];
 
 
 var EventRecorder = {
+    //SELECT MOUSE EVENTS FOR CONVERSION TO OBSERVABLES
     //we want to record location events so we know the state of any element BEFORE action occurs
     mouseLocationEventObervables: mouseLocationEvents.filter(item => item == "mouseover")
         //we map each string array item to an observable
-        .map(eventName => Rx.Observable.fromEvent(document, eventName)),
+        .map(eventName => Rx.Observable.fromEvent(window, eventName)),
     //we want to record action events so we know when user action occurs
     mouseActionEventObervables: mouseActionEvents
         //then we are interested in only certain types of mouse events
         .filter(item => item == "click" || item == "contextmenu" || item == "dblclick")
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(window, eventName)),
+
+    //SELECT INPUT EVENTS FOR CONVERSION TO OBSERVABLEs
     inputLocationEventObservables: inputEvents
         //then we are only interests in certain types of input events
         .filter(item => item == "input")
@@ -74,6 +77,14 @@ var EventRecorder = {
         .filter(item => item == "change")
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(window, eventName)),
+    
+    //SELECT TEXT SELECT EVENTS FOR CONVERSION TO OBSERVABLEs
+    selectStartActionEventObservable: attentionEvents
+        //then we are interested in only certain types of mouse events
+        .filter(item => item == "selectstart")
+        //we map each string array item to an observable
+        .map(eventName => Rx.Observable.fromEvent(document, eventName)),
+
     //we need to have instance of CSS selector generator class instantiated at the time of creation
     cssSelectorClass: new CssSelectorGenerator,
     //then we need a function that returned the CSS selector path
@@ -106,7 +117,48 @@ var EventRecorder = {
             }
          }
          return segs.length ? '/' + segs.join('/') : null;
-     }
+     },
+     domToJSON: node => {
+        
+        node = node || this;
+            
+        var obj = { nodeType: node.nodeType};
+
+        if (node.tagName) { obj.tagName = node.tagName.toLowerCase(); } 
+        else if (node.nodeName) { obj.nodeName = node.nodeName; }
+            
+        if (node.nodeValue) { obj.nodeValue = node.nodeValue; }
+            
+        var attrs = node.attributes;
+            
+        if (attrs) {
+            var length = attrs.length;
+            var arr = obj.attributes = new Array(length);
+              
+            for (var i = 0; i < length; i++) {
+                attr = attrs[i];
+                arr[i] = [attr.nodeName, attr.nodeValue];
+            }
+        }
+            
+        var childNodes = node.childNodes;
+            
+        if (childNodes) {
+              
+            length = childNodes.length;
+            arr = obj.childNodes = new Array(length);
+              
+            for (i = 0; i < length; i++) {
+                
+                arr[i] = EventRecorder.domToJSON(childNodes[i]);
+              
+            }
+            
+        }
+            
+        return obj;
+          
+    }
     
 }
 
@@ -128,6 +180,7 @@ EventRecorder.startRecordingEvents = () => {
         //then we get the selectors for the pre-action event element, so it is not mutated
         .map(event => {
             return {
+                eventTarget: event.target,
                 eventCssSelectorPath: EventRecorder.getCssSelectorPath(event.target),
                 eventCssDomPath: EventRecorder.getCssDomPath(event.target),
                 eventCssSimmerPath: EventRecorder.getCssSimmerPath(event.target),
@@ -135,9 +188,9 @@ EventRecorder.startRecordingEvents = () => {
             }
         });
 
-    //then we also query the latest inpute location, which we collect by referrring to the input events
+    //then we also query the latest input location, which we collect by referrring to the input events
     const InputLocator = Rx.Observable.merge(...EventRecorder.inputLocationEventObservables)
-        //the mouse location observables are many - we currently only want the mouseover events
+        //the input location observables are many - we currently only want the input events
         .filter(event => event.type == "input")
         //then log for useful debugging
         //.do(x => console.log(x))
@@ -198,6 +251,31 @@ EventRecorder.startRecordingEvents = () => {
             return newEvent;
         })
         .subscribe(recordingEvent => console.log(recordingEvent));
+
+    //TEXT SELECT EVENTS
+    Rx.Observable.merge(...EventRecorder.selectStartActionEventObservable)
+        //then as each action occurs, we want to know the state of the element BEFORE the action took place
+        .withLatestFrom(MouseLocator)
+        //then map the event to the Recording Event type
+        .map(([textEvent, mouseEvent])=> {
+            const newEvent = new RecordingEvent({
+                //general properties
+                recordingEventAction: 'TextSelect',
+                recordingEventHTMLElement: mouseEvent.eventTarget.constructor.name,
+                recordingEventHTMLTag: mouseEvent.eventTarget.tagName,
+                recordingEventCssSelectorPath: mouseEvent.eventCssSelectorPath,
+                recordingEventCssDomPath: mouseEvent.eventCssDomPath,
+                recordingEventCssSimmerPath: mouseEvent.eventCssSimmerPath,
+                recordingEventXPath: mouseEvent.eventXPath,
+                recordingEventLocation: window.location.origin,
+                recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                //information specific to text select events
+                recordingEventTextSelectTargetAsJSON: EventRecorder.domToJSON(mouseEvent.eventTarget)
+            });
+            return newEvent;
+        })
+        .subscribe(recordingEvent => console.log(recordingEvent));
+
 
 }
 
