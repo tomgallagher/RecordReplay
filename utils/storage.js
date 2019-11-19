@@ -130,13 +130,15 @@ StorageUtils.cascadeDeleteByProjectID = function(caller, key) {
             .then(db => Promise.all([
                 db.projects.delete(checkedKey),
                 db.tests.filter(obj => obj.testProjectId == checkedKey).delete(),
-                db.recordings.filter(obj => obj.recordingProjectId == checkedKey).delete()
+                //db.recordings.filter(obj => obj.recordingProjectId == checkedKey).delete(),
+                //db.replays.filter(obj => obj.recordingProjectId == checkedKey).delete(),
                 //TO DO - add bulk replay deletes by project id
             ]))
             .then(counts => {
                 if (counts[0] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[0]} projects for ${caller}.`); }
                 if (counts[1] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[1]} tests for ${caller}.`); }
-                if (counts[2] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[2]} recordings for ${caller}.`); }
+                //if (counts[2] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[2]} recordings for ${caller}.`); }
+                //if (counts[3] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[3]} replays for ${caller}.`); }
                 //TO DO - add bulk replay delete reporting
                 resolve();
             });

@@ -1016,15 +1016,25 @@
                             <div class="ui error message"></div>
                             <div class="ui success message">
                                 <div class="header">New Recording Created</div>
-                                <p>Press Run to Start Recording</p>
-                                <div class="ui black button">Run</div>
+                                <p>Start recording when ready</p>            
                             </div>
         
                         </form>
 
-                        <div class="ui center aligned segment" style="overflow-x: auto;">
+                        <div class="ui center aligned recordingEvents segment" style="overflow-x: auto; display: none">
 
-                            <h3 class="ui dividing header">
+                            <div class="ui left floated small compact buttons">
+                                <button class="ui startRecording positive button">Start</button>
+                                <div class="or"></div>
+                                <button class="ui stopRecording negative button">Stop</button>
+                            </div>
+
+                            <div class="ui right floated basic padded segment">
+                                <div class="ui text small recording loader">Recording</div>
+                            </div>
+                            
+
+                            <h3 class="ui header">
                                 Recording Events
                             </h3>
 
@@ -1033,7 +1043,6 @@
                                 <thead>
                                         
                                    <tr> 
-                                        <th style="display: none;">ID</th>
                                         <th>Origin</th>
                                         <th>Action</th>
                                         <th>Element</th>
@@ -1041,55 +1050,15 @@
                                         <th>Input</th>
                                         <th>Value</th>
                                         <th>Location</th>
-                                        <th style="display: none;">Iframe</th>
                                         <th>Recorded</th>
                                         <th>Action</th>
-                                        <th>Assertion(s)</th>
                                     </tr>
                                         
                                 </thead>
                                 
-                                <tbody>
-                                            
-                                    <tr>
-                                        <td data-field="recordingEventId" style="display: none;">recordingEvent001</td> 
-                                        <td data-field="recordingEventOrigin">User</td>
-                                        <td data-field="recordingEventAction">Click</td>
-                                        <td data-field="recordingEventHTMLElement">HTMLElement</td>
-                                        <td data-field="recordingEventHTMLTag">BUTTON</td>
-                                        <td data-field="recordingEventInputType">N/A</td>
-                                        <td data-field="recordingEventInputValue" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">N/A</td>
-                                        <td data-field="recordingEventLocation" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
-                                        <td data-field="recordingEventIsIframe" style="display: none;">false</td>
-                                        <td data-field="recordingEventCreated">Some time</td>
-                                        <td data-field="recordingEventAction" class="center aligned">
-                                            <div class="ui mini divided horizontal list">
-                                                <div class="item">
-                                                    <div class="disabled content">
-                                                        <a>Edit</a>
-                                                    </div>    
-                                                </div>
-                                                <div class="item">
-                                                    <div class="content">
-                                                        <a style="color: green">Assert</a>
-                                                    </div>    
-                                                </div>
-                                                <div class="item">
-                                                    <div class="content" >
-                                                        <a style="color: red">Delete</a>
-                                                    </div>    
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td data-label="recordingEventAddAssertion" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">Assert that title = something</td>
-                                        
-                                    </tr>
-                                          
-                                </tbody>
+                                <tbody></tbody>
 
-                                <tfoot>
-
-                                </tfoot>
+                                <tfoot></tfoot>
 
                             </table>
 
@@ -1206,7 +1175,30 @@
             <div class="recordingTableRowTemplate">
                 <table>
                     <tbody>
-                        
+                        <tr>
+                            <td data-field="recordingEventOrigin">User</td>
+                            <td data-field="recordingEventAction">Click</td>
+                            <td data-field="recordingEventHTMLElement">HTMLElement</td>
+                            <td data-field="recordingEventHTMLTag">BUTTON</td>
+                            <td data-field="recordingEventInputType">N/A</td>
+                            <td data-field="recordingEventInputValue" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">N/A</td>
+                            <td data-field="recordingEventLocation" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
+                            <td data-field="recordingEventCreated">Some time</td>
+                            <td data-field="recordingEventAction" class="center aligned">
+                                <div class="ui mini divided horizontal list">
+                                    <div class="item">
+                                        <div class="disabled content">
+                                            <a class="moveRecordingEventRow" data-recording-event-id="0">Move</a>
+                                        </div>    
+                                    </div>
+                                    <div class="item">
+                                        <div class="content" >
+                                            <a class="deleteRecordingEventRow" data-recording-event-id="0" style="color: red">Delete</a>
+                                        </div>    
+                                    </div>
+                                </div>
+                            </td>        
+                        </tr>
                     </tbody>
                 </table>
             </div>

@@ -35,7 +35,7 @@ function addProjectTableButtonListeners() {
         //delete the project in the database, using data-project-id from the template
         const projectKey = $(this).attr("data-project-id");
         //the project key will be in string format - StorageUtils handles conversion
-        StorageUtils.deleteModelObjectInDatabaseTable('projects.js', projectKey, 'projects')
+        StorageUtils.cascadeDeleteByProjectID('projects.js', projectKey)
             //then we have nothing returned
             .then( () => {
                 //then redraw the table

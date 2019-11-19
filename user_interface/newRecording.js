@@ -43,6 +43,18 @@ $(document).ready (function(){
         }
     });
 
+    //this is where the main recording action gets kicked off
+    $('.ui.startRecording.positive.button').on('mousedown', function() {
+        //show the recording loader
+        $('.ui.text.small.recording.loader').addClass('active');
+    });
+
+    //this is where we stop recording and save the recording events to the object
+    $('.ui.stopRecording.negative.button').on('mousedown', function() {
+        //hide the recording loader
+        $('.ui.text.small.recording.loader').removeClass('active');
+    });
+
     $('.ui.newRecordingForm.form')
         .form({
             on: 'blur',
@@ -107,6 +119,7 @@ $(document).ready (function(){
                             //.then( () => {
                                 //remove the loading indicator from the button
                                 $('.ui.newRecordingForm .ui.submit.button').removeClass('loading');
+                                $('.ui.recordingEvents.segment').css('display', 'block');
                                 //then run the function that enables the buttons
                                 //enableVerticalMenuButtonsWhenDataAllows();
                         //});

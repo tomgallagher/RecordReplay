@@ -78,9 +78,9 @@ $(document).ready (function(){
                     //test name is OK, we just take it straight from fields
                     testName: fields.testName,
                     //test description also comes straight from fields - though not compulsory so it may be defaulted by model
-                    testDescription: fields.testDescription,
+                    testDescription: fields.testDescription || "N/A",
                     //ditto with test author
-                    testAuthor: fields.testAuthor,
+                    testAuthor: fields.testAuthor || "N/A",
                     //project ID is going to come as a field value from a drop down so it will be a string
                     //we need this as a number, so we can cross-reference easily in the database, use storage utils conversion for now
                     testProjectId: StorageUtils.standardiseKey(fields.testProjectId),
@@ -101,7 +101,7 @@ $(document).ready (function(){
                     //then the checkboxes, which unhelpfully deliver either 'on' string or false boolean - we need to convert all to boolean
                     testPerformanceTimings: fields.testPerformanceTimings == false ? false : true,
                     testResourceLoads: fields.testResourceLoads == false ? false : true,
-                    testScreenshot: fields.testScreenShot == false ? false : true
+                    testScreenshot: fields.testScreenshot == false ? false : true
                 });
                 //then we need to save to the database
                 StorageUtils.addModelObjectToDatabaseTable('newTest.js', newTest, 'tests')
