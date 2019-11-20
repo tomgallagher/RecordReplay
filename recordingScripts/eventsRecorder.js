@@ -1,90 +1,97 @@
 //A LIST OF ALL WINDOW EVENTS FOR TOTAL USER INTERACTION COVERAGE
+var EventRecorderEvents = {
+    //The onsearch event occurs when a user presses the "ENTER" key or clicks the "x" button in an <input> element with type="search"
+    //The oninput event occurs when an element gets user input - similar to the onchange event. The difference is that the oninput event 
+    //occurs immediately after the value of an element has changed, while onchange occurs when the element loses focus, after the content has been changed. 
+    //The oninvalid event occurs when a submittable <input> element is invalid.
+    inputEvents: ["search", "change", "input", "invalid"],
+    //The onchange event occurs when a user changes the selected option of a <select> element
+    selectEvents: ["change"],
+    //blur and focus events
+    //The onscroll event occurs when an element's scrollbar is being scrolled.
+    //The onselect event occurs after some text has been selected in an element.
+    //The selectstart event fires when the user starts to make a new text selection on a webpage.
+    //The selectionchange event fires when the text selected on a webpage changes
+    attentionEvents: ["blur", "focus", "scroll", "select", "selectstart", "selectionchange"],
+    //The cancel event fires when the user indicates a wish to dismiss a <dialog>
+    //The close event fires when the user closes a <dialog>.
+    dialogEvents: ["cancel", "close"],
+    //this tells us where the mouse is on the page at any given moment
+    //very heavy load events with hundreds of events per second
+    mouseLocationEvents: [
+        "mouseenter", "mouseleave", "mousemove", 
+        "mouseout", "mouseover", "pointermove", 
+        "pointerover", "pointerout", "pointerenter",
+        "pointerleave", "pointercancel", "pointerrawupdate"
+    ],
+    //The contextmenu event typically fires when the right mouse button is clicked on the window
+    //The onsubmit event occurs when a form is submitted.
+    //The ontoggle event occurs when the user opens or closes the <details> element.
+    //The onwheel event occurs when the mouse wheel is rolled up or down over an element.
+    //The auxclick event is raised when a non-primary button has been pressed on an input device (e.g., a middle mouse button).
+    mouseActionEvents: [
+        "click", "contextmenu", "dblclick", 
+        "mousedown", "mouseup", "mousewheel", 
+        "pointerdown", "pointerup", "submit",
+        "toggle", "wheel", "auxclick", "drag", 
+        "dragend", "dragenter", "dragleave", 
+        "dragover", "dragstart", "drop"
+    ],
+    //The onkeypress event occurs when the user presses a key (on the keyboard).
+    //The onkeypress event is not fired for all keys (e.g. ALT, CTRL, SHIFT, ESC) in all browsers. 
+    //To detect only whether the user has pressed a key, use the onkeydown event instead, because it works for all keys.
+    keyboardEvents: ["keydown", "keypress", "keyup"],
+    //The onpagehide event is sometimes used instead of the onunload event, as the onunload event causes the page to not be cached.
+    //The onpageshow event is similar to the onload event, except that it occurs after the onload event when the page first loads. 
+    //Also, the onpageshow event occurs every time the page is loaded, whereas the onload event does not occur when the page is loaded from the cache.
+    browserWindowEvents: ["resize", "pagehide", "pageshow"]
 
-//The onsearch event occurs when a user presses the "ENTER" key or clicks the "x" button in an <input> element with type="search"
-//The oninput event occurs when an element gets user input - similar to the onchange event. The difference is that the oninput event 
-//occurs immediately after the value of an element has changed, while onchange occurs when the element loses focus, after the content has been changed. 
-//The oninvalid event occurs when a submittable <input> element is invalid.
-const inputEvents = ["search", "change", "input", "invalid"];
-
-//The onchange event occurs when a user changes the selected option of a <select> element
-const selectEvents = ["change"];
-
-//blur and focus events
-//The onscroll event occurs when an element's scrollbar is being scrolled.
-//The onselect event occurs after some text has been selected in an element.
-//The selectstart event fires when the user starts to make a new text selection on a webpage.
-//The selectionchange event fires when the text selected on a webpage changes
-const attentionEvents = ["blur", "focus", "scroll", "select", "selectstart", "selectionchange"];
-
-//The cancel event fires when the user indicates a wish to dismiss a <dialog>
-//The close event fires when the user closes a <dialog>.
-const dialogEvents = ["cancel", "close"];
-
-//The contextmenu event typically fires when the right mouse button is clicked on the window
-//The onsubmit event occurs when a form is submitted.
-//The ontoggle event occurs when the user opens or closes the <details> element.
-//The onwheel event occurs when the mouse wheel is rolled up or down over an element.
-//The auxclick event is raised when a non-primary button has been pressed on an input device (e.g., a middle mouse button).
-const mouseLocationEvents = [
-    "mouseenter", "mouseleave", "mousemove", 
-    "mouseout", "mouseover", "pointermove", 
-    "pointerover", "pointerout", "pointerenter",
-    "pointerleave", "pointercancel", "pointerrawupdate"
-];
-
-const mouseActionEvents = [
-    "click", "contextmenu", "dblclick", 
-    "mousedown", "mouseup", "mousewheel", 
-    "pointerdown", "pointerup", "submit",
-    "toggle", "wheel", "auxclick", "drag", 
-    "dragend", "dragenter", "dragleave", 
-    "dragover", "dragstart", "drop"
-];
-
-const keyboardEvents = ["keydown", "keypress", "keyup"];
-
-//The onpagehide event is sometimes used instead of the onunload event, as the onunload event causes the page to not be cached.
-//The onpageshow event is similar to the onload event, except that it occurs after the onload event when the page first loads. 
-//Also, the onpageshow event occurs every time the page is loaded, whereas the onload event does not occur when the page is loaded from the cache.
-const browserWindowEvents = ["resize", "pagehide", "pageshow"];
-
-//when subscribing to events, collect all events under a single subscribe loop into an object, then emit the object each time
-//then add an event property to object with outerhtml event.target.outerHTML, as well as event.target.offsetTop and event.target.offsetLeft, then add the details of the event
-//can add the css and xpath identifiers later, after blur event
-
+};
 
 var EventRecorder = {
+    
     //SELECT MOUSE EVENTS FOR CONVERSION TO OBSERVABLES
     //we want to record location events so we know the state of any element BEFORE action occurs
-    mouseLocationEventObervables: mouseLocationEvents.filter(item => item == "mouseover")
+    mouseLocationEventObervables: EventRecorderEvents.mouseLocationEvents
+        //we are interested only in certain types of mouse location events
+        .filter(item => item == "mouseover")
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(window, eventName)),
     //we want to record action events so we know when user action occurs
-    mouseActionEventObervables: mouseActionEvents
+    mouseActionEventObervables: EventRecorderEvents.mouseActionEvents
         //then we are interested in only certain types of mouse events
         .filter(item => item == "click" || item == "contextmenu" || item == "dblclick" || item == 'mouseup')
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(window, eventName)),
 
     //SELECT INPUT EVENTS FOR CONVERSION TO OBSERVABLEs
-    inputLocationEventObservables: inputEvents
+    inputLocationEventObservables: EventRecorderEvents.inputEvents
         //then we are only interests in certain types of input events
         .filter(item => item == "input")
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(window, eventName)),
-    inputActionEventObservables: inputEvents
+    inputActionEventObservables: EventRecorderEvents.inputEvents
         //then we are only interests in certain types of input events
         .filter(item => item == "change")
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(window, eventName)),
     
     //SELECT TEXT SELECT EVENTS FOR CONVERSION TO OBSERVABLEs
-    selectStartActionEventObservable: attentionEvents
-        //then we are interested in only certain types of mouse events
-        .filter(item => item == "selectstart")
+    attentionActionEventObservables: EventRecorderEvents.attentionEvents
+        //then we are interested in only certain types of select events
+        .filter(item => item == "selectstart" || item == "focus")
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(document, eventName)),
 
+    //SELECT KEYBOARD EVENTS FOR CONVERSION TO OBSERVABLES
+    keyBoardActionEventObservables: EventRecorderEvents.keyboardEvents
+        //then we are interested in only certain types of mouse events
+        .filter(item => item == "keydown" || item == "keyup")
+        //we map each string array item to an observable
+        .map(eventName => Rx.Observable.fromEvent(document, eventName)),
+
+    //we need to have an instance of the key code dictionary
+    keyCodeDictionary: new KeyCodeDictionary({}),
     //we need to have instance of CSS selector generator class instantiated at the time of creation
     cssSelectorClass: new CssSelectorGenerator,
     //then we need a function that returned the CSS selector path
@@ -188,7 +195,7 @@ EventRecorder.startRecordingEvents = () => {
             }
         });
 
-    //then we also query the latest input location, which we collect by referrring to the input events
+    //then we also query the latest input location, which we collect by referring to the input events
     EventRecorder.InputLocator = Rx.Observable.merge(...EventRecorder.inputLocationEventObservables)
         //the input location observables are many - we currently only want the input events
         .filter(event => event.type == "input")
@@ -204,10 +211,28 @@ EventRecorder.startRecordingEvents = () => {
             }
         });
     
+    //then we also query the latest focus location, which we collect by referring to attention events
+    EventRecorder.FocusLocator = Rx.Observable.merge(...EventRecorder.attentionActionEventObservables)
+        //the attention observables are many - we currently only want the focus events
+        .filter(event => event.type == "focus")
+        //then log for useful debugging
+        //.do(x => console.log(x))
+        //then we get the selectors for the pre-action event element, so it is not mutated
+        .map(event => {
+            return {
+                eventCssSelectorPath: EventRecorder.getCssSelectorPath(event.target),
+                eventCssDomPath: EventRecorder.getCssDomPath(event.target),
+                eventCssSimmerPath: EventRecorder.getCssSimmerPath(event.target),
+                eventXPath: EventRecorder.getXPath(event.target)
+            }
+        });
+    
     //TEXT SELECT EVENTS
     //as we do not have a select end event, we have to construct one
     //and we need to name this as it is used to prevent double recordings of text selection and clicks
-    EventRecorder.textSelectionObservable = Rx.Observable.merge(...EventRecorder.selectStartActionEventObservable)
+    EventRecorder.textSelectionObservable = Rx.Observable.merge(...EventRecorder.attentionActionEventObservables)
+        //the selection observables are many - we currently only want the select start event
+        .filter(event => event.type == "selectstart")
         //once we have a selectStart event, we then need to start listening to the mouseup event to work out when selection has finished
         .switchMap( () =>
             Rx.Observable.merge(...EventRecorder.mouseActionEventObervables).filter(event => event.type == "mouseup").take(1),
@@ -228,7 +253,7 @@ EventRecorder.startRecordingEvents = () => {
         //then filter for empty strings as that's an indication that the user either pressed on the contextMenu or changed their mind
         .filter(selectEndObject => selectEndObject.selectionString.length > 0)
         //then process selectEndObject into a recording object
-        .map(selectEndObject =>{
+        .map(selectEndObject => {
             const newEvent = new RecordingEvent({
                 //general properties
                 recordingEventAction: 'TextSelect',
@@ -250,14 +275,14 @@ EventRecorder.startRecordingEvents = () => {
 
     //MOUSE EVENTS
     EventRecorder.mouseObservable = Rx.Observable.merge(...EventRecorder.mouseActionEventObervables)
-        //we don't care about mouseup events here
+        //we don't care about mouseup events here as we're covered with the click event
         .filter(event => event.type != "mouseup")
         //then we only want mouse events to activate on non-input elements because we have a separate handler for them
         .filter(event => event.target instanceof HTMLInputElement == false)
         //then as each action occurs, we want to know the state of the element BEFORE the action took place
         .withLatestFrom(EventRecorder.MouseLocator, EventRecorder.textSelectionObservable.startWith({recordingEventCssSelectorPath: null}))
         //then map the event to the Recording Event type
-        .map(([actionEvent, locationEvent, currentTextSelection])=> {
+        .map(([actionEvent, locationEvent, currentTextSelection]) => {
             //create our event
             const newEvent = new RecordingEvent({
                 recordingEventAction: 'Mouse',
@@ -291,7 +316,7 @@ EventRecorder.startRecordingEvents = () => {
         //then as each action occurs, we want to know the state of the element BEFORE the action took place
         .withLatestFrom(EventRecorder.InputLocator)
         //then map the event to the Recording Event type
-        .map(([actionEvent, locationEvent])=> {
+        .map(([actionEvent, locationEvent]) => {
             const newEvent = new RecordingEvent({
                 //general properties
                 recordingEventAction: 'Input',
@@ -314,6 +339,35 @@ EventRecorder.startRecordingEvents = () => {
     //combine all our observables into a single subscription
     Rx.Observable.merge(EventRecorder.textSelectionObservable, EventRecorder.mouseObservable, EventRecorder.inputObservable)
         //and log the output    
+        .subscribe(recordingEvent => console.log(recordingEvent));
+
+    //KEYBOARD EVENTS
+    EventRecorder.keyboardObservable = Rx.Observable.merge(...EventRecorder.keyBoardActionEventObservables)
+        //then we only want the keyup event - we have chosen this as we want keyboard enter and tab events after any input events have registered, which happens on keydown
+        .filter(event => event.type == "keyup")
+        //this ensures that we only get keyboard events that are not typing events - we are assuming here that all typing input events are handled by input collectors
+        .filter(event => EventRecorder.keyCodeDictionary[event.keyCode].value == null)
+        //then we want to get the current focus event locator, starting with an empty object so we can test to see if focus event has emitted
+        .withLatestFrom(EventRecorder.FocusLocator.startWith({}))
+        //then combine the two observables properties to create our RecordingEvent object
+        .map( ([actionEvent, focusEvent]) => {
+            const newEvent = new RecordingEvent({
+                //general properties
+                recordingEventAction: 'Keyboard',
+                recordingEventActionType: actionEvent.key,
+                recordingEventHTMLElement: actionEvent.target.constructor.name,
+                recordingEventHTMLTag: actionEvent.target.tagName,
+                recordingEventCssSelectorPath: focusEvent.eventCssSelectorPath || EventRecorder.getCssSelectorPath(actionEvent.target),
+                recordingEventCssDomPath: focusEvent.eventCssDomPath || EventRecorder.getCssDomPath(actionEvent.target),
+                recordingEventCssSimmerPath: focusEvent.eventCssSimmerPath || EventRecorder.getCssSimmerPath(actionEvent.target),
+                recordingEventXPath: focusEvent.eventXPath || EventRecorder.getXPath(actionEvent.target),
+                recordingEventLocation: window.location.origin,
+                recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                //information specific to keyboard events
+                
+            });
+            return newEvent;
+        })
         .subscribe(recordingEvent => console.log(recordingEvent));
 
     

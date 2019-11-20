@@ -19,6 +19,7 @@ class RecordingEvent {
             recordingEventLocation: '',
             recordingEventIsIframe: false,
             recordingEventCreated: Date.now(),
+            recordingEventTimestamp: performance.now(),
             recordingEventEdited: 0,
             //information specific to input events
             recordingEventInputType: 'N/A',

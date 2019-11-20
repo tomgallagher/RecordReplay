@@ -38,7 +38,15 @@ class Recording {
     
     sortRecordingEventsByTimestamp() {
         this.recordingEventArray = this.recordingEventArray.sort(
-            (previousRecordingEvent, currentRecordingEvent) => previousRecordingEvent.recordingEventCreated - currentRecordingEvent.recordingEventCreated
+            (previousRecordingEvent, currentRecordingEvent) => {
+                //so we need a way of resolving ties - we use the performance timestamp here
+                //note that performance timestamps start from page load
+                if (previousRecordingEvent.recordingEventCreated = currentRecordingEvent.recordingEventCreated) {
+                    return previousRecordingEvent.recordingEventTimestamp - currentRecordingEvent.recordingEventTimestamp;
+                } else {
+                    return previousRecordingEvent.recordingEventCreated - currentRecordingEvent.recordingEventCreated
+                }
+            }
         );
     }
 
