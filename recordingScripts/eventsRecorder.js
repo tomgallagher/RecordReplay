@@ -62,7 +62,7 @@ var EventRecorder = {
     //we want to record action events so we know when user action occurs
     mouseActionEventObervables: mouseActionEvents
         //then we are interested in only certain types of mouse events
-        .filter(item => item == "click" || item == "contextmenu" || item == "dblclick")
+        .filter(item => item == "click" || item == "contextmenu" || item == "dblclick" || item == 'mouseup')
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(window, eventName)),
 
@@ -167,7 +167,7 @@ EventRecorder.startRecordingEvents = () => {
     //ALL OF OUR SEPARATE EVENTS REQUIRE AN UNADULTERATED LOCATOR that generates css selectors BEFORE ACTION
     
     //so we query the latest mouse location, which we collect by referring to the mouseover events
-    const MouseLocator = Rx.Observable.merge(...EventRecorder.mouseLocationEventObervables)
+    EventRecorder.MouseLocator = Rx.Observable.merge(...EventRecorder.mouseLocationEventObervables)
         //the mouse location observables are many - we currently only want the mouseover events
         .filter(event => event.type == "mouseover")
         //then we only want to have the new event when a new element is first entered, no multiple iterations as that can catch mutations following click
@@ -189,7 +189,7 @@ EventRecorder.startRecordingEvents = () => {
         });
 
     //then we also query the latest input location, which we collect by referrring to the input events
-    const InputLocator = Rx.Observable.merge(...EventRecorder.inputLocationEventObservables)
+    EventRecorder.InputLocator = Rx.Observable.merge(...EventRecorder.inputLocationEventObservables)
         //the input location observables are many - we currently only want the input events
         .filter(event => event.type == "input")
         //then log for useful debugging
@@ -203,17 +203,65 @@ EventRecorder.startRecordingEvents = () => {
                 eventXPath: EventRecorder.getXPath(event.target)
             }
         });
+    
+    //TEXT SELECT EVENTS
+    //as we do not have a select end event, we have to construct one
+    //and we need to name this as it is used to prevent double recordings of text selection and clicks
+    EventRecorder.textSelectionObservable = Rx.Observable.merge(...EventRecorder.selectStartActionEventObservable)
+        //once we have a selectStart event, we then need to start listening to the mouseup event to work out when selection has finished
+        .switchMap( () =>
+            Rx.Observable.merge(...EventRecorder.mouseActionEventObervables).filter(event => event.type == "mouseup").take(1),
+            //then we need a projection function to make sure we get only actionable information
+            (selectEvent, mouseUpEvent) => {
+                //get the current selection in the window to check that some text has been highlighted
+                const selection = window.getSelection()
+                //then return an object with properties that we need to filter and also to process a recording event
+                return {
+                    //we keep the event type although it's not selectStart that we are creating
+                    eventType: selectEvent.type,
+                    //we need the current selection as a string so we can filter zero selections
+                    selectionString: selection.toString(),
+                    //then we need to have the mouseup event so we can process the location of the selection
+                    mouseEvent: mouseUpEvent
+                }
+        })
+        //then filter for empty strings as that's an indication that the user either pressed on the contextMenu or changed their mind
+        .filter(selectEndObject => selectEndObject.selectionString.length > 0)
+        //then process selectEndObject into a recording object
+        .map(selectEndObject =>{
+            const newEvent = new RecordingEvent({
+                //general properties
+                recordingEventAction: 'TextSelect',
+                recordingEventActionType: selectEndObject.eventType,
+                recordingEventHTMLElement: selectEndObject.mouseEvent.target.constructor.name,
+                recordingEventHTMLTag: selectEndObject.mouseEvent.target.tagName,
+                recordingEventCssSelectorPath: EventRecorder.getCssSelectorPath(selectEndObject.mouseEvent.target),
+                recordingEventCssDomPath: EventRecorder.getCssDomPath(selectEndObject.mouseEvent.target),
+                recordingEventCssSimmerPath: EventRecorder.getCssSimmerPath(selectEndObject.mouseEvent.target),
+                recordingEventXPath: EventRecorder.getXPath(selectEndObject.mouseEvent.target),
+                recordingEventLocation: window.location.origin,
+                recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                //information specific to text select events
+                recordingEventTextSelectTextContent: selectEndObject.selectionString,
+                recordingEventTextSelectTargetAsJSON: EventRecorder.domToJSON(selectEndObject.mouseEvent.target)
+            });
+            return newEvent;
+        });
 
     //MOUSE EVENTS
-    Rx.Observable.merge(...EventRecorder.mouseActionEventObervables)
+    EventRecorder.mouseObservable = Rx.Observable.merge(...EventRecorder.mouseActionEventObervables)
+        //we don't care about mouseup events here
+        .filter(event => event.type != "mouseup")
         //then we only want mouse events to activate on non-input elements because we have a separate handler for them
         .filter(event => event.target instanceof HTMLInputElement == false)
         //then as each action occurs, we want to know the state of the element BEFORE the action took place
-        .withLatestFrom(MouseLocator)
+        .withLatestFrom(EventRecorder.MouseLocator, EventRecorder.textSelectionObservable.startWith({recordingEventCssSelectorPath: null}))
         //then map the event to the Recording Event type
-        .map(([actionEvent, locationEvent])=> {
+        .map(([actionEvent, locationEvent, currentTextSelection])=> {
+            //create our event
             const newEvent = new RecordingEvent({
                 recordingEventAction: 'Mouse',
+                recordingEventActionType: actionEvent.type,
                 recordingEventHTMLElement: actionEvent.target.constructor.name,
                 recordingEventHTMLTag: actionEvent.target.tagName,
                 recordingEventCssSelectorPath: locationEvent.eventCssSelectorPath,
@@ -223,19 +271,31 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
             });
-            return newEvent;
+            //then only return the event if the same element has not recorded a text selection event
+            if (currentTextSelection.recordingEventCssSelectorPath != newEvent.recordingEventCssSelectorPath) {
+                return newEvent;
+            } else { 
+                //if we have filtered it out then we need to report
+                console.log("Click Event Ignored As Action on Element is being Recorded as Text Selection Event");
+                console.log(currentTextSelection.recordingEventCssSelectorPath);
+                console.log(newEvent.recordingEventCssSelectorPath);
+                //just return an empty observable as a placeholder which we can easily filter out
+                return false; 
+            }
         })
-        .subscribe(recordingEvent => console.log(recordingEvent));
-    
+        //then a simple filter to ensure that the double counting events do not make it through to the final output
+        .filter(object => object != false);
+
     //INPUT EVENTS
-    Rx.Observable.merge(...EventRecorder.inputActionEventObservables)
+    EventRecorder.inputObservable = Rx.Observable.merge(...EventRecorder.inputActionEventObservables)
         //then as each action occurs, we want to know the state of the element BEFORE the action took place
-        .withLatestFrom(InputLocator)
+        .withLatestFrom(EventRecorder.InputLocator)
         //then map the event to the Recording Event type
         .map(([actionEvent, locationEvent])=> {
             const newEvent = new RecordingEvent({
                 //general properties
                 recordingEventAction: 'Input',
+                recordingEventActionType: actionEvent.type,
                 recordingEventHTMLElement: actionEvent.target.constructor.name,
                 recordingEventHTMLTag: actionEvent.target.tagName,
                 recordingEventCssSelectorPath: locationEvent.eventCssSelectorPath,
@@ -245,38 +305,18 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 //information specific to input events
-                recordingEventInputType: actionEvent.type,
-                recordingEventInputValue: actionEvent.target.type
+                recordingEventInputType: actionEvent.target.type,
+                recordingEventInputValue: actionEvent.target.value,
             });
             return newEvent;
-        })
+        });
+    
+    //combine all our observables into a single subscription
+    Rx.Observable.merge(EventRecorder.textSelectionObservable, EventRecorder.mouseObservable, EventRecorder.inputObservable)
+        //and log the output    
         .subscribe(recordingEvent => console.log(recordingEvent));
 
-    //TEXT SELECT EVENTS
-    Rx.Observable.merge(...EventRecorder.selectStartActionEventObservable)
-        //then as each action occurs, we want to know the state of the element BEFORE the action took place
-        .withLatestFrom(MouseLocator)
-        //then map the event to the Recording Event type
-        .map(([_, mouseEvent])=> {
-            const newEvent = new RecordingEvent({
-                //general properties
-                recordingEventAction: 'TextSelect',
-                recordingEventHTMLElement: mouseEvent.eventTarget.constructor.name,
-                recordingEventHTMLTag: mouseEvent.eventTarget.tagName,
-                recordingEventCssSelectorPath: mouseEvent.eventCssSelectorPath,
-                recordingEventCssDomPath: mouseEvent.eventCssDomPath,
-                recordingEventCssSimmerPath: mouseEvent.eventCssSimmerPath,
-                recordingEventXPath: mouseEvent.eventXPath,
-                recordingEventLocation: window.location.origin,
-                recordingEventIsIframe: EventRecorder.contextIsIframe(),
-                //information specific to text select events
-                recordingEventTextSelectTargetAsJSON: EventRecorder.domToJSON(mouseEvent.eventTarget)
-            });
-            return newEvent;
-        })
-        .subscribe(recordingEvent => console.log(recordingEvent));
-
-
+    
 }
 
 

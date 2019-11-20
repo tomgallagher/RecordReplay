@@ -9,6 +9,7 @@ class RecordingEvent {
             recordingEventId: `recordingEvent#${(Math.floor(Math.random() * 90000) + 10000)}#${Date.now()}`,
             recordingEventOrigin: 'User',
             recordingEventAction: '',
+            recordingEventActionType: '',
             recordingEventHTMLElement: 'HTMLElement',
             recordingEventHTMLTag: '',
             recordingEventCssSelectorPath: '',
@@ -23,7 +24,8 @@ class RecordingEvent {
             recordingEventInputType: 'N/A',
             recordingEventInputValue: 'N/A',
             //information specific to text select events
-            recordingEventTextSelectTargetAsJSON: 'N/A'
+            recordingEventTextSelectTextContent: "",
+            recordingEventTextSelectTargetAsJSON: {}
         };      
         
         // create a new object with the defaults over-ridden by the options passed in
