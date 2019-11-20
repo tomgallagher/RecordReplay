@@ -54,7 +54,7 @@ var EventRecorder = {
     //we want to record location events so we know the state of any element BEFORE action occurs
     mouseLocationEventObervables: EventRecorderEvents.mouseLocationEvents
         //we are interested only in certain types of mouse location events
-        .filter(item => item == "mouseover")
+        .filter(item => item == "mouseover" || item == "mouseout")
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(window, eventName)),
     //we want to record action events so we know when user action occurs
@@ -310,6 +310,8 @@ EventRecorder.startRecordingEvents = () => {
         });
 
     //MOUSE EVENTS
+    //MOUSE CLICK EVENTS
+
     EventRecorder.mouseObservable = Rx.Observable.merge(...EventRecorder.mouseActionEventObervables)
         //we don't care about mouseup events here as we're covered with the click event
         .filter(event => event.type != "mouseup")
@@ -346,6 +348,37 @@ EventRecorder.startRecordingEvents = () => {
         })
         //then a simple filter to ensure that the double counting events do not make it through to the final output
         .filter(object => object != false);
+    
+    //MOUSE HOVER EVENTS
+    EventRecorder.mouseHoverObservable = EventRecorder.MouseLocator
+        //Get the time of the mouseover event - this moves the mouselocator event to the value key of an object and adds a timestamp key as well with milliseconds
+        .timestamp()
+        //Don't emit until the mouseOut triggers
+        .sample(Rx.Observable.merge(...EventRecorder.mouseLocationEventObervables).filter(event => event.type == "mouseout"))
+        //Get a new timestamp (remember this is *after* mouse out) - this moves the mouselocator to a second level, referred by value so the mouselocator event is value.value.x 
+        .timestamp()
+        //then allow through only those events that have a delay of more than 3000
+        .filter(timeStampedLayeredObject => timeStampedLayeredObject.timestamp - timeStampedLayeredObject.value.timestamp > 3000)
+        //then map it to the MouseLocator event again
+        .map(timeStampedLayeredObject => timeStampedLayeredObject.value.value)
+        //then create a recording event
+        .map(mouseLocatorEvent => {
+            const newEvent = new RecordingEvent({
+                //general properties
+                recordingEventAction: 'Mouse',
+                recordingEventActionType: 'hover',
+                recordingEventHTMLElement: mouseLocatorEvent.eventTarget.constructor.name,
+                recordingEventHTMLTag: mouseLocatorEvent.eventTarget.tagName,
+                recordingEventCssSelectorPath: mouseLocatorEvent.eventCssSelectorPath,
+                recordingEventCssDomPath: mouseLocatorEvent.eventCssDomPath,
+                recordingEventCssSimmerPath: mouseLocatorEvent.eventCssSimmerPath,
+                recordingEventXPath: mouseLocatorEvent.eventXPath,
+                recordingEventLocation: window.location.origin,
+                recordingEventIsIframe: EventRecorder.contextIsIframe()
+            });
+            return newEvent;
+        });
+        
 
     //INPUT EVENTS
     EventRecorder.inputObservable = Rx.Observable.merge(...EventRecorder.inputActionEventObservables)
@@ -406,6 +439,8 @@ EventRecorder.startRecordingEvents = () => {
         EventRecorder.textSelectionObservable, 
         //handles all mouse actions,
         EventRecorder.mouseObservable, 
+        //handles mouse hover events
+        EventRecorder.mouseHoverObservable,
         //handles all input from user
         EventRecorder.inputObservable,
         //handles all non-typing keyboard actions
