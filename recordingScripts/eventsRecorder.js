@@ -102,69 +102,105 @@ var EventRecorder = {
     getCssSimmerPath: element => window.Simmer(element),
     //then a function that returns xpath of element
     getXPath: element => {
-        var allNodes = document.getElementsByTagName('*'); 
+        //get all the nodes in the document by tagname wildcard
+        var allNodes = document.getElementsByTagName('*');
+        //create the array to hold the different bits of the xpath, execute the code block if we have an element and the element is an element node, 
+        //then jump up to parent when finished with each node   
         for (var segs = []; element && element.nodeType == 1; element = element.parentNode) {
-             if (element.hasAttribute('id')) {
+            //check to see if the element has an id because this is then going to be fast
+            if (element.hasAttribute('id')) {
+                //set the marker for whether the id is unique in the page
                 var uniqueIdCount = 0;
+                //search through all the nodes 
                 for (var n=0; n < allNodes.length; n++) {
+                    //if we have a duplicate id, this is not going to work so bump the marker
                     if (allNodes[n].hasAttribute('id') && allNodes[n].id == element.id) uniqueIdCount++;
+                    //then if we do not have a unique id we break out of the loop
                     if (uniqueIdCount > 1) break;
                 }
-                if ( uniqueIdCount == 1) {
+                //the marker holds the value
+                if (uniqueIdCount == 1) {
+                    //if we only have one element with that id we can create the xpath now so we push the start path and then id into the array at the beginning
                     segs.unshift("//*[@id='" + element.getAttribute('id') + "']");
+                    //then we're done and we send it back to the caller
                     return segs.join('/');
                 } else {
+                    //otherwise we save the tagname and the id and continue on as we are going to need more qualifiers for a unqiue xpath
                     segs.unshift(element.localName.toLowerCase() + '[@id="' + element.getAttribute('id') + '"]');
                 }
             } else {
+                //with no id, we need to do something different
+                //we need to identify its place amongst siblings - is it the first list item or the third
                 for (var i = 1, sib = element.previousSibling; sib; sib = sib.previousSibling) {
+                    //this counts back until we have no previous sibling
                     if (sib.localName == element.localName)  i++; 
                 }
+                //just push the local name into the array along with the position
                 segs.unshift(element.localName.toLowerCase() + '[' + i + ']');
             }
          }
+         //then once we've worked our way up to an element with id or we are at the element with no parentNode - the html - we return all the strings joined with a backslash
          return segs.length ? '/' + segs.join('/') : null;
      },
      domToJSON: node => {
-        
-        node = node || this;
-            
+        //use the supplied node or the entire document if no node supplied
+        node = node || document.documentElement;
+        //this is the starter object, which has the nodetype
         var obj = { nodeType: node.nodeType};
-
+        //if the node has a tag then set the tag name, otherwise set the node name 
         if (node.tagName) { obj.tagName = node.tagName.toLowerCase(); } 
         else if (node.nodeName) { obj.nodeName = node.nodeName; }
-            
+        //if the node has a value then add that as well
         if (node.nodeValue) { obj.nodeValue = node.nodeValue; }
-            
+        //get the attributes as an array
         var attrs = node.attributes;
-            
+        //if there are any attributes, we need to add them to the object
         if (attrs) {
+            //get the length for the loop
             var length = attrs.length;
+            //create an array with the length of the attributes and allocate to obj.attributes property
             var arr = obj.attributes = new Array(length);
-              
+            //loop through the attributes 
             for (var i = 0; i < length; i++) {
+                //get the attribute from the attributes array
                 attr = attrs[i];
+                //then push into the object.attributes array
                 arr[i] = [attr.nodeName, attr.nodeValue];
             }
         }
-            
+        //see if we have any childnodes, returned as an array
         var childNodes = node.childNodes;
-            
+        //if we have any childnodes, we also want to follow the same process
         if (childNodes) {
-              
+            //get the length of the array for the loop
             length = childNodes.length;
+            //create the new array and allocate to the childnodes property
             arr = obj.childNodes = new Array(length);
-              
+            //loop through the childnodes array
             for (i = 0; i < length; i++) {
-                
+                //for each child node we recursively call this function until we reach a point where there are no childnodes left
                 arr[i] = EventRecorder.domToJSON(childNodes[i]);
-              
             }
-            
         }
-            
+        //once we have run out of childnodes we can then return the json object
         return obj;
-          
+    },
+    //send message according to the enviroment
+    sendEvent: recordingEvent => {
+        //if we are in an iframe rather than the content script environment, then this will return true
+        if (typeof chrome.runtime.getManifest == 'undefined' && EventRecorder.contextIsIframe()) {
+            //then we need to send a special kind of message, which uses window.postMessage and is relayed by content script, remember wildcard so anyone can hear it
+            window.parent.postMessage(recordingEvent, "*");
+        } else {
+            //just the standard message passing from extension
+            chrome.runtime.sendMessage(recordingEvent, function(response) {
+                console.log(response);
+            });
+        }
+    },
+    contextIsIframe: () => { 
+        try { return window.self !== window.top; } 
+        catch (e) { return true; } 
     }
     
 }
@@ -335,11 +371,6 @@ EventRecorder.startRecordingEvents = () => {
             });
             return newEvent;
         });
-    
-    //combine all our observables into a single subscription
-    Rx.Observable.merge(EventRecorder.textSelectionObservable, EventRecorder.mouseObservable, EventRecorder.inputObservable)
-        //and log the output    
-        .subscribe(recordingEvent => console.log(recordingEvent));
 
     //KEYBOARD EVENTS
     EventRecorder.keyboardObservable = Rx.Observable.merge(...EventRecorder.keyBoardActionEventObservables)
@@ -367,38 +398,22 @@ EventRecorder.startRecordingEvents = () => {
                 
             });
             return newEvent;
-        })
-        .subscribe(recordingEvent => console.log(recordingEvent));
-
-    
-}
-
-
-
-
-//send message according to the enviroment
-EventRecorder.sendEvent = recordingEvent => {
-    //if we are in an iframe rather than the content script environment, then this will return true
-    if (typeof chrome.runtime.getManifest == 'undefined' && EventRecorder.contextIsIframe()) {
-        //then we need to send a special kind of message, which uses window.postMessage and is relayed by content script, remember wildcard so anyone can hear it
-        window.parent.postMessage(recordingEvent, "*");
-    } else {
-        //just the standard message passing from extension
-        chrome.runtime.sendMessage(recordingEvent, function(response) {
-            console.log(response);
         });
-    }
-}
-
-//UTILITY FUNCTIONS
-
-EventRecorder.contextIsIframe = () => { 
-    try { return window.self !== window.top; } 
-    catch (e) { return true; } 
-}
     
-//use position on the screen and outerHTML to provide a unique identifier for each event target
-EventRecorder.quickUniqueID = element => { return `offsetTop:${element.offsetTop}|offsetLeft:${element.offsetLeft}|outerHTML:${element.outerHTML}`; }
+    //combine all our observables into a single subscription
+    Rx.Observable.merge(
+        //handles all text selection
+        EventRecorder.textSelectionObservable, 
+        //handles all mouse actions,
+        EventRecorder.mouseObservable, 
+        //handles all input from user
+        EventRecorder.inputObservable,
+        //handles all non-typing keyboard actions
+        EventRecorder.keyboardObservable,
+    //and log the output    
+    ).subscribe(recordingEvent => console.log(recordingEvent));
+
+}
 
 //START FUNCTION
 //WE ONLY WANT TO START IN IFRAME OR CONTENT SCRIPT CONTEXT

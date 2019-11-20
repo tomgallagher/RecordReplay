@@ -1,35 +1,33 @@
-/*need an override here so inverted vertical menu works OK in black*/
+/*need an override here so inverted vertical menu works OK*/
 .ui.vertical.tabular.menu .active.item {
-
     background: transparent !important;
     border-right: 2px solid white !important;
-
 }
+
+/*need an override here so inverted vertical menu opening out to right works OK in black*/
 .ui.vertical.inverted.tabular.menu .active.item {
-
     border-right: 2px solid black !important;
-
 }
 
+/*need an override here so inverted vertical menu disabled item works OK */
 .ui.vertical.inverted.menu .item.disabled, .ui.vertical.inverted.menu .item.disabled:hover {
     color: dimgrey !important;
 }
 
+/*small stylistic adjustment for inverted header*/
 .ui.inverted.block.header {
-
     background: #545454 linear-gradient(transparent,rgba(0,0,0,.5)) !important;
-
 }
 
+/*small stylistic adjustment for inputs which appear to have no inverted CSS*/
 .ui.inverted.form input:not([type]), .ui.inverted.form input[type=date], .ui.inverted.form input[type=datetime-local], .ui.inverted.form input[type=email], .ui.inverted.form input[type=file], .ui.inverted.form input[type=number], .ui.inverted.form input[type=password], .ui.inverted.form input[type=search], .ui.inverted.form input[type=tel], .ui.inverted.form input[type=text], .ui.inverted.form input[type=time], .ui.inverted.form input[type=url] {
     background: black !important;
     color: white !important;
 }
-
+/*small stylistic adjustment for dropdowns which appear to have no inverted CSS*/
 .ui.selection.inverted.dropdown {
     background: dimgray !important;
 }
-
 .ui.inverted.dropdown .menu>.item {
     background: darkgray !important;
 }
