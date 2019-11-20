@@ -899,7 +899,162 @@
         
                             </tbody>
 
-                            <tfoot>
+                            <tfoot class="full-width editRecordingFooter" style="display: none;">
+
+                                <tr>
+
+                                    <th colspan="16">
+
+                                        <form class="ui editRecordingForm form">
+
+                                            <div class="three fields">
+                                                
+                                                <div class="field" style="display: none;">
+                                                
+                                                    <input type="text" name="hiddenRecordingId">
+                                                        
+                                                </div>
+
+                                                <div class="required field">
+                
+                                                    <label>Recording Name</label>
+                
+                                                    <input type="text" name="recordingName" placeholder="Enter unique recording name">
+                                                    
+                                                </div>
+                                                        
+                                                <div class="field">
+                                                
+                                                    <label>Recording Description</label>
+                                                
+                                                    <input type="text" name="recordingDescription" placeholder="Add a recording description">
+                                                
+                                                </div>
+                
+                                                <div class="field">
+                                                
+                                                    <label>Recording Author</label>
+                                                
+                                                    <input type="text" name="recordingAuthor" placeholder="Add an author">
+                                                
+                                                </div>
+                        
+                                            </div>
+
+                                            <div class="two fields">
+        
+                                                <div class="required field">
+                                                
+                                                    <label>For Test</label>
+                                                            
+                                                    <div class="ui fluid selection editRecording test dropdown">
+                                                                
+                                                        <input type="hidden" name="recordingTestId">
+                                                                
+                                                        <div class="default text">Select Test</div>
+                                                                
+                                                        <i class="dropdown icon"></i>
+                                                                
+                                                        <div class="menu"></div>
+                                                            
+                                                    </div>
+                                                            
+                                                </div>
+                        
+                                                <div class="required disabled field">
+                                                        
+                                                    <label>Test Start Url</label>
+                                                        
+                                                    <input type="text" name="recordingTestStartUrl" placeholder="Filled on test select">
+                                                        
+                                                </div>
+                        
+                                            </div>
+
+                                            <div class="two fields">
+        
+                                                <div class="required four wide field">
+                                                
+                                                    <label>For Device</label>
+                                                            
+                                                    <div class="inline fields">
+                                                            
+                                                        <div class="field">
+                
+                                                            <div class="ui radio device checkbox">
+                                                                
+                                                                <input type="radio" name="device" checked="checked" value="computer">
+                
+                                                                <label>Computer</label>
+                
+                                                            </div>
+                                                            
+                                                        </div>
+                                                            
+                                                        <div class="field">
+                                                            
+                                                            <div class="ui radio device checkbox">
+                                                                
+                                                                <input type="radio" name="device" value="mobile">
+                                                                
+                                                                <label>Mobile</label>
+                                                            
+                                                            </div>
+                                                            
+                                                        </div>
+                                                                
+                                                    </div>
+                                                            
+                                                </div>
+                                
+                                                <div class="disabled orientation field">
+                                                            
+                                                    <label>Device Orientation</label>
+                                                            
+                                                    <div class="inline fields">
+                                                            
+                                                        <div class="field">
+                                                                
+                                                            <div class="ui radio checkbox">
+                                                                
+                                                                <input type="radio" name="orientation" checked="checked" value="portrait">
+                                                                
+                                                                <label>Portrait</label>
+                                                                
+                                                            </div>
+                                                            
+                                                        </div>
+                                                            
+                                                        <div class="field">
+                                                                
+                                                            <div class="ui radio checkbox">
+                                                                
+                                                                <input type="radio" name="orientation" value="landscape">
+                                                                
+                                                                <label>Landscape</label>
+                                                                
+                                                            </div>
+                                                            
+                                                        </div>
+                                                                
+                                                    </div>
+                                                            
+                                                </div>
+                            
+                                            </div>
+
+                                            <div class="ui violet inverted submit button">Edit Recording</div>
+                                            <div class="ui error message"></div>
+                                            <div class="ui success message">
+                                                <div class="header">Recording Edited</div>
+                                                <p>Start replaying when ready</p>            
+                                            </div>
+
+                                        </form>
+                                        
+                                    </th>
+
+                                </tr>
 
                             </tfoot>
 
@@ -1087,7 +1242,11 @@
                                 
                                 <tbody></tbody>
 
-                                <tfoot></tfoot>
+                                <tfoot>
+
+
+
+                                </tfoot>
 
                             </table>
 

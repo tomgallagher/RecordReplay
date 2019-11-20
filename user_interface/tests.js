@@ -29,9 +29,9 @@ function addTestTableButtonListeners() {
         
         //find the test in the database by id, using data-test-id from the template
         const testKey = $(this).attr("data-test-id");
-        //the project key will be in string format - StorageUtils handles conversion
+        //the test key will be in string format - StorageUtils handles conversion
         StorageUtils.getSingleObjectFromDatabaseTable('tests.js', testKey, 'tests')
-            //then we have a returned js object with the project details
+            //then we have a returned js object with the test details
             .then(test => {
 
                 //fill the hidden form field with the test id number, so we can retrieve after validation has been passed
@@ -138,7 +138,7 @@ function updateTestsTable() {
                 testStorageArray[test].testPerformanceTimings == true ? additionalReportsArray.push('Performance Timings') : null;
                 testStorageArray[test].testResourceLoads == true ? additionalReportsArray.push('Resource Loads') : null;
                 testStorageArray[test].testScreenshot == true ? additionalReportsArray.push('Take Screenshot') : null;
-                testAdditionalReportingNode.textContent = additionalReportsArray.join(',');
+                testAdditionalReportingNode.textContent = additionalReportsArray.join(', ');
                 //tempNode child <button class="ui editTest button" data-test-id="0"></button> needs to have data-test-id set to the database id
                 let testEditButton = tempNode.querySelector('.ui.editTest.button');
                 testEditButton.setAttribute('data-test-id', `${testStorageArray[test].id}`);

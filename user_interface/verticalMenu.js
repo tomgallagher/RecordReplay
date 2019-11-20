@@ -91,7 +91,6 @@ $(document).ready (function(){
                 $('.ui.newProjectForm.form').removeClass('error');
                 break;
             case classArray.includes('savedTests'):
-                $('.ui.verticalTabMenu.savedTests.segment').css('display', 'block');
                 //make sure the tests table shows an updated account of the tests in storage, using function from tests.js which adds loading indicator
                 updateTestsTable();
                 //make sure the edit test project dropdown shows an updated account of the projects in storage, using function from tests.js
@@ -99,29 +98,47 @@ $(document).ready (function(){
                 //then reset the form to the point at which the page loaded, where it has neither a success nor an error state
                 $('.ui.editTestForm.form').removeClass('success');
                 $('.ui.editTestForm.form').removeClass('error');
+                //then hide the form in the footer of the table
+                $('.editTestFooter').css("display", "none");
+                //then we're finished and ready to show the segment
+                $('.ui.verticalTabMenu.savedTests.segment').css('display', 'block');
                 break;
             case classArray.includes('newTest'):
-                //show the form to create a new project
-                $('.ui.verticalTabMenu.newTest.segment').css('display', 'block');
                 //make sure the new test project dropdown shows an updated account of the projects in storage, using function from newTest.js
                 refreshNewTestProjectDropdown();
                 //then reset the form to the point at which the page loaded, where it has neither a success nor an error state
                 $('.ui.newTestForm.form').removeClass('success');
                 $('.ui.newTestForm.form').removeClass('error');
+                //show the form to create a new project
+                $('.ui.verticalTabMenu.newTest.segment').css('display', 'block');
                 break;
             case classArray.includes('savedRecordings'):
-                $('.ui.verticalTabMenu.savedRecordings.segment').css('display', 'block');
                 //make sure the recordings table shows an updated account of the tests in storage, using function from recordings.js which adds loading indicator
                 updateRecordingsTable();
+                //make sure the edit recording test dropdown shows an updated account of the tests in storage, using function from recordings.js
+                refreshEditRecordingTestDropdown()
+                //then reset the form to the point at which the page loaded, where it has neither a success nor an error state
+                $('.ui.editRecordingForm.form').removeClass('success');
+                $('.ui.editRecordingForm.form').removeClass('error');
+                //then hide the form in the footer of the table
+                $('.editRecordingFooter').css("display", "none");
+
+                //TODO - HIDE THE RECORDING EVENTS TABLE
+                
+                //then we're finished and ready to show the segment
+                $('.ui.verticalTabMenu.savedRecordings.segment').css('display', 'block');
                 break;
             case classArray.includes('newRecording'):
-                //show the form to create a new recording
-                $('.ui.verticalTabMenu.newRecording.segment').css('display', 'block');
                 //make sure the new recording test dropdwon shows an updated account of the tests in storage, using function from newRecording.js
                 refreshNewRecordingTestDropdown();
                 //then reset the form to the point at which the page loaded, with neither success or error
                 $('.ui.newRecordingForm.form').removeClass('success');
                 $('.ui.newRecordingForm.form').removeClass('error');
+
+                //TODO - HIDE THE RECORDING EVENTS TABLE
+
+                //show the form to create a new recording
+                $('.ui.verticalTabMenu.newRecording.segment').css('display', 'block');
                 break;
             case classArray.includes('savedReplays'):
                 $('.ui.verticalTabMenu.savedReplays.segment').css('display', 'block');
