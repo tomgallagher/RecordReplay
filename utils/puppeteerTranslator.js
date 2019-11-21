@@ -9,7 +9,7 @@ class Puppeteer {
             //internal defaults
             recordingTestUrl: "",
             recordingTestID: 0,
-            //puppeteer defaults
+            //messaging for code
             standardOpeningComment: "/*\n" 
             + "\t Your options for launching Puppeteer will depend upon your system setup and preferences. \n"
             + "\t The following code depends upon you having successfully launched Puppeteer with the reference 'browser'.\n"
@@ -20,6 +20,7 @@ class Puppeteer {
             + "\t As such it only contains ACTIONS, not ASSERTIONS.\n"
             + "\t If you want to have code with assertions included, you need to generate a replay of this recording and download the replay code.\n"
             + "*/\n\n",
+            //puppeteer defaults
             defaultMouseButton: "left",
             defaultClicks: 1,
             defaultNetworkOffline: false,
