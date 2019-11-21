@@ -8,15 +8,15 @@ class RecordingEvent {
             //general information applicable to all events
             recordingEventId: `recordingEvent#${(Math.floor(Math.random() * 90000) + 10000)}#${Date.now()}`,
             recordingEventOrigin: 'User',
-            recordingEventAction: '',
-            recordingEventActionType: '',
+            recordingEventAction: 'N/A',
+            recordingEventActionType: 'N/A',
             recordingEventHTMLElement: 'HTMLElement',
-            recordingEventHTMLTag: '',
-            recordingEventCssSelectorPath: '',
-            recordingEventCssDomPath: '',
-            recordingEventCssSimmerPath: '',
-            recordingEventXPath: '',
-            recordingEventLocation: '',
+            recordingEventHTMLTag: 'N/A',
+            recordingEventCssSelectorPath: 'N/A',
+            recordingEventCssDomPath: 'N/A',
+            recordingEventCssSimmerPath: 'N/A',
+            recordingEventXPath: 'N/A',
+            recordingEventLocation: 'N/A',
             recordingEventIsIframe: false,
             recordingEventCreated: Date.now(),
             recordingEventTimestamp: performance.now(),
@@ -30,10 +30,13 @@ class RecordingEvent {
             recordingEventShiftKey: false,
             recordingEventCtrlKey: false,
             //information specific to text select events
-            recordingEventTextSelectTextContent: "",
+            recordingEventTextSelectTextContent: 'N/A',
             recordingEventTextSelectTargetAsJSON: {},
             //information specific to hover events
-            recordingEventHoverTargetAsJSON: {}
+            recordingEventHoverTargetAsJSON: {},
+            //information specific to scroll events
+            recordingEventXPosition: 0,
+            recordingEventYPosition: 0
         };      
         
         // create a new object with the defaults over-ridden by the options passed in

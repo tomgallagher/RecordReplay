@@ -78,8 +78,8 @@ var EventRecorder = {
     
     //SELECT TEXT SELECT EVENTS FOR CONVERSION TO OBSERVABLEs
     attentionActionEventObservables: EventRecorderEvents.attentionEvents
-        //then we are interested in only certain types of select events
-        .filter(item => item == "selectstart" || item == "focus")
+        //then we are interested in only certain types of attention events
+        .filter(item => item == "selectstart" || item == "focus" || item == "scroll")
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(document, eventName)),
 
@@ -440,6 +440,34 @@ EventRecorder.startRecordingEvents = () => {
             return newEvent;
         });
     
+    //SCROLL EVENTS
+    EventRecorder.scrollObservable = Rx.Observable.merge(...EventRecorder.attentionActionEventObservables)
+        //then we are interested only in scroll events
+        .filter(event => event.type == "scroll")
+        //then for the time being we only want to record scroll events on the document element
+        .filter(event => event.target instanceof HTMLDocument)
+        //then we only want to get the last event after scrolling has stopped for 1 second
+        .debounceTime(1000)
+        //then we need to translate that event into something that can be repeated so we need the x and y co-ordinates and the given scrolling element
+        .map(actionEvent => {
+            const newEvent = new RecordingEvent({
+                //general properties
+                recordingEventAction: 'Scroll',
+                recordingEventHTMLElement: actionEvent.target.constructor.name,
+                recordingEventHTMLTag: actionEvent.target.scrollingElement.tagName,
+                recordingEventCssSelectorPath: EventRecorder.getCssSelectorPath(actionEvent.target.scrollingElement),
+                recordingEventCssDomPath: EventRecorder.getCssDomPath(actionEvent.target.scrollingElement),
+                recordingEventCssSimmerPath: EventRecorder.getCssSimmerPath(actionEvent.target.scrollingElement),
+                recordingEventXPath: EventRecorder.getXPath(actionEvent.target.scrollingElement),
+                recordingEventLocation: window.location.origin,
+                recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                //information specific to scroll events
+                recordingEventXPosition: Math.round(actionEvent.target.scrollingElement.scrollLeft),
+                recordingEventYPosition: Math.round(actionEvent.target.scrollingElement.scrollTop),
+            });
+            return newEvent;
+        });
+
     //combine all our observables into a single subscription
     Rx.Observable.merge(
         //handles all text selection
@@ -452,6 +480,8 @@ EventRecorder.startRecordingEvents = () => {
         EventRecorder.inputObservable,
         //handles all non-typing keyboard actions
         EventRecorder.keyboardObservable,
+        //handles all window scroll events
+        EventRecorder.scrollObservable
     //and log the output    
     ).subscribe(recordingEvent => console.log(recordingEvent));
 

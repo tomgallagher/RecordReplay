@@ -31,7 +31,7 @@ $(document).ready (function(){
                 }
                 break;
             case classArray.includes('emailIcon'):
-                const emailUrl = "mailto:turbobrowser.contact@gmail.com?Subject=Turbo Query";
+                const emailUrl = "mailto:turbobrowser.contact@gmail.com?Subject=Record/Replay Query";
                 chrome.tabs.create({ url: emailUrl }, function(tab) {
                     setTimeout(function() { chrome.tabs.remove(tab.id); }, 500);
                 });

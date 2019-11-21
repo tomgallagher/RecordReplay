@@ -38,50 +38,52 @@ class Puppeteer {
 
     //ACTIONS
 
-    openPage() { return `\t const page = await browser.newPage();` }
+    openPage() { return `\t const page = await browser.newPage(); \n` }
 
-    navigateToUrl(url) { return `\t await page.goto('${url}');` }
+    navigateToUrl(url) { return `\t await page.goto('${url}'); \n` }
 
     getTitle() { return `\t await page.title();` }
 
-    click(selector, button = this.defaultMouseButton, clicks = this.defaultClicks) { return `\t await page.click('${selector}', { button: '${button}', clickCount: ${clicks} } ); `}
+    click(selector, button = this.defaultMouseButton, clicks = this.defaultClicks) { return `\t await page.click('${selector}', { button: '${button}', clickCount: ${clicks} } ); \n`}
 
     //NOTE YOU MUST ALWAYS FOCUS BEFORE YOU TYPE
-    typeText(text) { `\t await page.keyboard.type('${text}');` }
+    typeText(text) { `\t await page.keyboard.type('${text}'); \n` }
 
-    sendSpecialKey(keyDescriptor) { `\t await page.keyboard.press('${keyDescriptor}');` }
+    sendSpecialKey(keyDescriptor) { `\t await page.keyboard.press('${keyDescriptor}'); \n` }
 
-    focus(selector) { return `\t await page.focus('${selector}');` }
+    scrollTo(xPosition, yPosition) { `\t await page.evaluate( () => { window.scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' }); }); \n` }
 
-    hover(selector) { return `\t await page.hover('${selector}');` }
+    focus(selector) { return `\t await page.focus('${selector}'); \n` }
 
-    returnScreenshot() { return `\t await page.screenshot({path: 'screenshot.png'});` }
+    hover(selector) { return `\t await page.hover('${selector}'); \n` }
 
-    closePage() { return `\t const page = await page.close();` }
+    returnScreenshot() { return `\t await page.screenshot({path: 'screenshot.png'}); \n` }
+
+    closePage() { return `\t const page = await page.close(); \n` }
 
     //SETTINGS special devtools queries - mobile view, bandwidth, latency
 
-    connectToChromeDevtools() { return `\t const client  = await page.target().createCDPSession();` }
+    connectToChromeDevtools() { return `\t const client  = await page.target().createCDPSession(); \n` }
 
     emulateNetworkConditions(offline = this.defaultNetworkOffline, download = this.defaultNetworkDownload, upload = this.defaultNetworkUpload, latency = this.defaultLatency) {
 
-        return `\t await client.send('Network.emulateNetworkConditions', { offline': ${offline}, 'downloadThroughput': ${download}, 'uploadThroughput': ${upload}, 'latency': ${latency} });`;
+        return `\t await client.send('Network.emulateNetworkConditions', { offline': ${offline}, 'downloadThroughput': ${download}, 'uploadThroughput': ${upload}, 'latency': ${latency} }); \n`;
 
     }
 
     //ASSERTIONS HELPERS
 
-    querySelector(selector) { return `\t await page.$('${selector}');` }
+    querySelector(selector) { return `\t await page.$('${selector}'); \n` }
 
     querySelectorAll(selector) { return `\t await page.$$('${selector}');` }
 
-    countElements(selector, index) { return `\t const count${index} = await page.$$eval('${selector}', elements => elements.length);` }
+    countElements(selector, index) { return `\t const count${index} = await page.$$eval('${selector}', elements => elements.length); \n` }
 
-    getElementProperty(selector, property, index) { return `\t const ${property}Property${index} = await page.$eval('${selector}', element => element.${property});` }
+    getElementProperty(selector, property, index) { return `\t const ${property}Property${index} = await page.$eval('${selector}', element => element.${property}); \n` }
 
-    getElementAttribute(selector, attribute, index) { return `\t const ${attribute}Attribute${index} = await page.$eval('${selector}', element => element.getAttribute('${attribute}');` }
+    getElementAttribute(selector, attribute, index) { return `\t const ${attribute}Attribute${index} = await page.$eval('${selector}', element => element.getAttribute('${attribute}'); \n` }
 
-    getElementAttributesAsArray(selector, index) { return `\t const attributesArray${index} = await page.$eval('${selector}', element => Array.prototype.slice.call(element.attributes);` }
+    getElementAttributesAsArray(selector, index) { return `\t const attributesArray${index} = await page.$eval('${selector}', element => Array.prototype.slice.call(element.attributes); \n` }
 
   
 }
