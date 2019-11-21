@@ -24,9 +24,16 @@ class RecordingEvent {
             //information specific to input events
             recordingEventInputType: 'N/A',
             recordingEventInputValue: 'N/A',
+            //information specific to keyboard events
+            recordingEventKeyCode: 0,
+            recordingEventAltKey: false,
+            recordingEventShiftKey: false,
+            recordingEventCtrlKey: false,
             //information specific to text select events
             recordingEventTextSelectTextContent: "",
-            recordingEventTextSelectTargetAsJSON: {}
+            recordingEventTextSelectTargetAsJSON: {},
+            //information specific to hover events
+            recordingEventHoverTargetAsJSON: {}
         };      
         
         // create a new object with the defaults over-ridden by the options passed in

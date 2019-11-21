@@ -1060,9 +1060,72 @@
 
                         </table>
 
+                        <div class="ui fluid editRecording container" style="display: none;">
+
+                            <div class="ui top attached recording tabular menu">
+                                
+                                <div class="active item" data-tab="events">Events</div>
+                                <div class="item" data-tab="code">Code</div>
+                              
+                            </div>
+                              
+                            <div class="ui bottom attached active tab segment" data-tab="events">
+                                
+                                <table class="ui violet small single line center aligned compact editRecordingEventsTable table">
+                        
+                                    <thead>
+                                                
+                                        <tr> 
+                                            <th>Origin</th>
+                                            <th>Action</th>
+                                            <th>Element</th>
+                                            <th>Tag</th>
+                                            <th>Input</th>
+                                            <th>Value</th>
+                                            <th>Location</th>
+                                            <th>Recorded</th>
+                                            <th>Action</th>
+                                        </tr>
+                                                
+                                    </thead>
+                                        
+                                    <tbody></tbody>
+        
+                                    <tfoot></tfoot>
+        
+                                </table>
+                              
+                            </div>
+
+                            <div class="ui bottom attached tab segment" data-tab="code">
+                                
+                                <div class="ui code form">
+                                    
+                                    <div class="field">
+                                        
+                                        <button class="ui right floated mini violet inverted icon button" data-tooltip="Copy to clipboard" data-position="left center" style="margin-bottom: 5px;">
+
+                                            <i class="copy outline icon"></i>
+        
+                                        </button>
+
+                                        <label>Javascript for Jest / Puppeteer</label>
+                                                         
+                                        <textarea class="codeOutputTextArea"></textarea>
+                                    
+                                    </div>
+                                    
+                                    <div class="ui violet inverted submit button">Download</div>
+
+                                </div>
+                              
+                            </div>
+
+                        </div>
+
                     </div>
                         
-                    <div class="ui newRecording verticalTabMenu segment" style="display: none; ">
+                    <div class="ui newRecording verticalTabMenu segment" style="display: none;">
 
                         <form class="ui newRecordingForm form">
 
@@ -1244,8 +1307,6 @@
 
                                 <tfoot>
 
-
-
                                 </tfoot>
 
                             </table>
@@ -1312,8 +1373,9 @@
                                     
                                     <i class="angle right icon"></i>
 
-                                    When <strong>recording</strong> is in progress, try to restrict clicks to the actual actions you want to follow, so <strong>every click has meaning</strong>. 
-                                    Otherwise you will find yourself having to edit out a large number of spurious clicks from each recording. Sounds simple but is actually quite hard!  
+                                    When <strong>recording</strong> is in progress, the mouse 'hover' event is fired after hovering over an element for <strong>more than three seconds</strong>.
+                                    This may be longer than you'd expect, so try counting slowly to three. Or quickly to five. Or something. Don't worry if you collect too many 
+                                    hover events, you can delete them from your recording and it will become second nature.  
                               
                                 </div>
                             
@@ -1400,10 +1462,22 @@
                             <td data-label="recordingTestStartUrl" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">/td>
                             <td data-label="recordingAdditionalReporting"></td>
                             <td data-label="recordingButtons" class="center aligned">
-                                <div class="ui mini compact buttons">
-                                    <button class="ui editRecording button" data-recording-id="0">Edit</button>
-                                    <div class="or"></div>
-                                    <button class="ui deleteRecording negative button" data-recording-id="0" data-tooltip="To delete recording and all replays" data-position="left center">Delete</button>
+                                <div class="ui mini divided horizontal list">
+                                    <div class="item">
+                                        <div class="content">
+                                            <a class="showRecordingLink" data-recording-id="0">Show</a>
+                                        </div>    
+                                    </div>
+                                    <div class="item">
+                                        <div class="content">
+                                            <a class="editRecordingLink" data-recording-id="0">Edit</a>
+                                        </div>    
+                                    </div>
+                                    <div class="item">
+                                        <div class="content" >
+                                            <a class="deleteRecordingLink" data-recording-id="0" style="color: red">Delete</a>
+                                        </div>    
+                                    </div>
                                 </div>
                             </td>
                         </tr>   
@@ -1426,8 +1500,8 @@
                             <td data-field="recordingEventAction" class="center aligned">
                                 <div class="ui mini divided horizontal list">
                                     <div class="item">
-                                        <div class="disabled content">
-                                            <a class="moveRecordingEventRow" data-recording-event-id="0">Move</a>
+                                        <div class="content">
+                                            <a class="moveRecordingEventRow" data-recording-event-id="0">Show</a>
                                         </div>    
                                     </div>
                                     <div class="item">

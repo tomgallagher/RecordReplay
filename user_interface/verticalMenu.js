@@ -122,9 +122,8 @@ $(document).ready (function(){
                 $('.ui.editRecordingForm.form').removeClass('error');
                 //then hide the form in the footer of the table
                 $('.editRecordingFooter').css("display", "none");
-
-                //TODO - HIDE THE RECORDING EVENTS TABLE
-                
+                //and hide the section with the events and the code
+                $('.ui.fluid.editRecording.container').css('display', 'none');
                 //then we're finished and ready to show the segment
                 $('.ui.verticalTabMenu.savedRecordings.segment').css('display', 'block');
                 break;
@@ -134,9 +133,8 @@ $(document).ready (function(){
                 //then reset the form to the point at which the page loaded, with neither success or error
                 $('.ui.newRecordingForm.form').removeClass('success');
                 $('.ui.newRecordingForm.form').removeClass('error');
-
-                //TODO - HIDE THE RECORDING EVENTS TABLE
-
+                //and hide the recording events table
+                $('.ui.center.aligned.recordingEvents.segment').css('display', 'none');
                 //show the form to create a new recording
                 $('.ui.verticalTabMenu.newRecording.segment').css('display', 'block');
                 break;

@@ -67,7 +67,7 @@ function addTestTableButtonListeners() {
 
     });
 
-    //delete project button click handler
+    //delete test button click handler
     $('.ui.deleteTest.button').on('mousedown', function(){
         
         //delete the test in the database, using data-test-id from the template
@@ -145,6 +145,7 @@ function updateTestsTable() {
                 //tempNode child <button class="ui deleteTest negative button" data-test-id="0" data-tooltip="To delete test and all associated recordings and replays"></button> needs to have data-test-id set to the database id
                 let testDeleteButton = tempNode.querySelector('.ui.deleteTest.button');
                 testDeleteButton.setAttribute('data-test-id', `${testStorageArray[test].id}`);
+                
                 //then we need to attach the clone of the template node to our container fragment
                 docFrag.appendChild(tempNode);
 
@@ -251,7 +252,7 @@ $(document).ready (function(){
                 StorageUtils.updateModelObjectInDatabaseTable('tests.js', fields.hiddenTestId, editedTest, 'tests')
                     //then we have nothing returned so we just make the adjustments
                     .then( () => {
-                        //remove the loading indicator from the button, to indicate saving of the project to the database complete
+                        //remove the loading indicator from the button, to indicate saving of the test to the database complete
                         $('.ui.editTestForm ui.submit.button').removeClass('loading');
                         //then redraw the table
                         updateTestsTable();

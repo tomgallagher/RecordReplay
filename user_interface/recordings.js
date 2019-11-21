@@ -24,10 +24,32 @@ function refreshEditRecordingTestDropdown() {
 
 function addRecordingTableButtonListeners() {
 
-    //edit test button click handler
-    $('.ui.editRecording.button:not(submit)').on('mousedown', function(){
+    //edit recording button click handler
+    $('.showRecordingLink').on('mousedown', function(){
+        //find the recording in the database by id, using data-recording-id from the template
+        const recordingKey = $(this).attr("data-recording-id");
+        //the recording key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', recordingKey, 'recordings')
+            //then we have a returned js object with the recording details
+            .then(recording => {
+                //show the section that has the table in one tab and the code in another tab
+                $('.ui.fluid.editRecording.container').css('display', 'block');
+                //add the loading indicator to the table section
+                $('.ui.fluid.editRecording.container .ui.bottom.attached.active.tab.segment ').addClass('loading');
+                //then update the edit recording events table
+                updateRecordingEventsTableAndCodeText(recording);
+                //then remove the loading indicator
+                $('.ui.fluid.editRecording.container .ui.bottom.attached.active.tab.segment ').removeClass('loading');
+            })
+            //the get single object function will reject if object is not in database
+            .catch(error => console.error(error));   
+
+    });
+
+    //edit recording button click handler
+    $('.editRecordingLink').on('mousedown', function(){
         
-        //find the test in the database by id, using data-test-id from the template
+        //find the recording in the database by id, using data-recording-id from the template
         const recordingKey = $(this).attr("data-recording-id");
         //the recording key will be in string format - StorageUtils handles conversion
         StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', recordingKey, 'recordings')
@@ -58,20 +80,29 @@ function addRecordingTableButtonListeners() {
                 $('.ui.editRecordingForm.form').removeClass('success');
                 //clear any error state from the form
                 $('.ui.editRecordingForm.form').removeClass('error');
-
-                //TODO show the table for the recording events so it can be edited
-                //if (recording.recordingEventArray.length > 0) {
-
-                    
-
-                //}
-
                 //show the form
                 $('.editRecordingFooter').css("display", "table-footer-group");
 
             })
             //the get single object function will reject if object is not in database
             .catch(error => console.error(error));   
+
+    });
+
+    //delete recording button click handler
+    $('.deleteRecordingLink').on('mousedown', function(){
+        
+        //delete the test in the database, using data-test-id from the template
+        const recordingKey = $(this).attr("data-recording-id");
+        //the test key will be in string format - StorageUtils handles conversion
+        StorageUtils.deleteModelObjectInDatabaseTable('recordings.js', recordingKey, 'recordings')
+            //then we have nothing returned
+            .then( () => {
+                //then redraw the table
+                updateRecordingsTable();
+            })
+            //the delete single object function will reject if object is not in database
+            .catch( () => console.error(`Error Deleting Recording ${recordingKey}`));
 
     });
 
@@ -119,10 +150,12 @@ function updateRecordingsTable() {
                 recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push(recordingStorageArray[recording].recordingMobileOrientation) : null;
                 recordingAdditionalReportingNode.textContent = additionalReportsArray.join(', ');
 
-                let recordingEditButton = tempNode.querySelector('.ui.editRecording.button');
-                recordingEditButton.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
-                let recordingDeleteButton = tempNode.querySelector('.ui.deleteRecording.button');
-                recordingDeleteButton.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
+                let recordingShowLink = tempNode.querySelector('.showRecordingLink');
+                recordingShowLink.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
+                let recordingEditLink = tempNode.querySelector('.editRecordingLink');
+                recordingEditLink.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
+                let recordingDeleteLink = tempNode.querySelector('.deleteRecordingLink');
+                recordingDeleteLink.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
                 //then we need to attach the clone of the template node to our container fragment
                 docFrag.appendChild(tempNode);
             
@@ -142,7 +175,19 @@ function updateRecordingsTable() {
 
 }
 
+function updateRecordingEventsTableAndCodeText(recording) {
+
+    //TO DO this gets the templates for recording event row and populates the table
+
+    //TO DO this also create the code for Jest / Puppeteer
+
+
+}
+
 $(document).ready (function(){
+
+    //activate the tab control
+    $('.ui.top.attached.recording.tabular.menu .item').tab();
 
     $('.ui.editRecordingForm.form')
         .form({
@@ -174,8 +219,30 @@ $(document).ready (function(){
                 $('.ui.editRecordingForm .ui.submit.button').addClass('loading');
                 //just keep track of field names - they must be the same as model attributes when we create a new class object
                 console.log(fields);
-
-                $('.ui.editRecordingForm .ui.submit.button').removeClass('loading');
+                //lets create an object that has fields compatible with database, remember the creation of a new recording will remove any keys that are not acceptable
+                const adaptedFields = Object.assign({}, fields, { recordingIsMobile: fields.device == "mobile" ? true : false, recordingMobileOrientation: fields.orientation });
+                //as we have lots of fields in a recording that are not displayed in the form, we need to get the recording from local storage, using the hidden field id
+                StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', fields.hiddenRecordingId, 'recordings')
+                    //then map the object into a new object with the updated fields
+                    .then(oldRecording => {
+                        //this returns an amalgamated object to the following storage promise
+                        return Object.assign({}, oldRecording, adaptedFields);
+                    })
+                    //then send the edited recording to the database for updating our recordings
+                    .then(editedRecording => StorageUtils.updateModelObjectInDatabaseTable('recordings.js', fields.hiddenRecordingId, editedRecording, 'recordings') )
+                    //then do all the user interface stuff that needs doing
+                    .then(() => {
+                        //remove the loading indicator from the button, to indicate saving of the recording to the database complete
+                        $('.ui.editRecordingForm .ui.submit.button').removeClass('loading');
+                        //then redraw the table
+                        updateRecordingsTable();
+                        //clear the edit test form
+                        $('.ui.editRecordingForm.form').form('clear');
+                        //hide the edit test form container
+                        $('.editRecordingFooter').css("display", "none");
+                    })
+                    .catch( () => console.error(`Error Updating Recording ${fields.hiddenRecordingId}`));
+                
             }
 
         });

@@ -374,7 +374,9 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventCssSimmerPath: mouseLocatorEvent.eventCssSimmerPath,
                 recordingEventXPath: mouseLocatorEvent.eventXPath,
                 recordingEventLocation: window.location.origin,
-                recordingEventIsIframe: EventRecorder.contextIsIframe()
+                recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                //information specific to text select events
+                recordingEventHoverTargetAsJSON: EventRecorder.domToJSON(mouseLocatorEvent.eventTarget)
             });
             return newEvent;
         });
@@ -409,6 +411,8 @@ EventRecorder.startRecordingEvents = () => {
     EventRecorder.keyboardObservable = Rx.Observable.merge(...EventRecorder.keyBoardActionEventObservables)
         //then we only want the keyup event - we have chosen this as we want keyboard enter and tab events after any input events have registered, which happens on keydown
         .filter(event => event.type == "keyup")
+        //then we want to make sure that we do not get the modifier keys - the state of 
+        .filter(event => event.key == "Shift" || event.key == "Alt" || event.key == "Control")
         //this ensures that we only get keyboard events that are not typing events - we are assuming here that all typing input events are handled by input collectors
         .filter(event => EventRecorder.keyCodeDictionary[event.keyCode].value == null)
         //then we want to get the current focus event locator, starting with an empty object so we can test to see if focus event has emitted
@@ -428,7 +432,10 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 //information specific to keyboard events
-                
+                recordingEventKeyCode: actionEvent.keyCode,
+                recordingEventAltKey: actionEvent.altKey,
+                recordingEventShiftKey: actionEvent.shiftKey,
+                recordingEventCtrlKey: actionEvent.ctrlKey
             });
             return newEvent;
         });
