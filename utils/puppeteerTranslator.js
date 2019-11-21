@@ -14,7 +14,12 @@ class Puppeteer {
             + "\t Your options for launching Puppeteer will depend upon your system setup and preferences. \n"
             + "\t The following code depends upon you having successfully launched Puppeteer with the reference 'browser'.\n"
             + "\t Don't forget to call 'browser.close()' at the end of your tests.\n"
-            + "*/\n",
+            + "*/\n\n",
+            standardRecordingComment: "/*\n" 
+            + "\t This is code generated from a RECORDING. \n"
+            + "\t As such it only contains ACTIONS, not ASSERTIONS.\n"
+            + "\t If you want to have code with assertions included, you need to generate a replay of this recording and download the replay code.\n"
+            + "*/\n\n",
             defaultMouseButton: "left",
             defaultClicks: 1,
             defaultNetworkOffline: false,
