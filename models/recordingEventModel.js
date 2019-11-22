@@ -20,6 +20,7 @@ class RecordingEvent {
             recordingEventIsIframe: false,
             recordingEventCreated: Date.now(),
             recordingEventTimestamp: performance.now(),
+            recordingTimeSincePrevious: 0,
             recordingEventEdited: 0,
             //information specific to input events
             recordingEventInputType: 'N/A',

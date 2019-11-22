@@ -201,7 +201,8 @@ var EventRecorder = {
     contextIsIframe: () => { 
         try { return window.self !== window.top; } 
         catch (e) { return true; } 
-    }
+    },
+    contextIsContentScript: () => { return typeof chrome.runtime.getManifest != 'undefined' }
     
 }
 
@@ -482,8 +483,23 @@ EventRecorder.startRecordingEvents = () => {
         EventRecorder.keyboardObservable,
         //handles all window scroll events
         EventRecorder.scrollObservable
-    //and log the output    
-    ).subscribe(recordingEvent => console.log(recordingEvent));
+      
+    )
+    //and we need to start with a dummy marker so we can operate with only one emission, this must come before pairwise() to create the first pair
+    .startWith(new RecordingEvent({recordingEventOrigin: 'PairwiseStart'}))
+    //then we need to get the time between each emission so we take two emissions at a time
+    .pairwise()
+    //this then delivers an array with the previous and the current, we only need the current, with adjusted recordingTimeSincePrevious
+    .map(([previousRecording, currentRecording]) => {
+        //if the previous was not the dummy 'PairwiseStart', then we need to add the relative time of the recording event so we can exactly reproduce timing steps with delays
+        //if it is then the time will be 0, with zero delay, which is what we want
+        //this can be actioned in the replay mode via .concatMap(event => Rx.Observable.of(event).delay(event.recordingTimeSincePrevious))
+        previousRecording.recordingEventOrigin != 'PairwiseStart' ? currentRecording.recordingTimeSincePrevious = currentRecording.recordingEventCreated - previousRecording.recordingEventCreated : null;
+        //then we just need to return the current recording as we don't care about the dummy or the previous
+        return currentRecording;
+    })
+    //and log the output  
+    .subscribe(recordingEvent => console.log(recordingEvent.constructor.name));
 
 }
 
@@ -496,8 +512,8 @@ switch(true) {
         console.log(`%cEvent Recorder activated in iframe with origin ${window.origin}`, 'color: green');
         EventRecorder.startRecordingEvents();
         break;
-    case typeof chrome.runtime.getManifest != 'undefined':
-        console.log(`%cEvent Recorder activated in main frame with origin ${window.origin}`, 'color: blue');
+    case EventRecorder.contextIsContentScript():
+        console.log(`%cEvent Recorder activated via Content Script in main frame with origin ${window.origin}`, 'color: blue');
         EventRecorder.startRecordingEvents();
         break;
     default:
