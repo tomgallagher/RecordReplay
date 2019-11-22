@@ -130,8 +130,6 @@ $(document).ready (function(){
             case classArray.includes('newRecording'):
                 //make sure the new recording test dropdwon shows an updated account of the tests in storage, using function from newRecording.js
                 refreshNewRecordingTestDropdown();
-                //then we need to add the start recording handler
-                addStartRecordingHandler()
                 //then reset the form to the point at which the page loaded, with neither success or error
                 $('.ui.newRecordingForm.form').removeClass('success');
                 $('.ui.newRecordingForm.form').removeClass('error');

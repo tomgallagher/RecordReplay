@@ -86,6 +86,8 @@ function addStartRecordingHandler() {
             () => {  
                 //hide the recording loader
                 $('.ui.text.small.recording.loader').removeClass('active');
+                //then we need to add the start recording handler again
+                addStartRecordingHandler();
             }
         );
 
@@ -126,6 +128,9 @@ function refreshNewRecordingTestDropdown() {
 
 
 $(document).ready (function(){
+
+    //then we need to add the start recording handler
+    addStartRecordingHandler();
 
     //just need a simple handler for the check box to state computer or mobile emulation
     $('.ui.newRecordingForm.form .ui.radio.device.checkbox').change(function(event){
