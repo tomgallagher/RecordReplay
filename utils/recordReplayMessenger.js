@@ -8,7 +8,7 @@ class RecordReplayMessenger {
             //all recording messengers must be initialised to create the incoming message observable that can be subscribed
             incomingMessageObservable: null,
             //then we say the kind of message constructor we are interested in
-            constructorFilter: "N/A",
+            messageFilter: "N/A",
             //all messengers need the ability to detect if they are in an iframe
             contextIsIframe: () => { 
                 try { return window.self !== window.top; } 
@@ -30,7 +30,8 @@ class RecordReplayMessenger {
         //then initialise
         this.initialise();
         //then report
-        this.logWithContext(`Record/Replay Messenger created in with origin ${window.origin}`);
+        this.logWithContext(`Record/Replay Messenger created in ${this.contextIsIframe() ? 'Iframe' : 'ContentScript' } with origin ${window.origin}`);
+        console.log(this);
 
     }
 
@@ -48,9 +49,7 @@ class RecordReplayMessenger {
                     window.removeEventListener(handler);
                     this.logWithContext(`Record/Replay Messenger: UNSUBSCRIBED from Window Messaging Observer Instance`);
                 }
-            )
-            //we want to filter the messages so we only receive recording events
-            .filter(item => item.constructor.name == this.constructorFilter);
+            );
             //TO DO
             //REPLAYS IN IFRAME WILL NEED TO RESPOND TO INCOMING WINDOW POST MESSAGE EVENTS 
             
@@ -73,10 +72,10 @@ class RecordReplayMessenger {
                     chrome.runtime.onMessage.removeListener(wrapper);
                 }
             )
-            //this is just to test the output
+            // DELETE AFTER TESTING - this is just to test the output with the recording event subscriber
             .startWith({ async: {}, request: {recordingEvent: new RecordingEvent({})}, sender: {}, sendResponse: {} })
             //we want to filter the messages so we only receive recording events
-            //.filter(item => item.request.recordingEvent.constructor.name == this.constructorFilter);
+            .do(messageObject => console.log(messageObject))
 
         }
 
@@ -87,7 +86,7 @@ class RecordReplayMessenger {
             window.parent.postMessage(message, "*");
         } else {
             //this message is only sent from extension user interface to the background script to open recording tab so we need only one variety
-            chrome.runtime.sendMessage(message, response => this.logWithContext(`Record/Replay Messenger: received: ${response.message}`));
+            chrome.runtime.sendMessage(message, response => this.logWithContext(`Record/Replay Messenger: Received Response Message: ${response.message}`));
         }
     }
 

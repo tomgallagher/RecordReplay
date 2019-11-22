@@ -6,6 +6,7 @@ function BackgroundMessageListener(request, sender, sendResponse) {
     switch (true) {
         case request.hasOwnProperty('newRecording'):
             console.log(`Starting new recording tab for Recording ${request.newRecording.id}`);
+            sendResponse({message: "BackgroundJs Processing New Recording Request"});
             return true;
         default:
             console.log(`Unrecognised request from ${JSON.stringify(sender)}`);
