@@ -32,7 +32,7 @@ function addNewRecordingEventToTable(recordingEvent, table) {
     recordingEventLocationNode.textContent = recordingEvent.recordingEventLocation;
     //<td data-field="recordingEventCreated">Some time</td>
     let recordingEventCreatedNode = tempNode.querySelector('td[data-label="recordingEventCreated"]');
-    recordingEventCreatedNode.textContent = recordingEvent.recordingTimeSincePrevious == 0 ? new Date(recordingEvent.recordingEventCreated).toLocaleString() : `${Math.ceil(recordingEvent.recordingTimeSincePrevious / 1000)} seconds later`
+    recordingEventCreatedNode.textContent = recordingEvent.recordingTimeSincePrevious == 0 ? new Date(recordingEvent.recordingEventCreated).toLocaleString() : `+ ${Math.ceil(recordingEvent.recordingTimeSincePrevious / 1000)} sec`
 
     let recordingEventShowLink = tempNode.querySelector('.showRecordingEventRow');
     recordingEventShowLink.setAttribute('data-recording-event-id', `${recordingEvent.recordingEventId}`);
@@ -62,18 +62,17 @@ function addStartRecordingHandler() {
         })
         //map the event to the recording that has started by querying storage using the data id from the button
         .flatMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('newRecording.js', event.target.getAttribute('data-recording-id') , 'recordings')))
-        
-        //TO DO we need to instruct background script to start the tab with the recording 
-        
+        //we need to instruct background script to start the tab with the recording 
+        .do(recording => new RecordReplayMessenger({}).sendMessage({newRecording: recording}))
         //then we create a recording messenger that updates its active recording each time there is a message emitted
         .switchMap( () =>
             //then we need to start receiving recording events sent here by the content script, either originating in the content script or relayed from window.postMessage iframe
             new RecordReplayMessenger({constructorFilter: 'RecordingEvent'}).incomingMessageObservable,
             //then use the projection function to tie the two together
-            (recording, recordingEvent) => {
+            (recording, messageObject) => {
                 //add the recording event to the table
-                addNewRecordingEventToTable(recordingEvent, document.querySelector('.ui.celled.striped.newRecordingRecordingEventsTable.table tbody'))
-                recording.recordingEventArray.push(recordingEvent);
+                addNewRecordingEventToTable(messageObject.request.recordingEvent, document.querySelector('.ui.celled.striped.newRecordingRecordingEventsTable.table tbody'))
+                recording.recordingEventArray.push(messageObject.request.recordingEvent);
                 return recording;
             }
         )
@@ -86,6 +85,7 @@ function addStartRecordingHandler() {
             () => {  
                 //hide the recording loader
                 $('.ui.text.small.recording.loader').removeClass('active');
+                //TO DO send message to close the recording tab
                 //then we need to add the start recording handler again
                 addStartRecordingHandler();
             }

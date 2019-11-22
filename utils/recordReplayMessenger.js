@@ -74,9 +74,9 @@ class RecordReplayMessenger {
                 }
             )
             //this is just to test the output
-            .startWith(new RecordingEvent({}))
+            .startWith({ async: {}, request: {recordingEvent: new RecordingEvent({})}, sender: {}, sendResponse: {} })
             //we want to filter the messages so we only receive recording events
-            .filter(item => item.constructor.name == this.constructorFilter);
+            //.filter(item => item.request.recordingEvent.constructor.name == this.constructorFilter);
 
         }
 

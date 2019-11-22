@@ -92,6 +92,10 @@ function addRecordingTableButtonListeners() {
     //delete recording button click handler
     $('.deleteRecordingLink').on('mousedown', function(){
         
+        //close the edit recording form if it's open
+        $('.editRecordingFooter').css("display", "none");
+        //close the show recording / edit recording recordingEvents table
+        $('.ui.fluid.editRecording.container').css('display', 'none');
         //delete the test in the database, using data-test-id from the template
         const recordingKey = $(this).attr("data-recording-id");
         //the test key will be in string format - StorageUtils handles conversion
@@ -177,7 +181,14 @@ function updateRecordingsTable() {
 
 function updateRecordingEventsTableAndCodeText(recording) {
 
-    //TO DO this gets the templates for recording event row and populates the table
+    //gets the templates for recording event row and populates the table
+    const table = document.querySelector('.ui.celled.striped.editRecordingRecordingEventsTable.table tbody')
+    //then for each recordingEvent we need to add it to the table
+
+    for (let recordingEvent in recording.recordingEventArray) { 
+        //then borrow the function from newRecording.js
+        addNewRecordingEventToTable(recordingEvent, table);
+    }
 
     //TO DO this also create the code for Jest / Puppeteer
 
