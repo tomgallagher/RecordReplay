@@ -58,7 +58,7 @@ StorageUtils.addModelObjectToDatabaseTable = function(caller, object, table) {
             .then(id => {
                 //helps us to keep track of which operations have been performed and when
                 console.log(`Storage has saved new model object with id ${id} to table ${table} for ${caller}`);
-                resolve();
+                resolve(id);
             });
             
     });

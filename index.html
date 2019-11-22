@@ -13,7 +13,7 @@
         <script src="third_party/semantic.min.js"></script>
         <script src="third_party/fontawesome-all.min.js"></script>
         <script src="utils/storage.js"></script>
-        <script src="utils/messenger.js"></script>
+        <script src="utils/recordReplayMessenger.js"></script>
         <script src="models/projectModel.js"></script>
         <script src="models/testModel.js"></script>
         <script src="models/recordingModel.js"></script>
@@ -1072,7 +1072,7 @@
                               
                             <div class="ui bottom attached active tab segment" data-tab="events">
                                 
-                                <table class="ui small violet celled striped single line center aligned compact editRecordingEventsTable table">
+                                <table class="ui small violet celled striped single line center aligned compact editRecordingRecordingEventsTable table">
                         
                                     <thead>
                                                 
@@ -1190,10 +1190,10 @@
 
                             <div class="two fields">
         
-                                <div class="required four wide field">
+                                <div class="four wide required field">
                                 
                                     <label>For Device</label>
-                                            
+                                    
                                     <div class="inline fields">
                                             
                                         <div class="field">
@@ -1232,7 +1232,7 @@
                                             
                                         <div class="field">
                                               
-                                            <div class="ui radio checkbox">
+                                            <div class="ui radio orientation checkbox">
                                                 
                                                 <input type="radio" name="orientation" checked="checked" value="portrait">
                                                 
@@ -1244,7 +1244,7 @@
                                             
                                         <div class="field">
                                               
-                                            <div class="ui radio checkbox">
+                                            <div class="ui radio orientation checkbox">
                                                 
                                                 <input type="radio" name="orientation" value="landscape">
                                                 
@@ -1260,13 +1260,22 @@
             
                             </div>
                             
-                            <div class="ui violet inverted submit button">Create Recording</div>
-                            <div class="ui error message"></div>
-                            <div class="ui success message">
-                                <div class="header">New Recording Created</div>
-                                <p>Start recording when ready</p>            
+                            <div class="ui stackable four column grid">
+                                
+                                <div class="column">
+                                    <div class="ui violet inverted submit button">Create Recording</div>
+                                </div>
+                                
+                                <div class="column">
+                                    <div class="ui mini attached error message"></div>
+                                    <div class="ui mini attached success message">
+                                        <div class="header">New Recording Created</div>
+                                        <p>Start recording when ready</p>            
+                                    </div>
+                                </div>
+                                
                             </div>
-        
+                    
                         </form>
 
                         <div class="ui center aligned recordingEvents segment" style="overflow-x: auto; display: none">
@@ -1286,7 +1295,7 @@
                                 Recording Events
                             </h3>
 
-                            <table class="ui small violet celled striped single line center aligned compact newRecordingEventsTable table">
+                            <table class="ui small violet celled striped single line center aligned compact newRecordingRecordingEventsTable table">
                             
                                 <thead>
                                         
@@ -1490,19 +1499,19 @@
                 <table>
                     <tbody>
                         <tr>
-                            <td data-field="recordingEventOrigin">User</td>
-                            <td data-field="recordingEventAction">Click</td>
-                            <td data-field="recordingEventHTMLElement">HTMLElement</td>
-                            <td data-field="recordingEventHTMLTag">BUTTON</td>
-                            <td data-field="recordingEventInputType">N/A</td>
-                            <td data-field="recordingEventInputValue" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">N/A</td>
-                            <td data-field="recordingEventLocation" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
-                            <td data-field="recordingEventCreated">Some time</td>
-                            <td data-field="recordingEventAction" class="center aligned">
+                            <td data-label="recordingEventOrigin">User</td>
+                            <td data-label="recordingEventAction">Click</td>
+                            <td data-label="recordingEventHTMLElement">HTMLElement</td>
+                            <td data-label="recordingEventHTMLTag">BUTTON</td>
+                            <td data-label="recordingEventInputType">N/A</td>
+                            <td data-label="recordingEventInputValue" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">N/A</td>
+                            <td data-label="recordingEventLocation" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
+                            <td data-label="recordingEventCreated">Some time</td>
+                            <td data-label="recordingEventAction" class="center aligned">
                                 <div class="ui mini divided horizontal list">
                                     <div class="item">
                                         <div class="content">
-                                            <a class="moveRecordingEventRow" data-recording-event-id="0">Show</a>
+                                            <a class="showRecordingEventRow" data-recording-event-id="0">Show</a>
                                         </div>    
                                     </div>
                                     <div class="item">

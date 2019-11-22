@@ -1,3 +1,96 @@
+function addNewRecordingEventToTable(recordingEvent, table) {
+
+    //target our table row template first, we only need to find the template once
+    let targetNode = document.querySelector('.recordingEventTableRowTemplate');
+    //we need to do more work as we have to save the template in a table, which we don't need, we just want the row
+    let targetRow = targetNode.querySelector('tr');
+    //then create a document fragment that we will use as a container for each looped template
+    let docFrag = document.createDocumentFragment();
+    //then we make a clone of the row, that will serve the purpose
+    let tempNode = targetRow.cloneNode(true);
+    //then we just take the data from the recording event and paste it in
+    //<td data-field="recordingEventOrigin">User</td>
+    let recordingEventOriginNode = tempNode.querySelector('td[data-label="recordingEventOrigin"]');
+    recordingEventOriginNode.textContent = recordingEvent.recordingEventOrigin;
+    //<td data-field="recordingEventAction">Click</td>
+    let recordingEventActionNode = tempNode.querySelector('td[data-label="recordingEventAction"]');
+    recordingEventActionNode.textContent = recordingEvent.recordingEventAction;
+    //<td data-field="recordingEventHTMLElement">HTMLElement</td>
+    let recordingEventHTMLElementNode = tempNode.querySelector('td[data-label="recordingEventHTMLElement"]');
+    recordingEventHTMLElementNode.textContent = recordingEvent.recordingEventHTMLElement;
+    //<td data-field="recordingEventHTMLTag">BUTTON</td>
+    let recordingEventHTMLTagNode = tempNode.querySelector('td[data-label="recordingEventHTMLTag"]');
+    recordingEventHTMLTagNode.textContent = recordingEvent.recordingEventHTMLTag;
+    //<td data-field="recordingEventInputType">N/A</td>
+    let recordingEventInputTypeNode = tempNode.querySelector('td[data-label="recordingEventInputType"]');
+    recordingEventInputTypeNode.textContent = recordingEvent.recordingEventInputType;
+    //<td data-field="recordingEventInputValue" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">N/A</td>
+    let recordingEventInputValueNode = tempNode.querySelector('td[data-label="recordingEventInputValue"]');
+    recordingEventInputValueNode.textContent = recordingEvent.recordingEventInputValue;
+    //<td data-field="recordingEventLocation" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
+    let recordingEventLocationNode = tempNode.querySelector('td[data-label="recordingEventLocation"]');
+    recordingEventLocationNode.textContent = recordingEvent.recordingEventLocation;
+    //<td data-field="recordingEventCreated">Some time</td>
+    let recordingEventCreatedNode = tempNode.querySelector('td[data-label="recordingEventCreated"]');
+    recordingEventCreatedNode.textContent = recordingEvent.recordingTimeSincePrevious == 0 ? new Date(recordingEvent.recordingEventCreated).toLocaleString() : `${Math.ceil(recordingEvent.recordingTimeSincePrevious / 1000)} seconds later`
+
+    let recordingEventShowLink = tempNode.querySelector('.showRecordingEventRow');
+    recordingEventShowLink.setAttribute('data-recording-event-id', `${recordingEvent.recordingEventId}`);
+
+    let recordingEventDeleteLink = tempNode.querySelector('.deleteRecordingEventRow');
+    recordingEventDeleteLink.setAttribute('data-recording-event-id', `${recordingEvent.recordingEventId}`);
+
+    //then we need to attach the clone of the template node to our container fragment
+    docFrag.appendChild(tempNode);
+    //then we append the fragment to the table
+    table.appendChild(docFrag);    
+
+}
+
+function addStartRecordingHandler() {
+
+    //RECORDING START HANDLER
+    Rx.Observable.fromEvent(document.querySelector('.ui.startRecording.positive.button'), 'click')
+        //make the changes to the ui to indicate that we have started
+        .do(event => {
+            //show the start recording button as disabled
+            event.target.className += " disabled";
+            //show the recording loader
+            $('.ui.text.small.recording.loader').addClass('active');
+            //then empty the table
+            $('.ui.celled.striped.newRecordingRecordingEventsTable.table tbody').empty();
+        })
+        //map the event to the recording that has started by querying storage using the data id from the button
+        .flatMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('newRecording.js', event.target.getAttribute('data-recording-id') , 'recordings')))
+        
+        //TO DO we need to instruct background script to start the tab with the recording 
+        
+        //then we create a recording messenger that updates its active recording each time there is a message emitted
+        .switchMap( () =>
+            //then we need to start receiving recording events sent here by the content script, either originating in the content script or relayed from window.postMessage iframe
+            new RecordReplayMessenger({constructorFilter: 'RecordingEvent'}).incomingMessageObservable,
+            //then use the projection function to tie the two together
+            (recording, recordingEvent) => {
+                //add the recording event to the table
+                addNewRecordingEventToTable(recordingEvent, document.querySelector('.ui.celled.striped.newRecordingRecordingEventsTable.table tbody'))
+                recording.recordingEventArray.push(recordingEvent);
+                return recording;
+            }
+        )
+        .takeUntil(Rx.Observable.fromEvent(document.querySelector('.ui.stopRecording.negative.button'), 'click'))
+        //change the user interface
+        .subscribe(
+            x => console.log(x),
+            error => console.error(error),
+            //when complete we want to update the UI
+            () => {  
+                //hide the recording loader
+                $('.ui.text.small.recording.loader').removeClass('active');
+            }
+        );
+
+}
+
 function refreshNewRecordingTestDropdown() {
 
     //get the tests data from the database so we can have recordings linked to tests
@@ -41,18 +134,6 @@ $(document).ready (function(){
         } else { 
             $('.ui.newRecordingForm.form .orientation.field').addClass('disabled'); 
         }
-    });
-
-    //this is where the main recording action gets kicked off
-    $('.ui.startRecording.positive.button').on('mousedown', function() {
-        //show the recording loader
-        $('.ui.text.small.recording.loader').addClass('active');
-    });
-
-    //this is where we stop recording and save the recording events to the object
-    $('.ui.stopRecording.negative.button').on('mousedown', function() {
-        //hide the recording loader
-        $('.ui.text.small.recording.loader').removeClass('active');
     });
 
     $('.ui.newRecordingForm.form')
@@ -116,9 +197,16 @@ $(document).ready (function(){
                         //then we need to save to the database
                         StorageUtils.addModelObjectToDatabaseTable('newRecording.js', newRecording, 'recordings')
                             //which does not return anything but we don't need it as we fetch from database directly to update the projects table
-                            .then( () => {
+                            .then(createdRecordingId => {
                                 //remove the loading indicator from the button
                                 $('.ui.newRecordingForm .ui.submit.button').removeClass('loading');
+                                //clear the new recording recording events table of any previous entries
+                                $('.ui.celled.newRecordingRecordingEventsTable.table tbody').empty();
+                                //undisable the button if we have had a previous new recording
+                                $('.ui.startRecording.positive.button').removeClass('disabled');
+                                //change the data-recording-id of the start and stop buttons, so we can retrieve the recording on recording start
+                                $('.ui.startRecording.positive.button, .ui.stopRecording.negative.button').attr("data-recording-id", createdRecordingId);
+                                //show the recording events segment
                                 $('.ui.recordingEvents.segment').css('display', 'block');
                                 //then run the function that enables the buttons
                                 enableVerticalMenuButtonsWhenDataAllows();
