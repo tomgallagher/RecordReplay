@@ -1101,17 +1101,55 @@
                             <div class="ui bottom attached tab segment" data-tab="code">
                                 
                                 <div class="ui code form">
-                                    
+
+                                    <button class="ui right floated mini violet inverted icon button" data-tooltip="Copy to clipboard" data-position="left center">
+
+                                        <i class="copy outline icon"></i>
+    
+                                    </button>
+
+                                    <div class="inline fields">
+                                                            
+                                        <div class="field">
+                                                
+                                            <div class="ui radio checkbox">
+                                                
+                                                <input type="radio" name="outputCodeType" checked="checked" value="javascript">
+                                                
+                                                <label>Javascript</label>
+                                                
+                                            </div>
+                                            
+                                        </div>
+                                            
+                                        <div class="field">
+                                                
+                                            <div class="ui radio checkbox">
+                                                
+                                                <input type="radio" name="orientation" value="jquery">
+                                                
+                                                <label>JQuery</label>
+                                                
+                                            </div>
+                                            
+                                        </div>
+
+                                        <div class="field">
+                                                
+                                            <div class="ui radio checkbox">
+                                                
+                                                <input type="radio" name="orientation" value="puppeteer">
+                                                
+                                                <label>Puppeteer</label>
+                                                
+                                            </div>
+                                            
+                                        </div>
+
+                                    </div>
+
                                     <div class="field">
                                         
-                                        <button class="ui right floated mini violet inverted icon button" data-tooltip="Copy to clipboard" data-position="left center" style="margin-bottom: 5px;">
-
-                                            <i class="copy outline icon"></i>
-        
-                                        </button>
-
-                                        <label>Javascript for Jest / Puppeteer</label>
-                                                         
                                         <textarea class="codeOutputTextArea"></textarea>
                                     
                                     </div>
@@ -1485,7 +1523,7 @@
                                     </div>
                                     <div class="item">
                                         <div class="content" >
-                                            <a class="deleteRecordingLink" data-recording-id="0" style="color: red" data-tooltip="To delete recordings and associated replays" data-position="left center">Delete</a>
+                                            <a class="deleteRecordingLink" data-recording-id="0" style="color: red" data-tooltip="To delete recording and associated replays" data-position="left center">Delete</a>
                                         </div>    
                                     </div>
                                 </div>
@@ -1534,17 +1572,6 @@
                 </table>
             </div>
 
-            <div class="userEventTemplate">
-        
-            </div>
-
-            <div class="navigationEventTemplate">
-        
-            </div>
-
-            <div class="mutationEventTemplate">
-        
-            </div>
 
         </div>
         

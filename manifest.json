@@ -34,6 +34,7 @@
       "persistent": false,
       "scripts": [
           "third_party/Rx.min.js",
+          "third_party/jquery-3.1.1.min.js",
           "utils/recordReplayMessenger.js",
           "background/background.js"
         ]
