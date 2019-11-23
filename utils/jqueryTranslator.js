@@ -25,40 +25,51 @@ class jQueryTranslator {
     }
 
     //FORMATTING
-    openAnonAsyncFunction = () => ``
+    openAnonAsyncFunction = () => `(async ($) => { \n`
 
-    closeAnonAsyncFunction = () => `` 
+    closeAnonAsyncFunction = () => `\n})(jQuery);` 
+
+    openTimedFunction = () => `\n\tawait new Promise(resolve => setTimeout({`
+
+    closeTimedFunction = (delay) => `\n\t\t resolve(); \n\t}, ${delay}));\n`
 
     //ACTIONS
 
-    mouseClick = (selector, clicktype) => `  `
+    mouseClick = (selector, clicktype) => {
+        switch(clicktype) {
+            case 'click': return ` $('${selector}').click(); `
+            case 'dblclick': return ` $('${selector}').dblclick(); `
+            case 'contextmenu': return ` $('${selector}').contextmenu(); `
+            default: return `  `
+        }
+    }
 
     inputText = (selector, text) => ` $('${selector}').val('${text}'); `
 
     //Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
-    sendSpecialKey = keyDescriptor => `  `
+    sendSpecialKey = keyCode => ` jQuery.event.trigger({ type: 'keydown', which: ${keyCode} }); `
 
-    scrollTo = (xPosition, yPosition) => `  `
+    scrollTo = (xPosition, yPosition) => ` $('html').animate({ scrollLeft: ${xPosition}, scrollTop: ${yPosition} }, 500); `
 
-    focus = selector => `  `
+    focus = selector => ` $('${selector}').focus(); `
 
-    hover = selector => `  `
+    hover = selector => ` $('${selector}').mouseenter(); `
 
 
     //ASSERTIONS HELPERS
-    getTitle = (selector='document', index) => ` `
+    getTitle = (selector='document', index) => selector == 'document' ? ` const title${index} = $(document).attr('title'); ` : ` const title${index} = $('${selector}').attr('title'); `
 
-    querySelector = (selector, index) => `  `
+    querySelector = (selector, index) => ` const $selected${index} = $('${selector}').first(); `
 
-    querySelectorAll = selector => `  `
+    querySelectorAll = selector => ` const $selected${index} = $('${selector}'); `
 
-    countElements = (selector, index) => `  `
+    countElements = (selector, index) => ` const $count${index} = $('${selector}').length; `
 
-    getElementProperty = (selector, property, index) => `  `
+    getElementProperty = (selector, property, index) => ` const $property${index} = $('${selector}').prop('${property}'); `
 
-    getElementAttributeValue = (selector, attribute, index) => `  `
+    getElementAttributeValue = (selector, attribute, index) => ` const ${attribute}$Attribute${index} = $('${selector}').attr('${attribute}'); `
 
-    getElementAttributesAsArray = (selector, index) => `   `
+    getElementAttributesAsArray = (selector, index) => ` const attributesArray${index} = Array.prototype.slice.call(document.querySelector('${selector}').attributes); `
 
   
 }

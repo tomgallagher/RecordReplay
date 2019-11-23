@@ -27,7 +27,11 @@ class JavascriptTranslator {
     //FORMATTING
     openAnonAsyncFunction = () => `(async () => { \n`
 
-    closeAnonAsyncFunction = () => `\n})();` 
+    closeAnonAsyncFunction = () => `\n})();`
+    
+    openTimedFunction = () => `\n\tawait new Promise(resolve => setTimeout({`
+
+    closeTimedFunction = (delay) => `\n\t\t resolve(); \n\t}, ${delay}));\n`
 
     //ACTIONS
 

@@ -36,6 +36,11 @@ class PuppeteerTranslator {
         Object.keys(defaults).forEach(prop => { this[prop] = opts[prop]; });
     }
 
+    //FORMATTING
+    openTimedFunction = () => `\n\tawait new Promise(resolve => setTimeout({`
+
+    closeTimedFunction = (delay) => `\n\t\t resolve(); \n\t}, ${delay}));\n`
+
     //ACTIONS
 
     openPage = () => ` const page = await browser.newPage(); `
