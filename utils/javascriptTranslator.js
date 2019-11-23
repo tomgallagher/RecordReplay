@@ -42,6 +42,7 @@ class JavascriptTranslator {
 
 
     //TO DO Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
+    // THIS IS NOT WORKING
     sendSpecialKey = keyCode => ` const event = new KeyboardEvent('keydown',{'key': ${keyCode}}); document.querySelector('${selector}').dispatchEvent(event); `
 
 
