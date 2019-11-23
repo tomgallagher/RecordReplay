@@ -42,10 +42,10 @@ class JavascriptTranslator {
 
 
     //TO DO Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
-    sendSpecialKey = keyDescriptor => `  `
+    sendSpecialKey = keyCode => ` const event = new KeyboardEvent('keydown',{'key': ${keyCode}}); document.querySelector('${selector}').dispatchEvent(event); `
 
 
-    
+
     //TODO - check smooth scroll style key name
     scrollTo = (xPosition, yPosition) => ` window.scrollTo({left: ${xPosition}, top: ${yPosition}, scroll: 'smooth'}); `
 
