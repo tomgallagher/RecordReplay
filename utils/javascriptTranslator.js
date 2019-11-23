@@ -35,19 +35,23 @@ class JavascriptTranslator {
 
     //ACTIONS
 
-    mouseClick = (selector, clicktype) => `  `
+    mouseClick = (selector, clicktype) => ` const event = document.createEvent('Events'); event.initEvent(${clicktype}, true, false); document.querySelector('${selector}').dispatchEvent( event ); `
 
     inputText = (selector, text) => ` document.querySelector('${selector}').value = '${text}';  ` 
 
-    //Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
+
+
+    //TO DO Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
     sendSpecialKey = keyDescriptor => `  `
 
+
+    
     //TODO - check smooth scroll style key name
     scrollTo = (xPosition, yPosition) => ` window.scrollTo({left: ${xPosition}, top: ${yPosition}, scroll: 'smooth'}); `
 
-    focus = selector => `  `
+    focus = selector => ` const event = document.createEvent('Events'); event.initEvent('mouseover', true, false); document.querySelector('${selector}').dispatchEvent( event ); `
 
-    hover = selector => `  `
+    hover = selector => ` const event = document.createEvent('Events'); event.initEvent('focus', true, false); document.querySelector('${selector}').dispatchEvent( event ); `
 
     //ASSERTIONS HELPERS
 
