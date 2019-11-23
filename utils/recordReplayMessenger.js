@@ -9,6 +9,8 @@ class RecordReplayMessenger {
             incomingMessageObservable: null,
             //then we say the kind of message constructor we are interested in
             messageFilter: "N/A",
+            //then we say whether we want the ability to return async responses
+            asyncMessageListening: false,
             //all messengers need the ability to detect if they are in an iframe
             contextIsIframe: () => { 
                 try { return window.self !== window.top; } 
@@ -19,28 +21,9 @@ class RecordReplayMessenger {
             //then we need a function that logs accordint to context
             logWithContext: message => {
                 this.contextIsIframe() ? console.log(`%c${message} [iframe]`, 'color: green') : null;
-                this.contextIsContentScript() ? console.log(`%c${message} [contentscript]`, 'color: blue'): null;
-            }
-        }
-        // create a new object with the defaults over-ridden by the options passed in
-        let opts = Object.assign({}, defaults, options);
-  
-        // assign options to instance data (using only property names contained in defaults object to avoid copying properties we don't want)
-        Object.keys(defaults).forEach(prop => { this[prop] = opts[prop]; });
-        //then initialise
-        this.initialise();
-        //then report
-        this.logWithContext(`Record/Replay Messenger created in ${this.contextIsIframe() ? 'Iframe' : 'ContentScript' } with origin ${window.origin}`);
-        console.log(this);
-
-    }
-
-    initialise = () => {
-
-        if (this.contextIsIframe()) {
-
-            //we are going to be looking from incoming messages from the content script using window.postMessage
-            this.incomingMessageObservable = Rx.Observable.fromEventPattern(
+                this.contextIsContentScript() ? console.log(`%c${message} [extension]`, 'color: blue'): null;
+            },
+            windowOnMessageObservable: Rx.Observable.fromEventPattern(
                 handler => {
                     window.addEventListener("message", handler, false);
                     this.logWithContext(`Record/Replay Messenger: SUBSCRIBED to Window Messaging Observer Instance`);
@@ -49,17 +32,11 @@ class RecordReplayMessenger {
                     window.removeEventListener(handler);
                     this.logWithContext(`Record/Replay Messenger: UNSUBSCRIBED from Window Messaging Observer Instance`);
                 }
-            );
-            //TO DO
-            //REPLAYS IN IFRAME WILL NEED TO RESPOND TO INCOMING WINDOW POST MESSAGE EVENTS 
-            
-        } else {
-
-            //we are going to be looking for incoming messages from the content script using chrome.runtime
-            this.incomingMessageObservable = Rx.Observable.fromEventPattern(
+            ),
+            chromeOnMessageObservable: Rx.Observable.fromEventPattern(
                 handler => {
                     const wrapper = (request, sender, sendResponse) => {
-                        const options = { async: false, request, sender, sendResponse }; 
+                        const options = { async: this.asyncMessageListening, request, sender, sendResponse }; 
                         handler(options);
                         return options.async;
                     };
@@ -72,13 +49,23 @@ class RecordReplayMessenger {
                     chrome.runtime.onMessage.removeListener(wrapper);
                 }
             )
-            // DELETE AFTER TESTING - this is just to test the output with the recording event subscriber
-            .startWith({ async: {}, request: {recordingEvent: new RecordingEvent({})}, sender: {}, sendResponse: {} })
-            //we want to filter the messages so we only receive recording events
-            .do(messageObject => console.log(messageObject))
 
         }
+        // create a new object with the defaults over-ridden by the options passed in
+        let opts = Object.assign({}, defaults, options);
+  
+        // assign options to instance data (using only property names contained in defaults object to avoid copying properties we don't want)
+        Object.keys(defaults).forEach(prop => { this[prop] = opts[prop]; });
+        
+        //then report
+        this.logWithContext(`Record/Replay Messenger created in ${this.contextIsIframe() ? 'Iframe' : 'Extension' } with origin ${window.origin}`);
+        
+    }
 
+    isAsync = asyncMessageListening =>  {
+        //as we can't refer to one constructor key in another, we need to initialise as well
+        this.asyncMessageListening = asyncMessageListening;
+        return this;
     }
 
     sendMessage = message => {
