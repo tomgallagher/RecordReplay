@@ -56,7 +56,7 @@ class jQueryTranslator {
 
     getElementProperty = (selector, property, index) => `  `
 
-    getElementAttribute = (selector, attribute, index) => `  `
+    getElementAttributeValue = (selector, attribute, index) => `  `
 
     getElementAttributesAsArray = (selector, index) => `   `
 

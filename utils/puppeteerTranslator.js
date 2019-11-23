@@ -82,7 +82,7 @@ class PuppeteerTranslator {
 
     getElementProperty = (selector, property, index) => ` const ${property}Property${index} = await page.$eval('${selector}', element => element.${property}); `
 
-    getElementAttribute = (selector, attribute, index) => ` const ${attribute}Attribute${index} = await page.$eval('${selector}', element => element.getAttribute('${attribute}'); `
+    getElementAttributeValue = (selector, attribute, index) => ` const ${attribute}Attribute${index} = await page.$eval('${selector}', element => element.getAttribute('${attribute}'); `
 
     getElementAttributesAsArray = (selector, index) => ` const attributesArray${index} = await page.$eval('${selector}', element => Array.prototype.slice.call(element.attributes); `
 

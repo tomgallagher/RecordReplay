@@ -36,6 +36,9 @@ function addRecordingTableButtonListeners() {
                 $('.ui.fluid.editRecording.container').css('display', 'block');
                 //add the loading indicator to the table section
                 $('.ui.fluid.editRecording.container .ui.bottom.attached.active.tab.segment ').addClass('loading');
+
+                //TO DO update the checkboxes to have the current recording id                
+                
                 //then update the edit recording events table
                 updateRecordingEventsTableAndCodeText(recording);
                 //then remove the loading indicator
@@ -183,15 +186,19 @@ function updateRecordingEventsTableAndCodeText(recording) {
 
     //gets the templates for recording event row and populates the table
     const table = document.querySelector('.ui.celled.striped.editRecordingRecordingEventsTable.table tbody')
-    //then for each recordingEvent we need to add it to the table
+    //then for each recordingEvent we need to add it to the table and the textarea
+    //for code, we use Javascript as default
+    const toJavascript = new JavascriptTranslator({});
+    //we start with the standard recording comment
+    let codeString = toJavascript.standardRecordingComment;
 
     for (let recordingEvent in recording.recordingEventArray) { 
         //then borrow the function from newRecording.js
         addNewRecordingEventToTable(recordingEvent, table);
+        //then convert events into strings
     }
 
-    //TO DO this also create the code for Jest / Puppeteer
-
+    $('.codeOutputTextArea').val(codeString);
 
 }
 
@@ -200,6 +207,24 @@ $(document).ready (function(){
     //activate the tab control
     $('.ui.top.attached.recording.tabular.menu .item').tab();
 
+    //respond to language changes, which requires getting the recording from the server and processing it
+    $('.ui.code.form ui.radio.checkbox').change(function(event){
+        switch(true) {
+            case event.target.value == "javascript":
+                const toJavascript = new JavascriptTranslator({});
+                $('.codeOutputTextArea').val(toJavascript.standardRecordingComment);
+                break;
+            case event.target.value == "jquery":
+                const toJquery = new jQueryTranslator({}); 
+                $('.codeOutputTextArea').val(toJquery.standardRecordingComment);
+                break;
+            case event.target.value == "puppeteer":
+                const toPuppeteer = new PuppeteerTranslator({});
+                $('.codeOutputTextArea').val(toPuppeteer.standardRecordingComment);
+        }
+    });
+
+    //activate the form and validations
     $('.ui.editRecordingForm.form')
         .form({
             on: 'blur',

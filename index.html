@@ -14,6 +14,9 @@
         <script src="third_party/fontawesome-all.min.js"></script>
         <script src="utils/storage.js"></script>
         <script src="utils/recordReplayMessenger.js"></script>
+        <script src="utils/javascriptTranslator.js"></script>
+        <script src="utils/jqueryTranslator.js"></script>
+        <script src="utils/puppeteerTranslator.js"></script>
         <script src="models/projectModel.js"></script>
         <script src="models/testModel.js"></script>
         <script src="models/recordingModel.js"></script>
@@ -1114,7 +1117,7 @@
                                                 
                                             <div class="ui radio checkbox">
                                                 
-                                                <input type="radio" name="outputCodeType" checked="checked" value="javascript">
+                                                <input type="radio" name="outputCodeType" checked="checked" value="javascript" data-recording-id="0">
                                                 
                                                 <label>Javascript</label>
                                                 
@@ -1126,7 +1129,7 @@
                                                 
                                             <div class="ui radio checkbox">
                                                 
-                                                <input type="radio" name="orientation" value="jquery">
+                                                <input type="radio" name="outputCodeType" value="jquery" data-recording-id="0">
                                                 
                                                 <label>JQuery</label>
                                                 
@@ -1138,7 +1141,7 @@
                                                 
                                             <div class="ui radio checkbox">
                                                 
-                                                <input type="radio" name="orientation" value="puppeteer">
+                                                <input type="radio" name="outputCodeType" value="puppeteer" data-recording-id="0">
                                                 
                                                 <label>Puppeteer</label>
                                                 

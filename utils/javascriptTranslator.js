@@ -57,9 +57,9 @@ class JavascriptTranslator {
 
     getElementProperty = (selector, property, index) => ` const property${index} = document.querySelector('${selector}').${property}; `
 
-    getElementAttribute = (selector, attribute, index) => ` const attribute${index} = document.querySelector('${selector}').getAttribute('${attribute}'); `
+    getElementAttributeValue = (selector, attribute, index) => ` const ${attribute}Attribute${index} = document.querySelector('${selector}').getAttribute('${attribute}'); `
 
-    getElementAttributesAsArray = (selector, index) => ` const attributesArray${index} = Array.prototype.slice.call(document.querySelector('${selector}').attributes)); `
+    getElementAttributesAsArray = (selector, index) => ` const attributesArray${index} = Array.prototype.slice.call(document.querySelector('${selector}').attributes); `
 
   
 }
