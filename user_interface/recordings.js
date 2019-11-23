@@ -36,9 +36,8 @@ function addRecordingTableButtonListeners() {
                 $('.ui.fluid.editRecording.container').css('display', 'block');
                 //add the loading indicator to the table section
                 $('.ui.fluid.editRecording.container .ui.bottom.attached.active.tab.segment ').addClass('loading');
-
-                //TO DO update the checkboxes to have the current recording id                
-                
+                //update the checkboxes to have the current recording id                
+                $('.ui.code.form .ui.radio.checkbox input[name="outputCodeType"]').attr('data-recording-id', recordingKey);
                 //then update the edit recording events table
                 updateRecordingEventsTableAndCodeText(recording);
                 //then remove the loading indicator
@@ -195,7 +194,9 @@ function updateRecordingEventsTableAndCodeText(recording) {
     for (let recordingEvent in recording.recordingEventArray) { 
         //then borrow the function from newRecording.js
         addNewRecordingEventToTable(recordingEvent, table);
-        //then convert events into strings
+
+        //TO DO then convert events into strings
+
     }
 
     $('.codeOutputTextArea').val(codeString);
@@ -208,7 +209,7 @@ $(document).ready (function(){
     $('.ui.top.attached.recording.tabular.menu .item').tab();
 
     //respond to language changes, which requires getting the recording from the server and processing it
-    $('.ui.code.form ui.radio.checkbox').change(function(event){
+    $('.ui.code.form .ui.radio.checkbox').change(function(event){
         switch(true) {
             case event.target.value == "javascript":
                 const toJavascript = new JavascriptTranslator({});
