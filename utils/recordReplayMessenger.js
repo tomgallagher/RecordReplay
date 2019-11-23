@@ -5,11 +5,7 @@ class RecordReplayMessenger {
 
         // set default values for the keycodes class 
         const defaults = {
-            //all recording messengers must be initialised to create the incoming message observable that can be subscribed
-            incomingMessageObservable: null,
-            //then we say the kind of message constructor we are interested in
-            messageFilter: "N/A",
-            //then we say whether we want the ability to return async responses
+            //we say whether we want the ability to return async responses
             asyncMessageListening: false,
             //all messengers need the ability to detect if they are in an iframe
             contextIsIframe: () => { 

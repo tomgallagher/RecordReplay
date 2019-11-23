@@ -67,7 +67,7 @@ function addStartRecordingHandler() {
         //then we create a recording messenger that updates its active recording each time there is a message emitted
         .switchMap( () =>
             //then we need to start receiving recording events sent here by the content script, either originating in the content script or relayed from window.postMessage iframe
-            new RecordReplayMessenger({messageFilter: 'RecordingEvent'}).isAsync(false).chromeOnMessageObservable
+            new RecordReplayMessenger({}).isAsync(false).chromeOnMessageObservable
                 //NB JUST FOR TESTING
                 .startWith({request: { recordingEvent: new RecordingEvent({}) } }),
             //then use the projection function to tie the two together

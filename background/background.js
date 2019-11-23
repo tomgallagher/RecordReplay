@@ -8,4 +8,5 @@ const newRecordingObservable = new RecordReplayMessenger({}).isAsync(true).chrom
     .do(messagingObject => console.log(`Initialising New Recording Processes for Recording ${messagingObject.request.newRecording.id}`))
     //and respond to the caller to let them know the process has started
     .do(messagingObject => messagingObject.sendResponse({message: `BackgroundJS: Initialising New Recording Processes for Recording ${messagingObject.request.newRecording.id}`}))
+    //then we want to create an active recording
     .subscribe(x => console.log(x));
