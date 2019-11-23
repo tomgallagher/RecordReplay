@@ -190,12 +190,10 @@ var EventRecorder = {
         //if we are in an iframe rather than the content script environment, then this will return true
         if (typeof chrome.runtime.getManifest == 'undefined' && EventRecorder.contextIsIframe()) {
             //then we need to send a special kind of message, which uses window.postMessage and is relayed by content script, remember wildcard so anyone can hear it
-            window.parent.postMessage(recordingEvent, "*");
+            window.parent.postMessage({recordingEvent: recordingEvent}, "*");
         } else {
-            //just the standard message passing from extension
-            chrome.runtime.sendMessage(recordingEvent, function(response) {
-                console.log(response);
-            });
+            //just the standard message passing from extension - all listeners to these events are asynchronous so don't evpect a response
+            chrome.runtime.sendMessage({recordingEvent: recordingEvent});
         }
     },
     contextIsIframe: () => { 
@@ -341,8 +339,8 @@ EventRecorder.startRecordingEvents = () => {
             } else { 
                 //if we have filtered it out then we need to report
                 console.log("Click Event Ignored As Action on Element is being Recorded as Text Selection Event");
-                console.log(currentTextSelection.recordingEventCssSelectorPath);
-                console.log(newEvent.recordingEventCssSelectorPath);
+                //console.log(currentTextSelection.recordingEventCssSelectorPath);
+                //console.log(newEvent.recordingEventCssSelectorPath);
                 //just return an empty observable as a placeholder which we can easily filter out
                 return false; 
             }
@@ -482,8 +480,15 @@ EventRecorder.startRecordingEvents = () => {
         //handles all non-typing keyboard actions
         EventRecorder.keyboardObservable,
         //handles all window scroll events
-        EventRecorder.scrollObservable
-      
+        EventRecorder.scrollObservable,
+        //acts as a relay for window.postMessage events so all iframe events come through this channel as well
+        new RecordReplayMessenger({}).isAsync(false).windowOnMessageObservable
+            //we need to filter windows messages for thos messages that have a recording event property
+            .filter(messageObject => messageObject.hasOwnProperty('recordingEvent'))
+            //then we need to filter out messages that might be double counted in iframes by being generated and heard through the messaging function
+            .filter(EventRecorder.contextIsIframe() == false)
+            //we need to map the window message object to a recording event
+            .map(messageObject => new RecordingEvent(messageObject.recordingEvent))
     )
     //and we need to start with a dummy marker so we can operate with only one emission, this must come before pairwise() to create the first pair
     .startWith(new RecordingEvent({recordingEventOrigin: 'PairwiseStart'}))

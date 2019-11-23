@@ -13,7 +13,8 @@ class ActiveRecording extends Recording {
                 "utils/recordReplayMessenger.js",
                 "recordingScripts/eventsRecorder.js"
             ],
-            recordingScriptsString: "N/A"
+            recordingScriptsString: "N/A",
+            recordingBrowserTabId: 0
         };
         // create a new object with the defaults over-ridden by the options passed in
         let opts = Object.assign({}, defaults, options);
