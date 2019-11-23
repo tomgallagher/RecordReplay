@@ -1,22 +1,23 @@
 /*
-// first, create instance of the object with default options
+
+first, create instance of the object with default options
 my_selector_generator = new CssSelectorGenerator;
 
-// create (or find reference to) any element
+create (or find reference to) any element
 my_element = document.createElement('div');
 document.body.appendChild(my_element);
 
-// then you can get unique CSS selector for any referenced element
+then you can get unique CSS selector for any referenced element
 my_element_selector = my_selector_generator.getSelector(my_element);
 
 You can set the options either when creating an instance, or via the setOptions() method:
 
 custom_options = {selectors: ['tag', 'id', 'class']};
 
-// set options when creating an instance
+set options when creating an instance
 my_selector_generator = new CssSelectorGenerator(custom_options);
 
-// or set options later
+or set options later
 my_selector_generator.setOptions(custom_options);
 
 */

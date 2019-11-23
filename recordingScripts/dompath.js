@@ -1,17 +1,17 @@
 /*
-//call function, pass any element:
+call function, pass any element:
 var path = dompath(document.body);
 
-//get CSS selector:
+get CSS selector:
 var selector = path.toCSS();
 
-//can be serialized into JSON:
+can be serialized into JSON:
 var json = JSON.stringify(path);
 
-//and deserialized later on:
+and deserialized later on:
 var newPath = dompath(JSON.parse(json));
 
-//you can also get element based on the path:
+you can also get element based on the path:
 var element = newPath.select();
 */
 

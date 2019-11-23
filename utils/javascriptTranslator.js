@@ -25,9 +25,9 @@ class JavascriptTranslator {
     }
 
     //FORMATTING
-    openAnonAsyncFunction = () => ``
+    openAnonAsyncFunction = () => `(async () => { \n`
 
-    closeAnonAsyncFunction = () => `` 
+    closeAnonAsyncFunction = () => `\n})();` 
 
     //ACTIONS
 
