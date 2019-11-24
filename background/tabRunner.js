@@ -7,7 +7,7 @@ class TabRunner {
 
             // ALL ASYNC CODE HERE
             //we need to have the browser tab id in the constructor so we can close / listen to the browser tab from the instance of the tab runner
-            this.browserTabId = await new Promise(resolve => chrome.tabs.create({ url: recording.recordingTestStartUrl }, (tab) => { resolve(tab.id); } ));
+            this.browserTabId = await new Promise(resolve => chrome.tabs.create({ url: recording.recordingTestStartUrl }, tab => { resolve(tab.id); } ));
             //then we need to attach the debugger so we can send commands
             await new Promise(resolve => chrome.debugger.attach({ tabId: this.browserTabId }, "1.3", () => { resolve(); } ));
             
