@@ -7,10 +7,13 @@ class ActiveRecording extends Recording {
         // set default values for the active recording class
         const defaults = {
             recordingScriptsArray: [
+                "third_party/Rx.min.js",
                 "recordingScripts/cssSelectorGenerator.js", 
                 "recordingScripts/dompath.js",
                 "recordingScripts/simmer.js",
+                "models/recordingEventModel.js",
                 "utils/recordReplayMessenger.js",
+                "utils/keyCodeDictionary.js",
                 "recordingScripts/eventsRecorder.js"
             ],
             recordingScriptsString: "N/A",
