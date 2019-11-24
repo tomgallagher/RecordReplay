@@ -15,6 +15,7 @@ class Messenger {
 
         //this is where all the work gets done
         //all background script actions only take place as a response to user interface messages
+        //ALL MESSAGES ASYNC - YOU MUST SEND A RESPONSE TO AVOID ERRORS
 
         this.newRecordingActionObservable = this.newRecordingObservable
             //then we can report what we are doing
@@ -27,6 +28,8 @@ class Messenger {
             .do(activeRecording => activeRecording.generateScriptString())
             //just make sure we have the string in place - better to wait for a class async function to execute in Rx,js
             .delay(50)
+            //then let's map into the new tab runner, passing all the recording parameters into the debugger instance that's attached to the tab runner
+            .flatMap(activeRecording => Rx.Observable.fromPromise(new TabRunner(activeRecording)))
 
         //then we have all the subscriptions handled in a package
         this.collectedMessagingObservable = Rx.Observable.merge(

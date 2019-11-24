@@ -39,7 +39,8 @@
           "models/recordingModel.js",
           "models/activeRecordingModel.js",
           "background/background.js",
-          "background/messenger.js"
+          "background/messenger.js",
+          "background/tabRunner.js"
         ]
   },
 
