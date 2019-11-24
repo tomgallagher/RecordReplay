@@ -21,13 +21,19 @@ class TabRunner {
                 { offline: false, latency: activeRecording.recordingTestLatencyValue, downloadThroughput: activeRecording.recordingTestBandwidthValue, uploadThroughput: activeRecording.recordingTestBandwidthValue}, 
                 () => { resolve(); } 
             ));
-            
-            //TO DO - any mobile emulation that might be required
+            //any mobile emulation that might be required
+            if (activeRecording.recordingIsMobile) {
+                await new Promise(resolve => chrome.debugger.sendCommand({ 
+                    tabId: this.browserTabId }, 
+                    "Emulation.setDeviceMetricsOverride", 
+                    { width: 360, height: 640, mobile: true, screenOrientation: activeRecording.recordingMobileOrientation == 'portrait' ? "portraitPrimary" : "landscapePrimary" }, 
+                    () => { resolve(); } ));
+            }
 
             
             //TO DO - we need to wait for the page to have loaded, so all iframes are present and correct
 
-            //then we need to inject our script string
+            //then we need to inject our script string - this may better belong in a function that can be called after webnavigation events
             await new Promise(resolve => 
                 chrome.tabs.executeScript(this.browserTabId, 
                     //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
