@@ -14,7 +14,7 @@ class ActiveRecording extends Recording {
                 "recordingScripts/eventsRecorder.js"
             ],
             recordingScriptsString: "N/A",
-            recordingBrowserTabId: 0
+            recordingBrowserTabRunner: null
         };
         // create a new object with the defaults over-ridden by the options passed in
         let opts = Object.assign({}, defaults, options);

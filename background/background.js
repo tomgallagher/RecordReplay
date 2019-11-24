@@ -1,18 +1,18 @@
 //simple function to open the user interface
-chrome.browserAction.onClicked.addListener(function() { chrome.tabs.create({url: 'index.html'}); });
-//handle messages
-const newRecordingObservable = new RecordReplayMessenger({}).isAsync(true).chromeOnMessageObservable
-    //here we only care about messages that are carrying a new recording in their request object
-    .filter(messagingObject => messagingObject.request.hasOwnProperty('newRecording'))
-    //then we can report what we are doing
-    .do(messagingObject => console.log(`Initialising New Recording Processes for Recording ${messagingObject.request.newRecording.id}`))
-    //and respond to the caller to let them know the process has started
-    .do(messagingObject => messagingObject.sendResponse({message: `BackgroundJS: Initialising New Recording Processes for Recording ${messagingObject.request.newRecording.id}`}))
-    //then create our active recording object with the variables from the recording as well as those we need for the background script
-    .map(messagingObject => new ActiveRecording(messagingObject.request.newRecording))
-    //then mutate our active recording to generate the script string that will be required for injection into iframes - this takes about 20ms
-    .do(activeRecording => activeRecording.generateScriptString())
-    //just make sure we have the string in place - better to wait for a class async function to execute in Rx,js
-    .delay(50)
-    //then we want to create an active recording
-    .subscribe(x => console.log(x));
+chrome.browserAction.onClicked.addListener(function() { 
+    //then we open our user interface tab
+    chrome.tabs.create({url: 'index.html'}, function(tab) {
+        //this then returns a tab, from which we need to keep track of the tab id
+        let recordReplayTabId = tab.id;
+        //then we need to activate our background process observables, we stay dormant with no user interface
+        var MessageListener = new Messenger().initialise();
+        //then we need to add a listener for our user interface closing
+        chrome.tabs.onRemoved.addListener(function (tabId){
+            //then if the tab id matches the record replay id, we just run our background shutdown processes
+            if (tabId == recordReplayTabId) {
+                //at the moment all our actions in the background process is started by the message listener so shutting it down should render it inactive
+                MessageListener.shutdown();
+            }
+        });
+    }); 
+});
