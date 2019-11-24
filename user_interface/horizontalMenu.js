@@ -1,4 +1,13 @@
 $(document).ready (function(){
+    //info popup
+    $('.ui.stackable.compact.menu .link.item').popup({
+        popup : $('.ui.flowing.popup'),
+        on : 'hover',
+        position : 'bottom center',
+        hoverable : true,
+        delay: { show: 300, hide: 800}
+    });
+
     //menu operations are not handled automatically by semantic - we handle it ourselves
     $('.ui.stackable.compact.menu .item').on('mousedown', function() {
         //then get the classes of the active item as a list
