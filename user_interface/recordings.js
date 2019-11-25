@@ -186,6 +186,8 @@ function addRecordingEventTableButtonListeners() {
 
     //delete recording event button click handler
     $('.deleteRecordingEventRow').on('mousedown', function(){
+        //close the event details form if it's open
+        $('.viewDetailedTableEventsFooter').css("display", "none");
         //find the recording in the database by id, using data-recording-id from the template
         const recordingKey = $(this).attr("data-recording-id");
         //do the same with the recording event key
