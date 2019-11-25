@@ -24,51 +24,115 @@ class JavascriptTranslator {
         Object.keys(defaults).forEach(prop => { this[prop] = opts[prop]; });
     }
 
-    //FORMATTING
+    //FORMATTING FUNCTIONS
+
     openAnonAsyncFunction = () => `(async () => { \n`
 
     closeAnonAsyncFunction = () => `\n})();`
     
-    openTimedFunction = () => `\n\tawait new Promise(resolve => setTimeout({`
+    openTimedFunction = () => `\n\tawait new Promise(resolve => window.setTimeout({`
 
-    closeTimedFunction = (delay) => `\n\t\t resolve(); \n\t}, ${delay}));\n`
+    closeTimedFunction = (delay) => `\n\t\tresolve(); \n\t}, ${delay}));\n`
 
-    //ACTIONS
+    tabIndex = index =>  index == 0 ? '\n\t' : '\n\t\t';
 
-    mouseClick = (selector, clicktype) => ` const event = document.createEvent('Events'); event.initEvent(${clicktype}, true, false); document.querySelector('${selector}').dispatchEvent( event ); `
+    //ACTION FUNCTIONS
 
-    inputText = (selector, text) => ` document.querySelector('${selector}').value = '${text}';  ` 
+    mouseClick = (selector, clicktype, index) => `const event${index} = document.createEvent('Events'); event.initEvent(${clicktype}, true, false); document.querySelector('${selector}').dispatchEvent( event${index} );`
+
+    inputText = (selector, text) => `document.querySelector('${selector}').value = '${text}';` 
 
 
 
     //TO DO Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
     // THIS IS NOT WORKING
-    sendSpecialKey = keyCode => ` const event = new KeyboardEvent('keydown',{'key': ${keyCode}}); document.querySelector('${selector}').dispatchEvent(event); `
+    sendSpecialKey = (keyCode, index) => `const event${index} = new KeyboardEvent('keydown',{'key': ${keyCode}}); document.querySelector('${selector}').dispatchEvent( event${index} );`
 
 
 
     //TODO - check smooth scroll style key name
-    scrollTo = (xPosition, yPosition) => ` window.scrollTo({left: ${xPosition}, top: ${yPosition}, scroll: 'smooth'}); `
+    scrollTo = (xPosition, yPosition) => `window.scrollTo({left: ${xPosition}, top: ${yPosition}, scroll: 'smooth'}); `
 
-    focus = selector => ` const event = document.createEvent('Events'); event.initEvent('mouseover', true, false); document.querySelector('${selector}').dispatchEvent( event ); `
+    focus = (selector, index) => `const event${index} = document.createEvent('Events'); event.initEvent('focus', true, false); document.querySelector('${selector}').dispatchEvent( event${index} );`
 
-    hover = selector => ` const event = document.createEvent('Events'); event.initEvent('focus', true, false); document.querySelector('${selector}').dispatchEvent( event ); `
+    hover = (selector, index) => `const event${index} = document.createEvent('Events'); event.initEvent('mouseover', true, false); document.querySelector('${selector}').dispatchEvent( event${index} );`
 
     //ASSERTIONS HELPERS
 
-    getTitle = (selector='document', index) => selector == 'document' ? ` const title${index} = document.title; ` : ` const title${index} = document.querySelector('${selector}').title; `
+    getTitle = (selector='document', index) => selector == 'document' ? `const title${index} = document.title; ` : `const title${index} = document.querySelector('${selector}').title;`
 
-    querySelector = (selector, index) => ` const selected${index} = document.querySelector('${selector}'); `
+    querySelector = (selector, index) => `const selected${index} = document.querySelector('${selector}');`
 
-    querySelectorAll = (selector, index) => ` const selected${index} = document.querySelectorAll('${selector}'); `
+    querySelectorAll = (selector, index) => `const selected${index} = document.querySelectorAll('${selector}');`
 
-    countElements = (selector, index) => ` const count${index} = Array.prototype.slice.call(document.querySelectorAll('${selector}')).length; `
+    countElements = (selector, index) => `const count${index} = Array.prototype.slice.call(document.querySelectorAll('${selector}')).length;`
 
-    getElementProperty = (selector, property, index) => ` const property${index} = document.querySelector('${selector}').${property}; `
+    getElementProperty = (selector, property, index) => `const property${index} = document.querySelector('${selector}').${property};`
 
-    getElementAttributeValue = (selector, attribute, index) => ` const ${attribute}Attribute${index} = document.querySelector('${selector}').getAttribute('${attribute}'); `
+    getElementAttributeValue = (selector, attribute, index) => `const ${attribute}Attribute${index} = document.querySelector('${selector}').getAttribute('${attribute}');`
 
-    getElementAttributesAsArray = (selector, index) => ` const attributesArray${index} = Array.prototype.slice.call(document.querySelector('${selector}').attributes); `
+    getElementAttributesAsArray = (selector, index) => `const attributesArray${index} = Array.prototype.slice.call(document.querySelector('${selector}').attributes);`
 
-  
+    //RETURN STRING FUNCTIONS
+
+    getMostValidSelector = recordingEvent => {
+        //collect all the existing selectors into an array, filter and return the first valid one
+        return [
+            recordingEvent.recordingEventCssSelectorPath, 
+            recordingEvent.recordingEventCssSimmerPath, 
+            recordingEvent.recordingEventCssDomPath
+        ]
+        //when we filter we need to know what the selectors return when they fail
+        .filter(value => value != false && value != 'undefined' && value != null)[0] || ""; 
+
+    }
+
+    mapActionTypeToFunction = (recordingEvent, index) => {
+        switch(recordingEvent.recordingEventAction) {
+            case "Mouse":
+                if (recordingEvent.recordingEventActionType == "hover") return this.hover(this.getMostValidSelector(recordingEvent), index);
+                if (recordingEvent.recordingEventActionType == "click") return this.hover(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventActionType, index);
+            case "Scroll":
+                return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
+            case "Keyboard": 
+                return this.focus(this.getMostValidSelector(recordingEvent), index) += this.tabIndex(index) + this.sendSpecialKey(recordingEvent.recordingEventKeyCode, index);
+            case 'Input':
+                return this.inputText(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue);
+            default:
+                console.log(`No Mapping for Action Type ${recordingEvent.recordingEventAction}`);
+                return `${this.tabIndex(index)}//No Mapping Type for Action ${recordingEvent.recordingEventAction}`; 
+        }
+    }
+
+    buildRecordingStringFromEvents = eventsArray => {
+
+        //start with an empty string
+        var outputString = "";
+        //add the standard opening comment
+        outputString += this.standardRecordingComment;
+        //add the standard async opening function
+        outputString += this.openAnonAsyncFunction();
+        //then we loop through the array
+        for (let recordingEventIndex in eventsArray) { 
+            //make sure we have a recording event with defaults
+            var eachEvent = new RecordingEvent(eventsArray[recordingEventIndex]);
+            //if we are on the first event, just push according to event
+            if (recordingEventIndex == 0) {
+                outputString += `${this.tabIndex(recordingEventIndex)}${this.mapActionTypeToFunction(eachEvent, recordingEventIndex)}\n`;
+            //otherwise we need to wrap in the setTimeout
+            } else {
+                //open the async timeout function
+                outputString += this.openTimedFunction();
+                //map the action to the function and return string
+                outputString += `${this.tabIndex(recordingEventIndex)}${this.mapActionTypeToFunction(eachEvent, recordingEventIndex)}`;
+                //close the async timeout function
+                outputString += this.closeTimedFunction(eachEvent.recordingTimeSincePrevious);
+            }
+        }
+        //add the standard async closing function
+        outputString += this.closeAnonAsyncFunction();
+        //return the string
+        return outputString;
+
+    }
 }

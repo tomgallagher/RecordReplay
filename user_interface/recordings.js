@@ -183,23 +183,17 @@ function updateRecordingsTable() {
 
 function updateRecordingEventsTableAndCodeText(recording) {
 
+    console.log(recording);
     //gets the templates for recording event row and populates the table
     const table = document.querySelector('.ui.celled.striped.editRecordingRecordingEventsTable.table tbody')
     //then for each recordingEvent we need to add it to the table and the textarea
-    //for code, we use Javascript as default
-    const toJavascript = new JavascriptTranslator({});
-    //we start with the standard recording comment
-    let codeString = toJavascript.standardRecordingComment;
-
     for (let recordingEvent in recording.recordingEventArray) { 
         //then borrow the function from newRecording.js
-        addNewRecordingEventToTable(recordingEvent, table);
-
-        //TO DO then convert events into strings
-
+        addNewRecordingEventToTable(recording.recordingEventArray[recordingEvent], table);
     }
-
-    $('.codeOutputTextArea').val(codeString);
+    //for code, we use Javascript as default
+    const toJavascript = new JavascriptTranslator({});
+    $('.codeOutputTextArea').val(toJavascript.buildRecordingStringFromEvents(recording.recordingEventArray));
 
 }
 
@@ -209,20 +203,28 @@ $(document).ready (function(){
     $('.ui.top.attached.recording.tabular.menu .item').tab();
 
     //respond to language changes, which requires getting the recording from the server and processing it
-    $('.ui.code.form .ui.radio.checkbox').change(function(event){
-        switch(true) {
-            case event.target.value == "javascript":
-                const toJavascript = new JavascriptTranslator({});
-                $('.codeOutputTextArea').val(toJavascript.standardRecordingComment);
-                break;
-            case event.target.value == "jquery":
-                const toJquery = new jQueryTranslator({}); 
-                $('.codeOutputTextArea').val(toJquery.standardRecordingComment);
-                break;
-            case event.target.value == "puppeteer":
-                const toPuppeteer = new PuppeteerTranslator({});
-                $('.codeOutputTextArea').val(toPuppeteer.standardRecordingComment);
-        }
+    $('.ui.code.form .ui.radio.checkbox').change(event => {
+        //get the recording from the database using the key
+        const recordingKey = event.target.getAttribute("data-recording-id");
+        //the recording key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', recordingKey, 'recordings')
+            //then depending up the recording, fill the code text
+            .then(recording => {
+                switch(true) {
+                    case event.target.value == "javascript":
+                        const toJavascript = new JavascriptTranslator({});
+                        $('.codeOutputTextArea').val(toJavascript.buildRecordingStringFromEvents(recording.recordingEventArray));
+                        break;
+                    case event.target.value == "jquery":
+                        const toJquery = new jQueryTranslator({}); 
+                        $('.codeOutputTextArea').val(toJquery.buildRecordingStringFromEvents(recording.recordingEventArray));
+                        break;
+                    case event.target.value == "puppeteer":
+                        const toPuppeteer = new PuppeteerTranslator({});
+                        //we pass the whole recording to Puppeteer as it needs other values for set up
+                        $('.codeOutputTextArea').val(toPuppeteer.buildRecordingStringFromEvents(recording));
+                }
+            });
     });
 
     //activate the form and validations

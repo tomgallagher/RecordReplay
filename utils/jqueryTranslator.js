@@ -24,52 +24,122 @@ class jQueryTranslator {
         Object.keys(defaults).forEach(prop => { this[prop] = opts[prop]; });
     }
 
-    //FORMATTING
+    //FORMATTING FUNCTIONS
+
     openAnonAsyncFunction = () => `(async ($) => { \n`
 
     closeAnonAsyncFunction = () => `\n})(jQuery);` 
 
-    openTimedFunction = () => `\n\tawait new Promise(resolve => setTimeout({`
+    openTimedFunction = () => `\n\tawait new Promise(resolve => window.setTimeout({`
 
-    closeTimedFunction = (delay) => `\n\t\t resolve(); \n\t}, ${delay}));\n`
+    closeTimedFunction = (delay) => `\n\t\tresolve(); \n\t}, ${delay}));\n`
+
+    tabIndex = index =>  index == 0 ? '\n\t' : '\n\t\t';
 
     //ACTIONS
 
-    mouseClick = (selector, clicktype) => {
+    mouseClick = (selector, clicktype, index) => {
         switch(clicktype) {
-            case 'click': return ` $('${selector}').click(); `
-            case 'dblclick': return ` $('${selector}').dblclick(); `
-            case 'contextmenu': return ` $('${selector}').contextmenu(); `
-            default: return `  `
+            case 'click': return `$('${selector}').click();`
+            case 'dblclick': return `$('${selector}').dblclick();`
+            case 'contextmenu': return `$('${selector}').contextmenu();`
+            default: return `${this.tabIndex(index)}//No Click Action Available For Action ${clicktype}`
         }
     }
 
-    inputText = (selector, text) => ` $('${selector}').val('${text}'); `
+    inputText = (selector, text) => `$('${selector}').val('${text}');`
 
-    //Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
-    sendSpecialKey = keyCode => ` jQuery.event.trigger({ type: 'keydown', which: ${keyCode} }); `
 
-    scrollTo = (xPosition, yPosition) => ` $('html').animate({ scrollLeft: ${xPosition}, scrollTop: ${yPosition} }, 500); `
+    //NEEDS CHECKING Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
+    sendSpecialKey = keyCode => `jQuery.event.trigger({ type: 'keydown', which: ${keyCode} });`
 
-    focus = selector => ` $('${selector}').focus(); `
 
-    hover = selector => ` $('${selector}').mouseenter(); `
+    
+    scrollTo = (xPosition, yPosition) => `$('html').animate({ scrollLeft: ${xPosition}, scrollTop: ${yPosition} }, 500);`
+
+    focus = selector => `$('${selector}').focus();`
+
+    hover = selector => `$('${selector}').mouseenter();`
 
 
     //ASSERTIONS HELPERS
-    getTitle = (selector='document', index) => selector == 'document' ? ` const title${index} = $(document).attr('title'); ` : ` const title${index} = $('${selector}').attr('title'); `
+    getTitle = (selector='document', index) => selector == 'document' ? `const title${index} = $(document).attr('title');` : `const title${index} = $('${selector}').attr('title');`
 
-    querySelector = (selector, index) => ` const $selected${index} = $('${selector}').first(); `
+    querySelector = (selector, index) => `const $selected${index} = $('${selector}').first();`
 
-    querySelectorAll = selector => ` const $selected${index} = $('${selector}'); `
+    querySelectorAll = selector => `const $selected${index} = $('${selector}');`
 
-    countElements = (selector, index) => ` const $count${index} = $('${selector}').length; `
+    countElements = (selector, index) => `const $count${index} = $('${selector}').length;`
 
-    getElementProperty = (selector, property, index) => ` const $property${index} = $('${selector}').prop('${property}'); `
+    getElementProperty = (selector, property, index) => `const $property${index} = $('${selector}').prop('${property}');`
 
-    getElementAttributeValue = (selector, attribute, index) => ` const ${attribute}$Attribute${index} = $('${selector}').attr('${attribute}'); `
+    getElementAttributeValue = (selector, attribute, index) => `const ${attribute}$Attribute${index} = $('${selector}').attr('${attribute}');`
 
-    getElementAttributesAsArray = (selector, index) => ` const attributesArray${index} = Array.prototype.slice.call(document.querySelector('${selector}').attributes); `
+    getElementAttributesAsArray = (selector, index) => `const attributesArray${index} = Array.prototype.slice.call(document.querySelector('${selector}').attributes);`
 
+    //RETURN STRING FUNCTIONS
+
+    
+
+    getMostValidSelector = recordingEvent => {
+        //collect all the existing selectors into an array, filter and return the first valid one
+        return [
+            recordingEvent.recordingEventCssSelectorPath, 
+            recordingEvent.recordingEventCssSimmerPath, 
+            recordingEvent.recordingEventCssDomPath
+        ]
+        //when we filter we need to know what the selectors return when they fail
+        .filter(value => value != false && value != 'undefined' && value != null)[0] || ""; 
+
+    }
+
+    mapActionTypeToFunction = (recordingEvent, index) => {
+        switch(recordingEvent.recordingEventAction) {
+            case "Mouse":
+                if (recordingEvent.recordingEventActionType == "hover") return this.hover(this.getMostValidSelector(recordingEvent));
+                if (recordingEvent.recordingEventActionType == "click") return this.hover(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventActionType);
+            case "Scroll":
+                return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
+            case "Keyboard": 
+                return this.focus(this.getMostValidSelector(recordingEvent)) += this.tabIndex(index) + this.sendSpecialKey(recordingEvent.recordingEventKeyCode);
+            case 'Input':
+                return this.inputText(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue);
+            default:
+                console.log(`No Mapping for Action Type ${recordingEvent.recordingEventAction}`);
+                return `${this.tabIndex(index)}//No Mapping Type for Action ${recordingEvent.recordingEventAction}`; 
+        }
+    }
+
+    buildRecordingStringFromEvents = eventsArray => {
+
+        //start with an empty string
+        var outputString = "";
+        //add the standard opening comment
+        outputString += this.standardRecordingComment;
+        //add the standard async opening function
+        outputString += this.openAnonAsyncFunction();
+        //then we loop through the array
+        for (let recordingEventIndex in eventsArray) { 
+            //make sure we have a recording event with defaults
+            var eachEvent = new RecordingEvent(eventsArray[recordingEventIndex]);
+            //if we are on the first event, just push according to event
+            if (recordingEventIndex == 0) {
+                outputString += `${this.tabIndex(recordingEventIndex)}${this.mapActionTypeToFunction(eachEvent, recordingEventIndex)}\n`;
+            //otherwise we need to wrap in the setTimeout
+            } else {
+                //open the async timeout function
+                outputString += this.openTimedFunction();
+                //map the action to the function and return string
+                outputString += `${this.tabIndex(recordingEventIndex)}${this.mapActionTypeToFunction(eachEvent, recordingEventIndex)}`;
+                //close the async timeout function
+                outputString += this.closeTimedFunction(eachEvent.recordingTimeSincePrevious);
+            }
+        }
+        //add the standard async closing function
+        outputString += this.closeAnonAsyncFunction();
+        //return the string
+        return outputString;
+
+    }
   
 }

@@ -8,6 +8,7 @@ function addNewRecordingEventToTable(recordingEvent, table) {
     let docFrag = document.createDocumentFragment();
     //then we make a clone of the row, that will serve the purpose
     let tempNode = targetRow.cloneNode(true);
+
     //then we just take the data from the recording event and paste it in
     //<td data-field="recordingEventOrigin">User</td>
     let recordingEventOriginNode = tempNode.querySelector('td[data-label="recordingEventOrigin"]');
@@ -15,12 +16,15 @@ function addNewRecordingEventToTable(recordingEvent, table) {
     //<td data-field="recordingEventAction">Click</td>
     let recordingEventActionNode = tempNode.querySelector('td[data-label="recordingEventAction"]');
     recordingEventActionNode.textContent = recordingEvent.recordingEventAction;
-    //<td data-field="recordingEventHTMLElement">HTMLElement</td>
-    let recordingEventHTMLElementNode = tempNode.querySelector('td[data-label="recordingEventHTMLElement"]');
-    recordingEventHTMLElementNode.textContent = recordingEvent.recordingEventHTMLElement;
+    //<td data-label="recordingEventActionType">Click</td>
+    let recordingEventActionTypeNode = tempNode.querySelector('td[data-label="recordingEventActionType"]');
+    recordingEventActionTypeNode.textContent = recordingEvent.recordingEventActionType;
     //<td data-field="recordingEventHTMLTag">BUTTON</td>
     let recordingEventHTMLTagNode = tempNode.querySelector('td[data-label="recordingEventHTMLTag"]');
     recordingEventHTMLTagNode.textContent = recordingEvent.recordingEventHTMLTag;
+    //<td data-label="recordingEventCssSelectorPath" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">div > a</td>
+    let recordingEventSelectorNode = tempNode.querySelector('td[data-label="recordingEventCssSelectorPath"]');
+    recordingEventSelectorNode.textContent = recordingEvent.recordingEventCssSelectorPath || recordingEvent.recordingEventCssDomPath;
     //<td data-field="recordingEventInputType">N/A</td>
     let recordingEventInputTypeNode = tempNode.querySelector('td[data-label="recordingEventInputType"]');
     recordingEventInputTypeNode.textContent = recordingEvent.recordingEventInputType;
@@ -67,27 +71,37 @@ function addStartRecordingHandler() {
         //then we create a recording messenger that updates its active recording each time there is a message emitted
         .switchMap( () =>
             //then we need to start receiving recording events sent here by the content script, either originating in the content script or relayed from window.postMessage iframe
-            new RecordReplayMessenger({}).isAsync(false).chromeOnMessageObservable
-                //NB JUST FOR TESTING
-                .startWith({request: { recordingEvent: new RecordingEvent({}) } }),
+            new RecordReplayMessenger({}).isAsync(false).chromeOnMessageObservable,
             //then use the projection function to tie the two together
             (recording, messageObject) => {
                 //add the recording event to the table
                 addNewRecordingEventToTable(messageObject.request.recordingEvent, document.querySelector('.ui.celled.striped.newRecordingRecordingEventsTable.table tbody'))
+                //push the new recording event into the recording's event array
                 recording.recordingEventArray.push(messageObject.request.recordingEvent);
+                //then return the recording so it can be updated in the database
                 return recording;
             }
         )
+        //we only want to make additions until the user interface stop recording button is clicked 
+        //TO DO - WE PROBABLY WANT TO STOP RECORDING WHEN BROWSER WINDOW IS CLOSED AS WELL
         .takeUntil(Rx.Observable.fromEvent(document.querySelector('.ui.stopRecording.negative.button'), 'click'))
         //change the user interface
         .subscribe(
-            x => console.log(x),
+            //when we get each mutated recording emitted, we need to update the recording in the database with its new recording event array
+            editedRecording => {
+                //log to the console so we can follow what's going on
+                console.log(editedRecording);
+                //then update the recording in the database
+                StorageUtils.updateModelObjectInDatabaseTable('recordings.js', editedRecording.id, editedRecording, 'recordings');
+            },
             error => console.error(error),
             //when complete we want to update the UI
             () => {  
                 //hide the recording loader
                 $('.ui.text.small.recording.loader').removeClass('active');
+
                 //TO DO send message to close the recording tab
+                
                 //then we need to add the start recording handler again
                 addStartRecordingHandler();
             }

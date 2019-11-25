@@ -452,6 +452,7 @@ EventRecorder.startRecordingEvents = () => {
             const newEvent = new RecordingEvent({
                 //general properties
                 recordingEventAction: 'Scroll',
+                recordingEventActionType: `x: ${Math.round(actionEvent.target.scrollingElement.scrollLeft)}, y: ${Math.round(actionEvent.target.scrollingElement.scrollTop)}`,
                 recordingEventHTMLElement: actionEvent.target.constructor.name,
                 recordingEventHTMLTag: actionEvent.target.scrollingElement.tagName,
                 recordingEventCssSelectorPath: EventRecorder.getCssSelectorPath(actionEvent.target.scrollingElement),
@@ -504,7 +505,11 @@ EventRecorder.startRecordingEvents = () => {
         return currentRecording;
     })
     //and log the output  
-    .subscribe(recordingEvent => console.log(recordingEvent));
+    .subscribe(recordingEvent => {
+        //if we are not running in the extension testing environment, send the message
+        EventRecorder.sendEvent(recordingEvent);
+        console.log(recordingEvent)
+    });
 
 }
 
