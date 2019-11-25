@@ -118,8 +118,11 @@ class PuppeteerTranslator {
     mapActionTypeToFunction = (recordingEvent, index) => {
         switch(recordingEvent.recordingEventAction) {
             case "Mouse":
-                if (recordingEvent.recordingEventActionType == "hover") return this.hover(this.getMostValidSelector(recordingEvent));
-                if (recordingEvent.recordingEventActionType == "click") return this.mouseClick(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventActionType, index);
+                if (recordingEvent.recordingEventActionType == "hover") {
+                    return this.hover(this.getMostValidSelector(recordingEvent));
+                } else {
+                    return this.mouseClick(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventActionType, index);
+                }
             case "Scroll":
                 return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
             case "Keyboard": 

@@ -38,24 +38,23 @@ class JavascriptTranslator {
 
     //ACTION FUNCTIONS
 
-    mouseClick = (selector, clicktype, index) => `const event${index} = document.createEvent('Events'); event${index}.initEvent('${clicktype}', true, false); document.querySelector('${selector}').dispatchEvent( event${index} );`
+    mouseClick = (selector, clicktype, index) => `const event${index} = new MouseEvent('${clicktype}', {view: window, bubbles: true, cancelable: false}); document.querySelector('${selector}').dispatchEvent( event${index} );`
 
     inputText = (selector, text) => `document.querySelector('${selector}').value = '${text}';` 
 
 
 
     //TO DO Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
-    // THIS IS NOT WORKING
+    // 
     sendSpecialKey = (keyCode, index) => `const event${index} = new KeyboardEvent('keydown',{'key': ${keyCode}}); document.querySelector('${selector}').dispatchEvent( event${index} );`
 
 
 
-    //TODO - check smooth scroll style key name
     scrollTo = (xPosition, yPosition) => `window.scrollTo({left: ${xPosition}, top: ${yPosition}, behavior: 'smooth'}); `
 
-    focus = (selector, index) => `const event${index} = document.createEvent('Events'); event${index}.initEvent('focus', true, false); document.querySelector('${selector}').dispatchEvent( event${index} );`
+    focus = (selector) => `document.querySelector('${selector}').focus({ preventScroll: false });`
 
-    hover = (selector, index) => `const event${index} = document.createEvent('Events'); event${index}.initEvent('mouseover', true, false); document.querySelector('${selector}').dispatchEvent( event${index} );`
+    hover = (selector, index) => `const event${index} = new MouseEvent('mouseover', {view: window, bubbles: true, cancelable: false}); document.querySelector('${selector}').dispatchEvent( event${index} );`
 
     //ASSERTIONS HELPERS
 
@@ -90,8 +89,11 @@ class JavascriptTranslator {
     mapActionTypeToFunction = (recordingEvent, index) => {
         switch(recordingEvent.recordingEventAction) {
             case "Mouse":
-                if (recordingEvent.recordingEventActionType == "hover") return this.hover(this.getMostValidSelector(recordingEvent), index);
-                if (recordingEvent.recordingEventActionType == "click") return this.mouseClick(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventActionType, index);
+                if (recordingEvent.recordingEventActionType == "hover") {
+                    return this.hover(this.getMostValidSelector(recordingEvent), index);
+                } else {
+                    return this.mouseClick(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventActionType, index);
+                }
             case "Scroll":
                 return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
             case "Keyboard": 
