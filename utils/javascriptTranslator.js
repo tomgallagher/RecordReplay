@@ -38,7 +38,7 @@ class JavascriptTranslator {
 
     //ACTION FUNCTIONS
 
-    mouseClick = (selector, clicktype, index) => `const event${index} = document.createEvent('Events'); event.initEvent(${clicktype}, true, false); document.querySelector('${selector}').dispatchEvent( event${index} );`
+    mouseClick = (selector, clicktype, index) => `const event${index} = document.createEvent('Events'); event${index}.initEvent(${clicktype}, true, false); document.querySelector('${selector}').dispatchEvent( event${index} );`
 
     inputText = (selector, text) => `document.querySelector('${selector}').value = '${text}';` 
 
@@ -51,11 +51,11 @@ class JavascriptTranslator {
 
 
     //TODO - check smooth scroll style key name
-    scrollTo = (xPosition, yPosition) => `window.scrollTo({left: ${xPosition}, top: ${yPosition}, scroll: 'smooth'}); `
+    scrollTo = (xPosition, yPosition) => `window.scrollTo({left: ${xPosition}, top: ${yPosition}, behavior: 'smooth'}); `
 
-    focus = (selector, index) => `const event${index} = document.createEvent('Events'); event.initEvent('focus', true, false); document.querySelector('${selector}').dispatchEvent( event${index} );`
+    focus = (selector, index) => `const event${index} = document.createEvent('Events'); event${index}.initEvent('focus', true, false); document.querySelector('${selector}').dispatchEvent( event${index} );`
 
-    hover = (selector, index) => `const event${index} = document.createEvent('Events'); event.initEvent('mouseover', true, false); document.querySelector('${selector}').dispatchEvent( event${index} );`
+    hover = (selector, index) => `const event${index} = document.createEvent('Events'); event${index}.initEvent('mouseover', true, false); document.querySelector('${selector}').dispatchEvent( event${index} );`
 
     //ASSERTIONS HELPERS
 
