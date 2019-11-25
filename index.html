@@ -1122,7 +1122,87 @@
                                         
                                     <tbody></tbody>
         
-                                    <tfoot></tfoot>
+                                    <tfoot class="full-width viewDetailedTableEventsFooter" style="display: none">
+
+                                        <tr>
+
+                                            <th colspan="16">
+                
+                                                <form class="ui viewRecordingEvent form">
+                
+                                                    <div class="two fields">
+                                                                
+                                                        <div class="field">
+                                
+                                                            <label>CSS Selector 1</label>
+                                
+                                                            <input type="text" name="recordingEventCssSelectorPath" readonly="readonly">
+                                                                    
+                                                        </div>
+                                                                        
+                                                        <div class="field">
+
+                                                            <label>CSS Selector 2</label>
+                                                                
+                                                            <input type="text" name="recordingEventCssDomPath" readonly="readonly">
+                                                                
+                                                        </div>
+                                
+                                                    </div>
+                
+                                                    <div class="two fields">
+                        
+                                                        <div class="field">
+                                                                
+                                                            <label>CSS Selector 3</label>
+                                                                            
+                                                            <input type="text" name="recordingEventCssSimmerPath" readonly="readonly">
+                                                                            
+                                                        </div>
+
+                                                        <div class="field">
+                                                                
+                                                            <label>Xpath Selector</label>
+                                                                            
+                                                            <input type="text" name="recordingEventXPath" readonly="readonly">
+                                                                            
+                                                        </div>
+                                        
+                                                    </div>
+
+                                                    <div class="two fields">
+                        
+                                                        <div class="field">
+                                                                
+                                                            <label>Location</label>
+                                                                            
+                                                            <input type="text" name="recordingEventLocation" readonly="readonly">
+                                                                            
+                                                        </div>
+
+                                                        <div class="field">
+                                                            
+                                                            <label>Additional Reporting</label>
+
+                                                            <div class="ui checkbox">
+                                                                
+                                                                <input type="checkbox" name="recordingEventIsIframe" readonly="readonly">
+                                                                    
+                                                                <label>Event in iframe</label>
+                                                                  
+                                                            </div>
+                                                                            
+                                                        </div>
+                                        
+                                                    </div>
+                
+                                                </form>
+                                                        
+                                            </th>
+                
+                                        </tr>
+
+                                    </tfoot>
         
                                 </table>
                               
@@ -1581,12 +1661,12 @@
                                 <div class="ui mini divided horizontal list">
                                     <div class="item">
                                         <div class="content">
-                                            <a class="showRecordingEventRow" data-recording-event-id="0">Show</a>
+                                            <a class="showRecordingEventRow" data-recording-id="0" data-recording-event-id="0" data-tooltip="To show more details of this event" data-position="left center">Show</a>
                                         </div>    
                                     </div>
                                     <div class="item">
                                         <div class="content" >
-                                            <a class="deleteRecordingEventRow" data-recording-event-id="0" style="color: red">Delete</a>
+                                            <a class="deleteRecordingEventRow" data-recording-id="0" data-recording-event-id="0" style="color: red" data-tooltip="To delete this event from recording" data-position="left center">Delete</a>
                                         </div>    
                                     </div>
                                 </div>

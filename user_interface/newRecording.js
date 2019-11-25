@@ -1,4 +1,4 @@
-function addNewRecordingEventToTable(recordingEvent, table) {
+function addNewRecordingEventToTable(recording, recordingEvent, table) {
 
     //target our table row template first, we only need to find the template once
     let targetNode = document.querySelector('.recordingEventTableRowTemplate');
@@ -40,9 +40,11 @@ function addNewRecordingEventToTable(recordingEvent, table) {
 
     let recordingEventShowLink = tempNode.querySelector('.showRecordingEventRow');
     recordingEventShowLink.setAttribute('data-recording-event-id', `${recordingEvent.recordingEventId}`);
+    recordingEventShowLink.setAttribute('data-recording-id', `${recording.id}`);
 
     let recordingEventDeleteLink = tempNode.querySelector('.deleteRecordingEventRow');
     recordingEventDeleteLink.setAttribute('data-recording-event-id', `${recordingEvent.recordingEventId}`);
+    recordingEventDeleteLink.setAttribute('data-recording-id', `${recording.id}`);
 
     //then we need to attach the clone of the template node to our container fragment
     docFrag.appendChild(tempNode);
@@ -75,7 +77,7 @@ function addStartRecordingHandler() {
             //then use the projection function to tie the two together
             (recording, messageObject) => {
                 //add the recording event to the table
-                addNewRecordingEventToTable(messageObject.request.recordingEvent, document.querySelector('.ui.celled.striped.newRecordingRecordingEventsTable.table tbody'))
+                addNewRecordingEventToTable(recording, messageObject.request.recordingEvent, document.querySelector('.ui.celled.striped.newRecordingRecordingEventsTable.table tbody'))
                 //push the new recording event into the recording's event array
                 recording.recordingEventArray.push(messageObject.request.recordingEvent);
                 //then return the recording so it can be updated in the database

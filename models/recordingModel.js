@@ -55,4 +55,8 @@ class Recording {
         this.sortRecordingEventsByTimestamp();
     }
 
+    findRecordingEventById(recordingEventId) {
+        return this.recordingEventArray.find(event => event.recordingEventId == recordingEventId);
+    }
+
 }

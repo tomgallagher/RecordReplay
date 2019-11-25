@@ -181,19 +181,85 @@ function updateRecordingsTable() {
 
 }
 
+
+function addRecordingEventTableButtonListeners() {
+
+    //delete recording event button click handler
+    $('.deleteRecordingEventRow').on('mousedown', function(){
+        //find the recording in the database by id, using data-recording-id from the template
+        const recordingKey = $(this).attr("data-recording-id");
+        //do the same with the recording event key
+        const recordingEventKey = $(this).attr("data-recording-event-id");
+        //the recording key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', recordingKey, 'recordings')
+            //then we have a returned js object with the recording details
+            .then(recording => {
+                //get a new instantiation of our recording, which will lose the id
+                var editedRecording = new Recording(recording);
+                //add the id back so we can save using the id
+                editedRecording.id = recording.id;
+                //remove the deleted item and order according to time stamp, using the method attached to the recording model
+                editedRecording.deleteRecordingEventById(recordingEventKey);
+                //then update the events table so we can see the changes
+                updateRecordingEventsTableAndCodeText(editedRecording);
+                //then return the edited recording, with new set of events, for saving in the database
+                return editedRecording;
+            })
+            //then we need to save the edited recording
+            .then(editedRecording => StorageUtils.updateModelObjectInDatabaseTable('recordings.js', editedRecording.id, editedRecording, 'recordings'))
+            //the get single object function will reject if object is not in database
+            .catch(error => console.error(error));   
+
+    });
+
+    //delete recording event button click handler
+    $('.showRecordingEventRow').on('mousedown', function(){
+        //find the recording in the database by id, using data-recording-id from the template
+        const recordingKey = $(this).attr("data-recording-id");
+        //do the same with the recording event key
+        const recordingEventKey = $(this).attr("data-recording-event-id");
+        //the recording key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', recordingKey, 'recordings')
+            //then we have a returned js object with the recording details
+            .then(recording => {
+                //get a new instantiation of our recording, so we can use the method
+                var searchableRecording = new Recording(recording);
+                //use the method to get the recording event
+                const recordingEvent = searchableRecording.findRecordingEventById(recordingEventKey);
+                //fill the form fields with the data from the recording event
+                $('.ui.viewRecordingEvent.form input[name=recordingEventCssSelectorPath]').val(recordingEvent.recordingEventCssSelectorPath);
+                $('.ui.viewRecordingEvent.form input[name=recordingEventCssDomPath]').val(recordingEvent.recordingEventCssDomPath);
+                $('.ui.viewRecordingEvent.form input[name=recordingEventCssSimmerPath]').val(recordingEvent.recordingEventCssSimmerPath);
+                $('.ui.viewRecordingEvent.form input[name=recordingEventXPath]').val(recordingEvent.recordingEventXPath);
+                $('.ui.viewRecordingEvent.form input[name=recordingEventLocation]').val(recordingEvent.recordingEventLocation);
+                //then the checkbox
+                recordingEvent.recordingEventIsIframe == true ? $('.ui.viewRecordingEvent .ui.checkbox input[name=recordingEventIsIframe]').prop('checked', true) : null;
+                //show the form
+                $('.viewDetailedTableEventsFooter').css("display", "table-footer-group");
+            })
+            //the get single object function will reject if object is not in database
+            .catch(error => console.error(error));   
+
+    });
+
+}
+
 function updateRecordingEventsTableAndCodeText(recording) {
 
-    console.log(recording);
-    //gets the templates for recording event row and populates the table
+    //empty the table body first
+    $('.ui.celled.striped.editRecordingRecordingEventsTable.table tbody').empty();
+    //get a reference to the table
     const table = document.querySelector('.ui.celled.striped.editRecordingRecordingEventsTable.table tbody')
     //then for each recordingEvent we need to add it to the table and the textarea
     for (let recordingEvent in recording.recordingEventArray) { 
         //then borrow the function from newRecording.js
-        addNewRecordingEventToTable(recording.recordingEventArray[recordingEvent], table);
+        addNewRecordingEventToTable(recording, recording.recordingEventArray[recordingEvent], table);
     }
     //for code, we use Javascript as default
     const toJavascript = new JavascriptTranslator({});
     $('.codeOutputTextArea').val(toJavascript.buildRecordingStringFromEvents(recording.recordingEventArray));
+    //add recording events table button listeners
+    addRecordingEventTableButtonListeners();
 
 }
 
