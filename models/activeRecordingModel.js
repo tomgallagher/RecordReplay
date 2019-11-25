@@ -45,7 +45,7 @@ class ActiveRecording extends Recording {
                 //log any errors obviously
                 error => console.error(error),
                 //then we log the completion of this event to ensure that the async task is not completing after its output might be required
-                () => console.log("Active Recording has Collected ALL scripts into recordingScriptsString")
+                () => console.log(`%cActive Recording has Collected ALL scripts into recordingScriptsString [extension]`, 'color: blue')
             );
 
     }

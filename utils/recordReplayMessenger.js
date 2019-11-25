@@ -7,18 +7,9 @@ class RecordReplayMessenger {
         const defaults = {
             //we say whether we want the ability to return async responses
             asyncMessageListening: false,
-            //all messengers need the ability to detect if they are in an iframe
-            contextIsIframe: () => { 
-                try { return window.self !== window.top; } 
-                catch (e) { return true; } 
-            },
-            //all messengers need the ability to detect if they are in a content script
-            contextIsContentScript: () => { return typeof chrome.runtime.getManifest != 'undefined' },
             //then we need a function that logs accordint to context
-            logWithContext: message => {
-                this.contextIsIframe() ? console.log(`%c${message} [iframe]`, 'color: green') : null;
-                this.contextIsContentScript() ? console.log(`%c${message} [extension]`, 'color: blue'): null;
-            },
+            logWithContext: message => console.log(`%c${message} [extension]`, 'color: blue'),
+            //then we may need to listen to iframe messages from the windows postMessage function
             windowOnMessageObservable: Rx.Observable.fromEventPattern(
                 handler => {
                     window.addEventListener("message", handler, false);
@@ -29,6 +20,7 @@ class RecordReplayMessenger {
                     this.logWithContext(`Record/Replay Messenger: UNSUBSCRIBED from Window Messaging Observer Instance`);
                 }
             ),
+            //extension functions will need the possibility of listening to extension messages
             chromeOnMessageObservable: Rx.Observable.fromEventPattern(
                 handler => {
                     const wrapper = (request, sender, sendResponse) => {
@@ -54,7 +46,7 @@ class RecordReplayMessenger {
         Object.keys(defaults).forEach(prop => { this[prop] = opts[prop]; });
         
         //then report
-        this.logWithContext(`Record/Replay Messenger created in ${this.contextIsIframe() ? 'Iframe' : 'Extension' } with origin ${window.origin}`);
+        this.logWithContext(`Record/Replay Messenger created in origin ${window.origin}`);
         
     }
 
@@ -64,13 +56,7 @@ class RecordReplayMessenger {
         return this;
     }
 
-    sendMessage = message => {
-        if (this.contextIsIframe()) {
-            window.parent.postMessage(message, "*");
-        } else {
-            //this message is only sent from extension user interface to the background script to open recording tab so we need only one variety
-            chrome.runtime.sendMessage(message, response => this.logWithContext(`Record/Replay Messenger: Received Response Message: ${response.message}`));
-        }
-    }
+    //this message is only sent from extension user interface to the background script to open recording tab so we need only one variety
+    sendMessage = message => chrome.runtime.sendMessage(message, response => this.logWithContext(`Record/Replay Messenger: Received Response Message: ${response.message}`));
 
 }

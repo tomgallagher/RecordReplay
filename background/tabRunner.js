@@ -10,6 +10,29 @@ class TabRunner {
             this.browserTabId = await new Promise(resolve => chrome.tabs.create({ url: activeRecording.recordingTestStartUrl }, tab => { resolve(tab.id); } ));
             //then we need to attach the debugger so we can send commands
             await new Promise(resolve => chrome.debugger.attach({ tabId: this.browserTabId }, "1.3", () => { resolve(); } ));
+            //then we need an observable that listens for the creation of new frames
+            this.webNavigationObservable = Rx.Observable.fromEventPattern(
+                //we add the handler that takes the callback object from the debugger event and passes it to subscribers
+                handler => chrome.webNavigation.onCompleted.addListener(handler),
+                //we add the handler that removed the handler from the debugger even and reports
+                handler => chrome.webNavigation.onCompleted.removeListener(handler)
+            );
+            //then lets listen to the events as they come in
+            this.iframeNavigationObservable = this.webNavigationObservable
+                //then we only care about the iframe creation event and we want to ignore the blank ones
+                .filter(navigationObject => navigationObject.frameId > 0 && navigationObject.url != "about:blank")
+                //then lets' see if we can inject content scripts
+                .concatMap(frameObject => Rx.Observable.fromPromise(
+                    new Promise(resolve => 
+                        chrome.tabs.executeScript(this.browserTabId, 
+                            //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
+                            { code: activeRecording.recordingScriptsString, frameId: frameObject.frameId, runAt: "document_idle" }, 
+                            () => { resolve(frameObject); } 
+                        )
+                    )
+                ))
+                //then let's see the output
+                .subscribe(x => console.log(x));
             //then we need to listen to network events, passing in an empty object as we have no need to fine-tune
             await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Network.enable", {}, () => { resolve(); } ));
             //then we need to listen to page events
@@ -29,19 +52,17 @@ class TabRunner {
                     { width: 360, height: 640, mobile: true, screenOrientation: activeRecording.recordingMobileOrientation == 'portrait' ? "portraitPrimary" : "landscapePrimary" }, 
                     () => { resolve(); } ));
             }
-
-            
-            //TO DO - we need to wait for the page to have loaded, so all iframes are present and correct
-
             //then we need to inject our script string - this may better belong in a function that can be called after webnavigation events
             await new Promise(resolve => 
                 chrome.tabs.executeScript(this.browserTabId, 
                     //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
-                    { code: activeRecording.recordingScriptsString, allFrames: true, frameId: 0, runAt: "document_idle" }, 
+                    { code: activeRecording.recordingScriptsString, runAt: "document_idle" }, 
                     () => { resolve(); } 
                 )
             );
+
             
+
             return this; 
 
         })();

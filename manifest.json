@@ -49,6 +49,7 @@
     "unlimitedStorage",
     "downloads",
     "webNavigation",
+    "activeTab",
     "debugger",
     "<all_urls>"
   ]

@@ -235,7 +235,7 @@ function addRecordingEventTableButtonListeners() {
                 $('.ui.viewRecordingEvent.form input[name=recordingEventXPath]').val(recordingEvent.recordingEventXPath);
                 $('.ui.viewRecordingEvent.form input[name=recordingEventLocation]').val(recordingEvent.recordingEventLocation);
                 //then the checkbox
-                recordingEvent.recordingEventIsIframe == true ? $('.ui.viewRecordingEvent .ui.checkbox input[name=recordingEventIsIframe]').prop('checked', true) : null;
+                recordingEvent.recordingEventIsIframe == true ? $('.ui.viewRecordingEvent .ui.checkbox input[name=recordingEventIsIframe]').prop('checked', true) : $('.ui.viewRecordingEvent .ui.checkbox input[name=recordingEventIsIframe]').prop('checked', false);
                 //show the form
                 $('.viewDetailedTableEventsFooter').css("display", "table-footer-group");
             })
