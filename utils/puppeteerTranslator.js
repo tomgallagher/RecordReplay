@@ -40,7 +40,7 @@ class PuppeteerTranslator {
 
     closeAnonAsyncFunction = () => `\n})();`
 
-    openTimedFunction = () => `\n\tawait new Promise(resolve => window.setTimeout({`
+    openTimedFunction = () => `\n\tawait new Promise(resolve => window.setTimeout(() => {`
 
     closeTimedFunction = (delay) => `\n\t\tresolve(); \n\t}, ${delay}));\n`
 

@@ -202,7 +202,32 @@ $(document).ready (function(){
     //activate the tab control
     $('.ui.top.attached.recording.tabular.menu .item').tab();
 
-    //respond to language changes, which requires getting the recording from the server and processing it
+    //activate the copy to clipboard button
+    $('.ui.copyCodeToClipBoard.icon.button').on('click', function() {
+        //get the text from the text area
+        const textToCopy = $('.codeOutputTextArea').val();
+        //then paste that into the clipboard
+        navigator.clipboard.writeText(textToCopy);
+    });
+
+    //activate the download code as js file button
+    $('.ui.downloadCodeToFile.submit.button').on('click', function(event) {
+        //make sure the submit button does not perform its usual reload function
+        event.preventDefault();
+        //get the text from the text area
+        const textToCopy = $('.codeOutputTextArea').val();
+        //create a blob from the text - maybe set this to "text/plain" when we no longer want to use vscode to check formatting of emitted code
+        var blob = new Blob([textToCopy], {type: "text/javascript"});
+        //create a local temporary url - the object URL can be used as download URL
+        var url = URL.createObjectURL(blob);
+        //then download
+        chrome.downloads.download({
+            url: url,
+            filename: "RecordReplayRecording.js"
+        });
+    });
+
+    //respond to requested code language changes, which requires getting the recording from the server and processing it
     $('.ui.code.form .ui.radio.checkbox').change(event => {
         //get the recording from the database using the key
         const recordingKey = event.target.getAttribute("data-recording-id");

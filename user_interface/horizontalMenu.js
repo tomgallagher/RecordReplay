@@ -29,7 +29,7 @@ $(document).ready (function(){
                     localStorage.setItem("ThemeInverted", "true");
                 } else {
                     //otherwise we revert each of our semantic components 
-                    $( ".ui:not(.violet.submit.button)" ).removeClass( "inverted" );
+                    $( ".ui:not(.violet.submit.button):not(.ui.copyCodeToClipBoard.icon.button)" ).removeClass( "inverted" );
                     //then we change the background colour of the whole project
                     $( ".mainSection" ).css( "background-color", "#fff" );
                     //then we change the vertical menu colour back to violet

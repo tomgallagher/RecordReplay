@@ -47,6 +47,7 @@
   "permissions": [
     "storage",
     "unlimitedStorage",
+    "downloads",
     "webNavigation",
     "debugger",
     "<all_urls>"
