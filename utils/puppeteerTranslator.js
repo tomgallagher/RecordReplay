@@ -69,7 +69,7 @@ class PuppeteerTranslator {
     mouseClick = (selector, clicktype, index) => {
         switch(clicktype) {
             case 'click': return `await page.click('${selector}', { button: 'left', clickCount: 1 } );`
-            case 'dblclick': return `await page.click('${selector}', { button: 'left', clickCount: 1 } );`
+            case 'dblclick': return `await page.click('${selector}', { button: 'left', clickCount: 2 } );`
             case 'contextmenu': return `await page.click('${selector}', { button: 'right', clickCount: 1 } );`
             default: return `${this.tabIndex(index)}//No Click Action Available For Action ${clicktype}`
         }
@@ -119,7 +119,7 @@ class PuppeteerTranslator {
         switch(recordingEvent.recordingEventAction) {
             case "Mouse":
                 if (recordingEvent.recordingEventActionType == "hover") return this.hover(this.getMostValidSelector(recordingEvent));
-                if (recordingEvent.recordingEventActionType == "click") return this.hover(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventActionType);
+                if (recordingEvent.recordingEventActionType == "click") return this.mouseClick(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventActionType, index);
             case "Scroll":
                 return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
             case "Keyboard": 
