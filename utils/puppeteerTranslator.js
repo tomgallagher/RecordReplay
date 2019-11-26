@@ -62,7 +62,7 @@ class PuppeteerTranslator {
 
     emulateNetworkConditions = (offline = this.defaultNetworkOffline, download = this.defaultNetworkDownload, upload = this.defaultNetworkUpload, latency = this.defaultLatency) => {
 
-        return `${this.tabIndex(0)}await client.send('Network.emulateNetworkConditions', { offline': ${offline}, 'downloadThroughput': ${download}, 'uploadThroughput': ${upload}, 'latency': ${latency} });\n`;
+        return `${this.tabIndex(0)}await client.send('Network.emulateNetworkConditions', { offline: ${offline}, downloadThroughput: ${download}, uploadThroughput: ${upload}, latency: ${latency} });\n`;
 
     }
 

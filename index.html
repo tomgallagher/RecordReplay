@@ -230,7 +230,7 @@
                                     <i class="angle right icon"></i>
 
                                     <div class="content">
-                                        Organising your testing workflow into projects allows for <strong>quick search, update and delete</strong> of saved tests 
+                                        Organising your testing workflow into projects allows for <strong>better organisation</strong> of saved recordings and replays 
                                     </div>
 
                                 </div>
@@ -276,7 +276,7 @@
                                     <i class="angle right icon"></i>
 
                                     <div class="content">
-                                        Tests are linked to a <strong>single starting url</strong> and can contain many individual recordings 
+                                        Tests are linked to a <strong>single starting url</strong> and can contain many recordings and replays 
                                     </div>
 
                                 </div>
@@ -286,7 +286,7 @@
                                     <i class="angle right icon"></i>
 
                                     <div class="content">
-                                        Tests allow <strong>bandwidth and latency throttling</strong>, as well as taking screenshots  
+                                        Tests allow <strong>bandwidth and latency throttling</strong>, as well as taking screenshots on replay success or failure 
                                     </div>
 
                                 </div>
@@ -332,7 +332,7 @@
                                     <i class="angle right icon"></i>
                                 
                                     <div class="content">
-                                        Highlight the content of any element by <strong>standard mouse text selection</strong>, if you want to <strong>assert properties</strong> of the element in future replays 
+                                        You can flip between the Record/Replay tab and the test target tab to see your actions being <strong>recorded in real time</strong> 
                                     </div>
 
                                 </div>
@@ -342,7 +342,7 @@
                                     <i class="angle right icon"></i>
 
                                     <div class="content">
-                                        Unwanted recordings events can be removed via the simple <strong>table interface</strong>, with final output saved to local storage for later replay
+                                        Unwanted recordings events can be removed via the <strong>table interface</strong>, with final output saved to local storage for later replay
                                     </div>
 
                                 </div>
@@ -368,7 +368,7 @@
                                     <i class="angle right icon"></i>
 
                                     <div class="content">
-                                        
+                                        To create your first replay, select a previous recording from menu, <strong>add the assertions</strong> you want performed, then hit start
                                     </div>
 
                                 </div>
@@ -378,7 +378,7 @@
                                     <i class="angle right icon"></i>
 
                                     <div class="content">
-                                        
+                                        The replay reports to the Record/Replay tab, so you can see your tests progressing with <strong>identical time intervals</strong> as the recording. 
                                     </div>
 
                                 </div>
@@ -1545,10 +1545,24 @@
                                     
                                     <i class="angle right icon"></i>
 
-                                    When <strong>recording</strong> is in progress, the mouse 'hover' event is fired after hovering over an element for <strong>more than three seconds</strong>.
-                                    This may be longer than you'd expect, so try counting slowly to three. Or quickly to five. Or something. Don't worry if you collect too many 
-                                    hover events, you can delete them from your recording and it will become second nature.  
+                                    When <strong>recording</strong> is in progress, the mouse <strong>Hover</strong> action is fired after hovering over an element for <strong>more 
+                                    than three seconds</strong>. This may be longer than you'd expect, so try counting slowly to three. Or quickly to five. Or something. Don't worry 
+                                    if you collect too many <strong>Hover</strong> actions, you can delete them from your recording and it will become second nature.  
                               
+                                </div>
+                            
+                            </div>
+
+                            <div class="item">
+                              
+                                <div class="content">
+                                    
+                                    <i class="angle right icon"></i>
+
+                                    <strong>Hover</strong> and <strong>Text Selection</strong> actions are the <strong>only</strong> recorded actions that allow you to add assertions
+                                    that can be checked on replay. Text selection operates as you would expect - if you select text on the page during a <strong>recording</strong>, 
+                                    the element selected is made available for qualified assertions. All other actions are subject to their own verification checks.
+                                
                                 </div>
                             
                             </div>
@@ -1561,7 +1575,7 @@
 
                                     Be careful when <strong>editing</strong> existing tests or recordings. Changing bandwidth and mobile emulation parameters can lead to unpredictable 
                                     results. Our advice is to create <strong>separate mobile and computer recordings</strong> for the same test, thereby ensuring that the testing 
-                                    environments remain constant.  
+                                    environment remains constant.  
                               
                                 </div>
                             
