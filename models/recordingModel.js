@@ -35,27 +35,27 @@ class Recording {
         // assign options to instance data (using only property names contained in defaults object to avoid copying properties we don't want)
         Object.keys(defaults).forEach(prop => { this[prop] = opts[prop]; });
     }
-    
-    sortRecordingEventsByTimestamp() {
-        this.recordingEventArray = this.recordingEventArray.sort(
-            (previousRecordingEvent, currentRecordingEvent) => {
-                //so we need a way of resolving ties - we use the performance timestamp here
-                //note that performance timestamps start from page load
-                if (previousRecordingEvent.recordingEventCreated = currentRecordingEvent.recordingEventCreated) {
-                    return previousRecordingEvent.recordingEventTimestamp - currentRecordingEvent.recordingEventTimestamp;
-                } else {
-                    return previousRecordingEvent.recordingEventCreated - currentRecordingEvent.recordingEventCreated
-                }
-            }
-        );
-    }
 
     deleteRecordingEventById(recordingEventId) {
-        this.recordingEventArray = this.recordingEventArray.filter(item => item.recordingEventId != recordingEventId);
-        this.sortRecordingEventsByTimestamp();
+        this.recordingEventArray = this.recordingEventArray
+            //get rid of the element that has been deleted
+            .filter(item => item.recordingEventId != recordingEventId)
+            //then adjust the time since previous
+            .map((recordingEvent, index, array) => {
+                //the time since previous of the first item is always 0, so if the first item is deleted we end up with an absolute timestamp for the second item
+                if (index == 0) { recordingEvent.recordingTimeSincePrevious = 0; return recordingEvent; }
+                //otherwise we need to go through to the end of the array, comparing the current event with the one before it in the index
+                else {
+                    //so recording event time since previous is equal to the difference in their event created times
+                    recordingEvent.recordingTimeSincePrevious = recordingEvent.recordingEventCreated - array[index-1].recordingEventCreated;
+                    //then return the mutated element
+                    return recordingEvent;
+                }
+            });
     }
 
     findRecordingEventById(recordingEventId) {
+        //we know that the event is in the array so a simple find is fine
         return this.recordingEventArray.find(event => event.recordingEventId == recordingEventId);
     }
 
