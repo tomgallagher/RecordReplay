@@ -276,9 +276,9 @@ function addRecordingEventTableButtonListeners() {
 function updateRecordingEventsTableAndCodeText(recording) {
 
     //empty the table body first
-    $('.ui.celled.striped.editRecordingRecordingEventsTable.table tbody').empty();
+    $('.ui.editRecordingRecordingEventsTable.table tbody').empty();
     //get a reference to the table
-    const table = document.querySelector('.ui.celled.striped.editRecordingRecordingEventsTable.table tbody')
+    const table = document.querySelector('.ui.editRecordingRecordingEventsTable.table tbody')
     //then for each recordingEvent we need to add it to the table and the textarea
     for (let recordingEvent in recording.recordingEventArray) { 
         //then borrow the function from newRecording.js

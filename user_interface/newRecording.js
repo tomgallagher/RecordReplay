@@ -9,6 +9,11 @@ function addNewRecordingEventToTable(recording, recordingEvent, table) {
     //then we make a clone of the row, that will serve the purpose
     let tempNode = targetRow.cloneNode(true);
 
+    //if the event has taken place in an iframe we add the warning class
+    if (recordingEvent.recordingEventIsIframe) { tempNode.classList.add('warning');}
+    
+    //then we should also change row for navigation events
+
     //then we just take the data from the recording event and paste it in
     //<td data-field="recordingEventOrigin">User</td>
     let recordingEventOriginNode = tempNode.querySelector('td[data-label="recordingEventOrigin"]');
@@ -64,7 +69,7 @@ function addStartRecordingHandler() {
             //show the recording loader
             $('.ui.text.small.recording.loader').addClass('active');
             //then empty the table
-            $('.ui.celled.striped.newRecordingRecordingEventsTable.table tbody').empty();
+            $('.ui.newRecordingRecordingEventsTable.table tbody').empty();
         })
         //map the event to the recording that has started by querying storage using the data id from the button
         .flatMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('newRecording.js', event.target.getAttribute('data-recording-id') , 'recordings')))
@@ -92,7 +97,7 @@ function addStartRecordingHandler() {
             //then use the projection function to tie the two together
             (recording, recordingEvent) => {
                 //add the recording event to the table
-                addNewRecordingEventToTable(recording, recordingEvent, document.querySelector('.ui.celled.striped.newRecordingRecordingEventsTable.table tbody'))
+                addNewRecordingEventToTable(recording, recordingEvent, document.querySelector('.ui.newRecordingRecordingEventsTable.table tbody'))
                 //push the new recording event into the recording's event array
                 recording.recordingEventArray.push(recordingEvent);
                 //then return the recording so it can be updated in the database
@@ -239,7 +244,7 @@ $(document).ready (function(){
                                 //remove the loading indicator from the button
                                 $('.ui.newRecordingForm .ui.submit.button').removeClass('loading');
                                 //clear the new recording recording events table of any previous entries
-                                $('.ui.celled.newRecordingRecordingEventsTable.table tbody').empty();
+                                $('.ui.newRecordingRecordingEventsTable.table tbody').empty();
                                 //undisable the button if we have had a previous new recording
                                 $('.ui.startRecording.positive.button').removeClass('disabled');
                                 //change the data-recording-id of the start and stop buttons, so we can retrieve the recording on recording start
