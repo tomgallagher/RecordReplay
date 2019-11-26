@@ -474,8 +474,8 @@ EventRecorder.startRecordingEvents = () => {
         .filter(event => event.type == "scroll")
         //then for the time being we only want to record scroll events on the document element
         .filter(event => event.target instanceof HTMLDocument)
-        //then we only want to get the last event after scrolling has stopped for 1 second
-        .debounceTime(1000)
+        //then we only want to get the last event after scrolling has stopped for 1/2 second - longer and the scroll events can occur after the click that should follow
+        .debounceTime(500)
         //then we need to translate that event into something that can be repeated so we need the x and y co-ordinates and the given scrolling element
         .map(actionEvent => {
             const newEvent = new RecordingEvent({
