@@ -255,6 +255,7 @@ function updateRecordingEventsTableAndCodeText(recording) {
     //then for each recordingEvent we need to add it to the table and the textarea
     for (let recordingEvent in recording.recordingEventArray) { 
         //then borrow the function from newRecording.js
+        console.log(recording.recordingEventArray[recordingEvent])
         addNewRecordingEventToTable(recording, recording.recordingEventArray[recordingEvent], table);
     }
     //for code, we use Javascript as default

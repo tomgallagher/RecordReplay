@@ -32,6 +32,8 @@ class JavascriptTranslator {
     
     openTimedFunction = () => `\n\tawait new Promise(resolve => window.setTimeout(() => {`
 
+    warnOnIframe = (href) => `\n\t\t//THIS ACTION MUST BE EXECUTED IN CONTEXT OF IFRAME WITH ORIGIN: ${new URL(href).origin}`
+
     closeTimedFunction = (delay) => `\n\t\tresolve(); \n\t}, ${delay}));\n`
 
     tabIndex = index =>  index == 0 ? '\n\t' : '\n\t\t';
@@ -39,6 +41,8 @@ class JavascriptTranslator {
     //ACTION FUNCTIONS
 
     mouseClick = (selector, clicktype, index) => `const event${index} = new MouseEvent('${clicktype}', {view: window, bubbles: true, cancelable: false}); document.querySelector('${selector}').dispatchEvent( event${index} );`
+
+    recaptcha = (selector, index) => `const event${index} = new MouseEvent('click', {view: window, bubbles: true, cancelable: false}); document.querySelector('${selector}').dispatchEvent( event${index} );`
 
     inputText = (selector, text) => `document.querySelector('${selector}').value = '${text}';` 
 
@@ -89,10 +93,13 @@ class JavascriptTranslator {
     mapActionTypeToFunction = (recordingEvent, index) => {
         switch(recordingEvent.recordingEventAction) {
             case "Mouse":
-                if (recordingEvent.recordingEventActionType == "hover") {
-                    return this.hover(this.getMostValidSelector(recordingEvent), index);
-                } else {
-                    return this.mouseClick(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventActionType, index);
+                switch(recordingEvent.recordingEventActionType) {
+                    case "hover":
+                        return this.hover(this.getMostValidSelector(recordingEvent), index);
+                    case "recaptcha":
+                        return this.recaptcha(this.getMostValidSelector(recordingEvent), index);
+                    default:
+                        return this.mouseClick(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventActionType, index);
                 }
             case "Scroll":
                 return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
@@ -125,6 +132,8 @@ class JavascriptTranslator {
             } else {
                 //open the async timeout function
                 outputString += this.openTimedFunction();
+                //then add the iframe warning if required
+                eachEvent.recordingEventIsIframe ? outputString += this.warnOnIframe(eachEvent.recordingEventLocationHref) : null;
                 //map the action to the function and return string
                 outputString += `${this.tabIndex(recordingEventIndex)}${this.mapActionTypeToFunction(eachEvent, recordingEventIndex)}`;
                 //close the async timeout function

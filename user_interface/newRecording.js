@@ -72,14 +72,29 @@ function addStartRecordingHandler() {
         .do(recording => new RecordReplayMessenger({}).sendMessage({newRecording: recording}))
         //then we create a recording messenger that updates its active recording each time there is a message emitted
         .switchMap( () =>
-            //then we need to start receiving recording events sent here by the content script, either originating in the content script or relayed from window.postMessage iframe
-            new RecordReplayMessenger({}).isAsync(false).chromeOnMessageObservable,
+            //then we need to start receiving recording events sent here by the content script, originating in either main frame or iframe content scripts
+            new RecordReplayMessenger({}).isAsync(false).chromeOnMessageObservable
+                //we only care about the recording events at the moment so we can just map to those
+                .map(messageObject => messageObject.request.recordingEvent)
+                //and we need to start with a dummy marker so we can operate with only one emission, this must come before pairwise() to create the first pair
+                .startWith(new RecordingEvent({recordingEventOrigin: 'PairwiseStart'}))
+                //then we need to get the time between each emission so we take two emissions at a time
+                .pairwise()
+                //this then delivers an array with the previous and the current, we only need the current, with adjusted recordingTimeSincePrevious
+                .map(([previousRecording, currentRecording]) => {
+                    //if the previous was not the dummy 'PairwiseStart', then we need to add the relative time of the recording event so we can exactly reproduce timing steps with delays
+                    //if it is then the time will be 0, with zero delay, which is what we want
+                    //this can be actioned in the replay mode via .concatMap(event => Rx.Observable.of(event).delay(event.recordingTimeSincePrevious))
+                    previousRecording.recordingEventOrigin != 'PairwiseStart' ? currentRecording.recordingTimeSincePrevious = currentRecording.recordingEventCreated - previousRecording.recordingEventCreated : null;
+                    //then we just need to return the current recording as we don't care about the dummy or the previous
+                    return currentRecording;
+                }),
             //then use the projection function to tie the two together
-            (recording, messageObject) => {
+            (recording, recordingEvent) => {
                 //add the recording event to the table
-                addNewRecordingEventToTable(recording, messageObject.request.recordingEvent, document.querySelector('.ui.celled.striped.newRecordingRecordingEventsTable.table tbody'))
+                addNewRecordingEventToTable(recording, recordingEvent, document.querySelector('.ui.celled.striped.newRecordingRecordingEventsTable.table tbody'))
                 //push the new recording event into the recording's event array
-                recording.recordingEventArray.push(messageObject.request.recordingEvent);
+                recording.recordingEventArray.push(recordingEvent);
                 //then return the recording so it can be updated in the database
                 return recording;
             }

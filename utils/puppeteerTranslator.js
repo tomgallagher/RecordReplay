@@ -42,6 +42,8 @@ class PuppeteerTranslator {
 
     openTimedFunction = () => `\n\tawait new Promise(resolve => window.setTimeout(() => {`
 
+    warnOnIframe = (href) => `\n\t\t//THIS ACTION MUST BE EXECUTED IN CONTEXT OF IFRAME WITH ORIGIN: ${new URL(href).origin}`
+
     closeTimedFunction = (delay) => `\n\t\tresolve(); \n\t}, ${delay}));\n`
 
     tabIndex = index =>  index == 0 ? '\n\t' : '\n\t\t';
@@ -74,6 +76,8 @@ class PuppeteerTranslator {
             default: return `${this.tabIndex(index)}//No Click Action Available For Action ${clicktype}`
         }
     }
+
+    recaptcha = (selector) => `await page.click('${selector}', { button: 'left', clickCount: 1 } );`
 
     //Note you should always focus before you type
     typeText = text => `await page.keyboard.type('${text}');`
@@ -118,10 +122,13 @@ class PuppeteerTranslator {
     mapActionTypeToFunction = (recordingEvent, index) => {
         switch(recordingEvent.recordingEventAction) {
             case "Mouse":
-                if (recordingEvent.recordingEventActionType == "hover") {
-                    return this.hover(this.getMostValidSelector(recordingEvent));
-                } else {
-                    return this.mouseClick(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventActionType, index);
+                switch(recordingEvent.recordingEventActionType) {
+                    case "hover":
+                        return this.hover(this.getMostValidSelector(recordingEvent));
+                    case "recaptcha":
+                        return this.recaptcha(this.getMostValidSelector(recordingEvent));
+                    default:
+                        return this.mouseClick(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventActionType, index);
                 }
             case "Scroll":
                 return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
@@ -164,6 +171,8 @@ class PuppeteerTranslator {
             } else {
                 //open the async timeout function
                 outputString += this.openTimedFunction();
+                //then add the iframe warning if required
+                eachEvent.recordingEventIsIframe ? outputString += this.warnOnIframe(eachEvent.recordingEventLocationHref) : null;
                 //map the action to the function and return string
                 outputString += `${this.tabIndex(recordingEventIndex)}${this.mapActionTypeToFunction(eachEvent, recordingEventIndex)}`;
                 //close the async timeout function

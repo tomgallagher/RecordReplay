@@ -17,6 +17,7 @@ class RecordingEvent {
             recordingEventCssSimmerPath: 'N/A',
             recordingEventXPath: 'N/A',
             recordingEventLocation: 'N/A',
+            recordingEventLocationHref: 'N/A',
             recordingEventIsIframe: false,
             recordingEventCreated: Date.now(),
             recordingEventTimestamp: performance.now(),

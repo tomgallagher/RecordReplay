@@ -60,7 +60,7 @@ var EventRecorder = {
     //we want to record action events so we know when user action occurs
     mouseActionEventObervables: EventRecorderEvents.mouseActionEvents
         //then we are interested in only certain types of mouse events
-        .filter(item => item == "click" || item == "contextmenu" || item == "dblclick" || item == 'mouseup')
+        .filter(item => item == "click" || item == "contextmenu" || item == "dblclick" || item == 'mouseup' || item == "mousedown")
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(window, eventName)),
 
@@ -294,6 +294,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventCssSimmerPath: EventRecorder.getCssSimmerPath(selectEndObject.mouseEvent.target),
                 recordingEventXPath: EventRecorder.getXPath(selectEndObject.mouseEvent.target),
                 recordingEventLocation: window.location.origin,
+                recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 //information specific to text select events
                 recordingEventTextSelectTextContent: selectEndObject.selectionString,
@@ -306,8 +307,8 @@ EventRecorder.startRecordingEvents = () => {
     //MOUSE CLICK EVENTS
 
     EventRecorder.mouseObservable = Rx.Observable.merge(...EventRecorder.mouseActionEventObervables)
-        //we don't care about mouseup events here as we're covered with the click event
-        .filter(event => event.type != "mouseup")
+        //we don't care about mouseup or mousedown events here as we're covered with the click event
+        .filter(event => event.type != "mouseup" && event.type != "mousedown")
         //then we only want mouse events to activate on non-input elements because we have a separate handler for them
         .filter(event => event.target instanceof HTMLInputElement == false)
         //then as each action occurs, we want to know the state of the element BEFORE the action took place
@@ -325,6 +326,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventCssSimmerPath: locationEvent.eventCssSimmerPath,
                 recordingEventXPath: locationEvent.eventXPath,
                 recordingEventLocation: window.location.origin,
+                recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
             });
             //then only return the event if the same element has not recorded a text selection event
@@ -367,13 +369,44 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventCssSimmerPath: mouseLocatorEvent.eventCssSimmerPath,
                 recordingEventXPath: mouseLocatorEvent.eventXPath,
                 recordingEventLocation: window.location.origin,
+                recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 //information specific to text select events
                 recordingEventHoverTargetAsJSON: EventRecorder.domToJSON(mouseLocatorEvent.eventTarget)
             });
             return newEvent;
         });
-        
+    
+    //MOUSE RECAPTCHA EVENTS
+    EventRecorder.mouseRecaptchaObservable = Rx.Observable.merge(...EventRecorder.mouseActionEventObervables)
+        //we only care about mousedown events here - the click event does not work for listening to recaptchas
+        .filter(event => event.type == "mousedown")
+        //then we only care about events in iframes as the recaptcha is served via the iframe
+        .filter(() => EventRecorder.contextIsIframe())
+        //then we only care about iframes served by google
+        .filter(() => window.location.origin == "https://www.google.com")
+        //then we only care about recaptcha urls
+        .filter(() => window.location.href.includes("recaptcha"))
+        //then as each action occurs, we want to know the state of the element BEFORE the action took place
+        .withLatestFrom(EventRecorder.MouseLocator)
+        //then map the event to the Recording Event type
+        .map(([actionEvent, locationEvent]) => {
+            //create our event
+            const newEvent = new RecordingEvent({
+                recordingEventAction: 'Mouse',
+                recordingEventActionType: 'recaptcha',
+                recordingEventHTMLElement: actionEvent.target.constructor.name,
+                recordingEventHTMLTag: actionEvent.target.tagName,
+                recordingEventCssSelectorPath: locationEvent.eventCssSelectorPath,
+                recordingEventCssDomPath: locationEvent.eventCssDomPath,
+                recordingEventCssSimmerPath: locationEvent.eventCssSimmerPath,
+                recordingEventXPath: locationEvent.eventXPath,
+                recordingEventLocation: window.location.origin,
+                recordingEventLocationHref: window.location.href,
+                recordingEventIsIframe: EventRecorder.contextIsIframe(),
+            });
+            return newEvent;
+        });
 
     //INPUT EVENTS
     EventRecorder.inputObservable = Rx.Observable.merge(...EventRecorder.inputActionEventObservables)
@@ -392,6 +425,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventCssSimmerPath: locationEvent.eventCssSimmerPath,
                 recordingEventXPath: locationEvent.eventXPath,
                 recordingEventLocation: window.location.origin,
+                recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 //information specific to input events
                 recordingEventInputType: actionEvent.target.type,
@@ -423,6 +457,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventCssSimmerPath: focusEvent.eventCssSimmerPath || EventRecorder.getCssSimmerPath(actionEvent.target),
                 recordingEventXPath: focusEvent.eventXPath || EventRecorder.getXPath(actionEvent.target),
                 recordingEventLocation: window.location.origin,
+                recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 //information specific to keyboard events
                 recordingEventKeyCode: actionEvent.keyCode,
@@ -454,6 +489,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventCssSimmerPath: EventRecorder.getCssSimmerPath(actionEvent.target.scrollingElement),
                 recordingEventXPath: EventRecorder.getXPath(actionEvent.target.scrollingElement),
                 recordingEventLocation: window.location.origin,
+                recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 //information specific to scroll events
                 recordingEventXPosition: Math.round(actionEvent.target.scrollingElement.scrollLeft),
@@ -470,6 +506,8 @@ EventRecorder.startRecordingEvents = () => {
         EventRecorder.mouseObservable, 
         //handles mouse hover events
         EventRecorder.mouseHoverObservable,
+        //handles Google recaptcha events
+        EventRecorder.mouseRecaptchaObservable,
         //handles all input from user
         EventRecorder.inputObservable,
         //handles all non-typing keyboard actions
@@ -477,19 +515,6 @@ EventRecorder.startRecordingEvents = () => {
         //handles all window scroll events
         EventRecorder.scrollObservable
     )
-    //and we need to start with a dummy marker so we can operate with only one emission, this must come before pairwise() to create the first pair
-    .startWith(new RecordingEvent({recordingEventOrigin: 'PairwiseStart'}))
-    //then we need to get the time between each emission so we take two emissions at a time
-    .pairwise()
-    //this then delivers an array with the previous and the current, we only need the current, with adjusted recordingTimeSincePrevious
-    .map(([previousRecording, currentRecording]) => {
-        //if the previous was not the dummy 'PairwiseStart', then we need to add the relative time of the recording event so we can exactly reproduce timing steps with delays
-        //if it is then the time will be 0, with zero delay, which is what we want
-        //this can be actioned in the replay mode via .concatMap(event => Rx.Observable.of(event).delay(event.recordingTimeSincePrevious))
-        previousRecording.recordingEventOrigin != 'PairwiseStart' ? currentRecording.recordingTimeSincePrevious = currentRecording.recordingEventCreated - previousRecording.recordingEventCreated : null;
-        //then we just need to return the current recording as we don't care about the dummy or the previous
-        return currentRecording;
-    })
     //and log the output  
     .subscribe(recordingEvent => {
         //if we are not running in the extension testing environment, send the message
