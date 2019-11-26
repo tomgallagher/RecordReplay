@@ -17,6 +17,7 @@
         <script src="utils/javascriptTranslator.js"></script>
         <script src="utils/jqueryTranslator.js"></script>
         <script src="utils/puppeteerTranslator.js"></script>
+        <script src="utils/nodeBuilder.js"></script>
         <script src="models/projectModel.js"></script>
         <script src="models/testModel.js"></script>
         <script src="models/recordingModel.js"></script>
@@ -1090,7 +1091,7 @@
 
                         </table>
 
-                        <div class="ui fluid editRecording container" style="display: none;">
+                        <div class="ui fluid editRecording container" style="display: none; overflow-x: auto;">
 
                             <div class="ui top attached recording tabular menu">
                                 
@@ -1197,6 +1198,18 @@
                                                     </div>
                 
                                                 </form>
+
+                                                <div class="recordingEventTargetStructureDisplay">
+                                                    
+                                                    <div class="ui left aligned segment">
+                                                        
+                                                        <h3 class="ui header">Element Structure</h3>
+                                                        
+                                                        <div class="ui small recordingEventTargetStructureList list"></div>
+
+                                                    </div>
+
+                                                </div>
                                                         
                                             </th>
                 

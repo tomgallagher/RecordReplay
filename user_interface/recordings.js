@@ -236,7 +236,34 @@ function addRecordingEventTableButtonListeners() {
                 $('.ui.viewRecordingEvent.form input[name=recordingEventLocation]').val(recordingEvent.recordingEventLocation);
                 //then the checkbox
                 recordingEvent.recordingEventIsIframe == true ? $('.ui.viewRecordingEvent .ui.checkbox input[name=recordingEventIsIframe]').prop('checked', true) : $('.ui.viewRecordingEvent .ui.checkbox input[name=recordingEventIsIframe]').prop('checked', false);
-                //show the form
+                //then if the recording event is either a hover or a text select, we can fill the target strucure
+                switch(true) {
+                    case recordingEvent.recordingEventAction == 'Mouse' && recordingEvent.recordingEventActionType == 'hover':
+                        //on each call we empty the list container we are using to create a dom structure
+                        $('.recordingEventTargetStructureList').empty();
+                        //then we deliver the pre-cooked html fragment from the Node builder, which loops through the DOM structure to create a tree
+                        //we can use the same builder for recordings and replays just by adding the isReplay marker as false, which shows no assertion checkboxes
+                        $('.recordingEventTargetStructureList').append(new NodeBuilder({isReplay: false}).build(recordingEvent.recordingEventHoverTargetAsJSON));
+                        //then once it has been built, and added, then we are ready to show the display
+                        $('.recordingEventTargetStructureDisplay').show();
+                        break;
+                    case recordingEvent.recordingEventAction == 'TextSelect' && recordingEvent.recordingEventActionType == 'selectstart':
+                        //same thing here, with a different recording event property to work on
+                        $('.recordingEventTargetStructureList').empty();
+                        //the text selection has a slightly different collection method, separating the two for the time being allws more optionality, via properties passed to builder
+                        $('.recordingEventTargetStructureList').append(new NodeBuilder({isReplay: false}).build(recordingEvent.recordingEventTextSelectTargetAsJSON));
+                        //then once we have finished the processing, show the results
+                        $('.recordingEventTargetStructureDisplay').show();
+                        break;
+                    default:
+                        //if we are checking a recording event that is an action, rather than a hover or text selection, then we emoty the list container
+                        $('.recordingEventTargetStructureList').empty();
+                        //and we hide the segment that shows the list container as well
+                        $('.recordingEventTargetStructureDisplay').hide();
+                        //no need to supply a structure for elements we don't want to deliver assertions for
+                        console.log("No JSON Structure saved for unassertable events")
+                }
+                //show the form and the structure div
                 $('.viewDetailedTableEventsFooter').css("display", "table-footer-group");
             })
             //the get single object function will reject if object is not in database

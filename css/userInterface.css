@@ -36,3 +36,14 @@
 .ui.inverted.menu .item:not(.active):hover {
     color: rgba(255,255,255,.9) !important;
 }
+
+/*need an override here for inline assertion checkboxes*/
+.ui.assertion.checkbox {
+    margin-left: 5px !important;
+    font-size: 0.7rem !important;
+}
+
+/*need an override here so inverted vertical menu opening out to right works OK in black*/
+.ui.inverted.checkbox label {
+    color: rgba(255,255,255,.7) !important;
+}
