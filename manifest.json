@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
 
-  "name": "RecordReplay",
-  "description": "Automated Testing Suite",
+  "name": "Record/Replay",
+  "description": "Automated testing via the Chrome DevTools Protocol. Easy to use and open source. Integrated with Jest and Puppeteer.",
   "author": "Tom Gallagher",
   "version": "1.0.0.1",
   
@@ -19,7 +19,7 @@
         "19": "images/robot_violet_19.png",
         "38": "images/robot_violet_38.png"
       },
-      "default_title": "Automated Testing Suite"
+      "default_title": "Click to open Record/Replay testing software"
   },
   
   "options_page": "options.html",
