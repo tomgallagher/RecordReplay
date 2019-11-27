@@ -11,7 +11,7 @@ function addNewRecordingEventToTable(recording, recordingEvent, table) {
 
     //if the event has taken place in an iframe we add the warning class
     if (recordingEvent.recordingEventIsIframe) { tempNode.classList.add('warning');}
-    
+    if (recordingEvent.recordingEventAction == "Page") { tempNode.classList.add('disabled');}
     //then we should also change row for navigation events
 
     //then we just take the data from the recording event and paste it in
@@ -79,8 +79,12 @@ function addStartRecordingHandler() {
         .switchMap( () =>
             //then we need to start receiving recording events sent here by the content script, originating in either main frame or iframe content scripts
             new RecordReplayMessenger({}).isAsync(false).chromeOnMessageObservable
+                //we only want to receive recording events here
+                .filter(msgObject => msgObject.request.hasOwnProperty('recordingEvent'))
+                //then we need to send a response to the location that sent out the event
+                .do(msgObject => msgObject.sendResponse({message: `User Interface Received Recording Event: ${msgObject.request.recordingEvent.recordingEventId}`}))
                 //we only care about the recording events at the moment so we can just map to those
-                .map(messageObject => messageObject.request.recordingEvent)
+                .map(msgObject => msgObject.request.recordingEvent)
                 //and we need to start with a dummy marker so we can operate with only one emission, this must come before pairwise() to create the first pair
                 .startWith(new RecordingEvent({recordingEventOrigin: 'PairwiseStart'}))
                 //then we need to get the time between each emission so we take two emissions at a time
@@ -106,7 +110,22 @@ function addStartRecordingHandler() {
         )
         //we only want to make additions until the user interface stop recording button is clicked 
         //TO DO - WE PROBABLY WANT TO STOP RECORDING WHEN BROWSER WINDOW IS CLOSED AS WELL
-        .takeUntil(Rx.Observable.fromEvent(document.querySelector('.ui.stopRecording.negative.button'), 'click'))
+        .takeUntil(
+            //merge the two sources of potential recording stop commands, either will do
+            Rx.Observable.merge(
+                //obviously the stop button is a source of finalisation
+                Rx.Observable.fromEvent(document.querySelector('.ui.stopRecording.negative.button'), 'click')
+                    //we need to send the message to the background script here 
+                    .do(event => new RecordReplayMessenger({}).sendMessage({stopNewRecording: event.target.getAttribute('data-recording-id')})),
+                //less obviously, the user might choose to stop the recording by closing the tab window
+                //background scripts keep an eye on this and will send a message entitled recordingTabClosed
+                new RecordReplayMessenger({}).isAsync(false).chromeOnMessageObservable
+                    //we only want to receive recordingTabClosed events here
+                    .filter(msgObject => msgObject.request.hasOwnProperty('recordingTabClosed'))
+                    //send the response so we don't get the silly errors
+                    .do(msgObject => msgObject.sendResponse({message: `User Interface Received Tab Closed Event`}) )
+            )
+        )
         //change the user interface
         .subscribe(
             //when we get each mutated recording emitted, we need to update the recording in the database with its new recording event array
@@ -121,9 +140,6 @@ function addStartRecordingHandler() {
             () => {  
                 //hide the recording loader
                 $('.ui.text.small.recording.loader').removeClass('active');
-
-                //TO DO send message to close the recording tab
-                
                 //then we need to add the start recording handler again
                 addStartRecordingHandler();
             }

@@ -56,13 +56,13 @@ var EventRecorder = {
         //we are interested only in certain types of mouse location events
         .filter(item => item == "mouseover" || item == "mouseout")
         //we map each string array item to an observable
-        .map(eventName => Rx.Observable.fromEvent(window, eventName)),
+        .map(eventName => Rx.Observable.fromEvent(document, eventName)),
     //we want to record action events so we know when user action occurs
     mouseActionEventObervables: EventRecorderEvents.mouseActionEvents
         //then we are interested in only certain types of mouse events
         .filter(item => item == "click" || item == "contextmenu" || item == "dblclick" || item == 'mouseup' || item == "mousedown")
         //we map each string array item to an observable
-        .map(eventName => Rx.Observable.fromEvent(window, eventName)),
+        .map(eventName => Rx.Observable.fromEvent(document, eventName)),
 
     //SELECT INPUT EVENTS FOR CONVERSION TO OBSERVABLEs
     inputLocationEventObservables: EventRecorderEvents.inputEvents
@@ -76,7 +76,7 @@ var EventRecorder = {
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(window, eventName)),
     
-    //SELECT TEXT SELECT EVENTS FOR CONVERSION TO OBSERVABLEs
+    //SELECT CERTAIN EVENTS FOR CONVERSION TO OBSERVABLEs
     attentionActionEventObservables: EventRecorderEvents.attentionEvents
         //then we are interested in only certain types of attention events
         .filter(item => item == "selectstart" || item == "focus" || item == "scroll")
@@ -336,8 +336,6 @@ EventRecorder.startRecordingEvents = () => {
             } else { 
                 //if we have filtered it out then we need to report
                 console.log("Click Event Ignored As Action on Element is being Recorded as Text Selection Event");
-                //console.log(currentTextSelection.recordingEventCssSelectorPath);
-                //console.log(newEvent.recordingEventCssSelectorPath);
                 //just return an empty observable as a placeholder which we can easily filter out
                 return false; 
             }
@@ -434,6 +432,10 @@ EventRecorder.startRecordingEvents = () => {
             });
             return newEvent;
         });
+    
+    //DROPDOWN SELECT
+    
+
 
     //KEYBOARD EVENTS
     EventRecorder.keyboardObservable = Rx.Observable.merge(...EventRecorder.keyBoardActionEventObservables)
