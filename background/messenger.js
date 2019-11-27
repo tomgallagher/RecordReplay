@@ -63,7 +63,8 @@ class Messenger {
                         recordingEventAction: 'Page',
                         recordingEventActionType: navObject.recordReplayWebNavigationEvent,
                         recordingEventHTMLElement: 'N/A',
-                        recordingEventLocation: new URL(activeRecording.recordingTestStartUrl).origin,
+                        recordingEventLocation: new URL(navObject.url).origin,
+                        recordingEventLocationHref: navObject.url,
                     }))
                     //then each time we get an event that needs to be sent to the user interface
                     .do(recordingEvent => activeRecording.recordingBrowserMessenger.sendMessage({recordingEvent: recordingEvent}))
