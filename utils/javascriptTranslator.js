@@ -45,14 +45,8 @@ class JavascriptTranslator {
     recaptcha = (selector, index) => `const event${index} = new MouseEvent('click', {view: window, bubbles: true, cancelable: false}); document.querySelector('${selector}').dispatchEvent( event${index} );`
 
     inputText = (selector, text) => `document.querySelector('${selector}').value = '${text}';` 
-
-
-
-    //TO DO Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
-    // 
-    sendSpecialKey = (keyCode, index) => `const event${index} = new KeyboardEvent('keydown',{'key': ${keyCode}}); document.querySelector('${selector}').dispatchEvent( event${index} );`
-
-
+    
+    sendSpecialKey = (recordingEvent, index) => `const event${index} = new KeyboardEvent("keypress", { key : '${recordingEvent.recordingEventKey}', code : '${recordingEvent.recordingEventKey}', ctrlKey: ${recordingEvent.recordingEventCtrlKey}, shiftKey: ${recordingEvent.recordingEventShiftKey}, altKey: ${recordingEvent.recordingEventAltKey} }); document.dispatchEvent( event${index} );`
 
     scrollTo = (xPosition, yPosition) => `window.scrollTo({left: ${xPosition}, top: ${yPosition}, behavior: 'smooth'}); `
 
@@ -104,7 +98,7 @@ class JavascriptTranslator {
             case "Scroll":
                 return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
             case "Keyboard": 
-                return this.focus(this.getMostValidSelector(recordingEvent), index) += this.tabIndex(index) + this.sendSpecialKey(recordingEvent.recordingEventKeyCode, index);
+                return this.sendSpecialKey(recordingEvent, index);
             case 'Input':
                 return this.inputText(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue);
             default:

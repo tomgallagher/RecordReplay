@@ -249,6 +249,7 @@ EventRecorder.startRecordingEvents = () => {
         //then we get the selectors for the pre-action event element, so it is not mutated
         .map(event => {
             return {
+                eventTarget: event.target,
                 eventCssSelectorPath: EventRecorder.getCssSelectorPath(event.target),
                 eventCssDomPath: EventRecorder.getCssDomPath(event.target),
                 eventCssSimmerPath: EventRecorder.getCssSimmerPath(event.target),
@@ -446,6 +447,13 @@ EventRecorder.startRecordingEvents = () => {
         .withLatestFrom(EventRecorder.FocusLocator.startWith({}))
         //then combine the two observables properties to create our RecordingEvent object
         .map( ([actionEvent, focusEvent]) => {
+            //if we are following keyboard events, there is no point in recording such events on INPUT elements
+            //we cannot recreate these events due to browser security restrictions
+            if (actionEvent.target instanceof HTMLInputElement) {
+                console.log(`Not Recording Keyboard ${actionEvent.key} Event on HTMLInputElement`);
+                //just return an empty observable as a placeholder which we can easily filter out
+                return false;
+            }
             const newEvent = new RecordingEvent({
                 //general properties
                 recordingEventAction: 'Keyboard',
@@ -460,13 +468,16 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 //information specific to keyboard events
-                recordingEventKeyCode: actionEvent.keyCode,
+                recordingEventKey: actionEvent.key,
+                recordingEventCode: actionEvent.code,
                 recordingEventAltKey: actionEvent.altKey,
                 recordingEventShiftKey: actionEvent.shiftKey,
                 recordingEventCtrlKey: actionEvent.ctrlKey
             });
             return newEvent;
-        });
+        })
+        //then a simple filter to ensure that the keyboard events on input element do not make it through to the final output
+        .filter(object => object != false);
     
     //SCROLL EVENTS
     EventRecorder.scrollObservable = Rx.Observable.merge(...EventRecorder.attentionActionEventObservables)

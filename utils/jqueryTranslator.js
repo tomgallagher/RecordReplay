@@ -53,12 +53,8 @@ class jQueryTranslator {
 
     inputText = (selector, text) => `$('${selector}').val('${text}');`
 
+    sendSpecialKey = (recordingEvent, index) => `const event${index} = new KeyboardEvent("keypress", { key : '${recordingEvent.recordingEventKey}', code : '${recordingEvent.recordingEventKey}', ctrlKey: ${recordingEvent.recordingEventCtrlKey}, shiftKey: ${recordingEvent.recordingEventShiftKey}, altKey: ${recordingEvent.recordingEventAltKey} }); document.dispatchEvent( event${index} );`
 
-    //NEEDS CHECKING Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
-    sendSpecialKey = keyCode => `jQuery.event.trigger({ type: 'keydown', which: ${keyCode} });`
-
-
-    
     scrollTo = (xPosition, yPosition) => `$('html').animate({ scrollLeft: ${xPosition}, scrollTop: ${yPosition} }, 500);`
 
     focus = selector => `$('${selector}').focus();`
@@ -111,7 +107,7 @@ class jQueryTranslator {
             case "Scroll":
                 return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
             case "Keyboard": 
-                return this.focus(this.getMostValidSelector(recordingEvent)) += this.tabIndex(index) + this.sendSpecialKey(recordingEvent.recordingEventKeyCode);
+                return sendSpecialKey(recordingEvent, index);
             case 'Input':
                 return this.inputText(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue);
             default:

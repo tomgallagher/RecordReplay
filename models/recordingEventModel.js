@@ -27,7 +27,8 @@ class RecordingEvent {
             recordingEventInputType: 'N/A',
             recordingEventInputValue: 'N/A',
             //information specific to keyboard events
-            recordingEventKeyCode: 0,
+            recordingEventKey: 'N/A',
+            recordingEventCode: 'N/A',
             recordingEventAltKey: false,
             recordingEventShiftKey: false,
             recordingEventCtrlKey: false,

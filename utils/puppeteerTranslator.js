@@ -133,7 +133,7 @@ class PuppeteerTranslator {
             case "Scroll":
                 return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
             case "Keyboard": 
-                return this.focus(this.getMostValidSelector(recordingEvent)) += this.tabIndex(index) + this.sendSpecialKey(recordingEvent.recordingEventKeyCode);
+                return this.sendSpecialKey(recordingEvent.recordingEventKey);
             case 'Input':
                 return this.focus(this.getMostValidSelector(recordingEvent)) += this.tabIndex(index) + this.typeText(recordingEvent.recordingEventInputValue);
             default:
