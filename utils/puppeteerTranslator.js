@@ -136,6 +136,8 @@ class PuppeteerTranslator {
                 return this.sendSpecialKey(recordingEvent.recordingEventKey);
             case 'Input':
                 return this.focus(this.getMostValidSelector(recordingEvent)) += this.tabIndex(index) + this.typeText(recordingEvent.recordingEventInputValue);
+            case 'Page':
+                return `${this.tabIndex(index)}//Page navigate to ${recordingEvent.recordingEventLocation}`; 
             default:
                 console.log(`No Mapping for Action Type ${recordingEvent.recordingEventAction}`);
                 return `${this.tabIndex(index)}//No Mapping Type for Action ${recordingEvent.recordingEventAction}`; 

@@ -110,6 +110,8 @@ class jQueryTranslator {
                 return sendSpecialKey(recordingEvent, index);
             case 'Input':
                 return this.inputText(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue);
+            case 'Page':
+                return `${this.tabIndex(index)}//Page navigate to ${recordingEvent.recordingEventLocation}`; 
             default:
                 console.log(`No Mapping for Action Type ${recordingEvent.recordingEventAction}`);
                 return `${this.tabIndex(index)}//No Mapping Type for Action ${recordingEvent.recordingEventAction}`; 
