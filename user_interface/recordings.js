@@ -281,7 +281,7 @@ function addRecordingEventTableButtonListeners() {
 
     });
 
-    //delete recording event button click handler
+    //show recording event button click handler
     $('.ui.editRecordingRecordingEventsTable .showRecordingEventRow').on('mousedown', function(){
         //find the recording in the database by id, using data-recording-id from the template
         const recordingKey = $(this).attr("data-recording-id");

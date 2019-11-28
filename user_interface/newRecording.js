@@ -58,10 +58,60 @@ function addNewRecordingEventToTable(recording, recordingEvent, table) {
 
 }
 
+function updateNewRecordingEventsTable(recording) {
+
+    //empty the table body first
+    $('.ui.newRecordingRecordingEventsTable.table tbody').empty();
+    //get a reference to the table
+    const table = document.querySelector('.ui.newRecordingRecordingEventsTable.table tbody')
+    //then for each recordingEvent we need to add it to the table and the textarea
+    for (let recordingEvent in recording.recordingEventArray) { 
+        //then borrow the function from newRecording.js
+        addNewRecordingEventToTable(recording, recording.recordingEventArray[recordingEvent], table);
+    }
+    //add recording events table button listeners
+    addNewRecordingEventButtonListeners();
+
+}
+
+function addNewRecordingEventButtonListeners() {
+
+    //show recording event button click handler
+    $('.ui.newRecordingRecordingEventsTable .showRecordingEventRow').on('mousedown', function(){
+        //find the recording in the database by id, using data-recording-id from the template
+        const recordingKey = $(this).attr("data-recording-id");
+        //do the same with the recording event key
+        const recordingEventKey = $(this).attr("data-recording-event-id");
+        //the recording key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', recordingKey, 'recordings')
+            //then we have a returned js object with the recording details
+            .then(recording => {
+                //get a new instantiation of our recording, so we can use the method
+                var searchableRecording = new Recording(recording);
+                //use the method to get the recording event
+                const recordingEvent = searchableRecording.findRecordingEventById(recordingEventKey);
+                //fill the form fields with the data from the recording event
+                $('.ui.viewNewRecordingEvent.form input[name=recordingEventCssSelectorPath]').val(recordingEvent.recordingEventCssSelectorPath);
+                $('.ui.viewNewRecordingEvent.form input[name=recordingEventCssDomPath]').val(recordingEvent.recordingEventCssDomPath);
+                $('.ui.viewNewRecordingEvent.form input[name=recordingEventCssSimmerPath]').val(recordingEvent.recordingEventCssSimmerPath);
+                $('.ui.viewNewRecordingEvent.form input[name=recordingEventXPath]').val(recordingEvent.recordingEventXPath);
+                $('.ui.viewNewRecordingEvent.form input[name=recordingEventLocation]').val(recordingEvent.recordingEventLocation);
+                //then the checkbox
+                recordingEvent.recordingEventIsIframe == true ? $('.ui.viewNewRecordingEvent .ui.checkbox input[name=recordingEventIsIframe]').prop('checked', true) : $('.ui.viewNewRecordingEvent .ui.checkbox input[name=recordingEventIsIframe]').prop('checked', false);
+                //show the form and the structure div
+                $('.viewNewDetailedTableEventsFooter').css("display", "table-row");
+            })
+            //the get single object function will reject if object is not in database
+            .catch(error => console.error(error)); 
+            
+    })
+
+}
+
 function addStartRecordingHandler() {
 
-    //RECORDING START HANDLER
-    Rx.Observable.fromEvent(document.querySelector('.ui.startRecording.positive.button'), 'click')
+    //RECORDING EVENTS START HANDLER
+    const recordingEventObservable = Rx.Observable.fromEvent(document.querySelector('.ui.startRecording.positive.button'), 'click')
         //make the changes to the ui to indicate that we have started
         .do(event => {
             //show the start recording button as disabled
@@ -100,50 +150,88 @@ function addStartRecordingHandler() {
                 }),
             //then use the projection function to tie the two together
             (recording, recordingEvent) => {
-                //add the recording event to the table
-                addNewRecordingEventToTable(recording, recordingEvent, document.querySelector('.ui.newRecordingRecordingEventsTable.table tbody'))
                 //push the new recording event into the recording's event array
                 recording.recordingEventArray.push(recordingEvent);
                 //then return the recording so it can be updated in the database
                 return recording;
             }
-        )
-        //we only want to make additions until the user interface stop recording button is clicked 
-        //TO DO - WE PROBABLY WANT TO STOP RECORDING WHEN BROWSER WINDOW IS CLOSED AS WELL
-        .takeUntil(
-            //merge the two sources of potential recording stop commands, either will do
-            Rx.Observable.merge(
-                //obviously the stop button is a source of finalisation
-                Rx.Observable.fromEvent(document.querySelector('.ui.stopRecording.negative.button'), 'click')
-                    //we need to send the message to the background script here 
-                    .do(event => new RecordReplayMessenger({}).sendMessage({stopNewRecording: event.target.getAttribute('data-recording-id')})),
-                //less obviously, the user might choose to stop the recording by closing the tab window
-                //background scripts keep an eye on this and will send a message entitled recordingTabClosed
-                new RecordReplayMessenger({}).isAsync(false).chromeOnMessageObservable
-                    //we only want to receive recordingTabClosed events here
-                    .filter(msgObject => msgObject.request.hasOwnProperty('recordingTabClosed'))
-                    //send the response so we don't get the silly errors
-                    .do(msgObject => msgObject.sendResponse({message: `User Interface Received Tab Closed Event`}) )
-            )
-        )
-        //change the user interface
-        .subscribe(
-            //when we get each mutated recording emitted, we need to update the recording in the database with its new recording event array
-            editedRecording => {
-                //log to the console so we can follow what's going on
-                console.log(editedRecording);
-                //then update the recording in the database
-                StorageUtils.updateModelObjectInDatabaseTable('recordings.js', editedRecording.id, editedRecording, 'recordings');
-            },
-            error => console.error(error),
-            //when complete we want to update the UI
-            () => {  
-                //hide the recording loader
-                $('.ui.text.small.recording.loader').removeClass('active');
-                //then we need to add the start recording handler again
-                addStartRecordingHandler();
-            }
         );
+        
+        //DELETION EVENTS
+        const deletionEventObservable =  Rx.Observable.fromEvent(document, 'click')
+            //we only care about elements that match our delete button class    
+            .filter(event => event.target.classList.contains("deleteRecordingEventRow"))
+            //then just to be sure we need them to have a data recording event id
+            .filter(event => event.target.hasAttribute("data-recording-event-id"))
+            //then we map all those clicks into their recording event ids
+            .map(event => event.target.getAttribute("data-recording-event-id"))
+            //then we need to start with a dummy string so we get an emission
+            .startWith("DELETED RECORDING EVENT IDS FOLLOW")
+            //then we scan them all into an array
+            .scan((acc, value) => { acc.push(value); return acc; }, []);
+
+        //THEN WE NEED TO COMBINE THE TWO SO WE GET THE EVENTS COMING FROM THE CURATED TAB AND OUR LIVE DELETION EVENTS
+        Rx.Observable.combineLatest(
+                //each of the recording events pumps out a new recording
+                recordingEventObservable,
+                //each of the deletion events pumps out a new set of deleted recording event ids
+                deletionEventObservable,
+                // combineLatest also takes an optional projection function
+                (recording, deletedEventsIdArray) => {
+                    //we need to save the recording's id as that will be lost on creation of the temporary class 
+                    let carriedForwardId = recording.id
+                    //then we create a temporary recording so we can use the class method to redo time since previous
+                    let tempRecording = new Recording(recording);
+                    //then we loop through all the elements of the array - it does not matter if they've been done before
+                    for (let recordingEventId in deletedEventsIdArray) {
+                        //then pick each of the deleted events from the recording's events array 
+                        tempRecording.deleteRecordingEventById(deletedEventsIdArray[recordingEventId]);
+                    }
+                    //then add the recording id back
+                    tempRecording.id = carriedForwardId
+                    //then return the amended recording, if there have been any live deletions
+                    return tempRecording;
+                }
+            )
+            //we only want to make additions until the user interface stop recording button is clicked 
+            .takeUntil(
+                //merge the two sources of potential recording stop commands, either will do
+                Rx.Observable.merge(
+                    //obviously the stop button is a source of finalisation
+                    Rx.Observable.fromEvent(document.querySelector('.ui.stopRecording.negative.button'), 'click')
+                        //we need to send the message to the background script here 
+                        .do(event => new RecordReplayMessenger({}).sendMessage({stopNewRecording: event.target.getAttribute('data-recording-id')})),
+                    //less obviously, the user might choose to stop the recording by closing the tab window
+                    //background scripts keep an eye on this and will send a message entitled recordingTabClosed
+                    new RecordReplayMessenger({}).isAsync(false).chromeOnMessageObservable
+                        //we only want to receive recordingTabClosed events here
+                        .filter(msgObject => msgObject.request.hasOwnProperty('recordingTabClosed'))
+                        //send the response so we don't get the silly errors
+                        .do(msgObject => msgObject.sendResponse({message: `User Interface Received Tab Closed Event`}) )
+                )
+            )
+            //change the user interface
+            .subscribe(
+                //when we get each mutated recording emitted, we need to update the recording in the database with its new recording event array
+                recording => {
+                    //log to the console so we can follow what's going on
+                    console.log(recording);
+                    //add the recording event to the table
+                    updateNewRecordingEventsTable(recording);
+                    //then add the button listeners
+                    addNewRecordingEventButtonListeners();
+                    //then update the recording in the database
+                    StorageUtils.updateModelObjectInDatabaseTable('recordings.js', recording.id, recording, 'recordings');
+                },
+                error => console.error(error),
+                //when complete we want to update the UI
+                () => {  
+                    //hide the recording loader
+                    $('.ui.text.small.recording.loader').removeClass('active');
+                    //then we need to add the start recording handler again
+                    addStartRecordingHandler();
+                }
+            );
 
 }
 
