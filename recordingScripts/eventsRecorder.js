@@ -304,9 +304,10 @@ EventRecorder.startRecordingEvents = () => {
             return newEvent;
         });
 
+    
     //MOUSE EVENTS
+    
     //MOUSE CLICK EVENTS
-
     EventRecorder.mouseObservable = Rx.Observable.merge(...EventRecorder.mouseActionEventObervables)
         //we don't care about mouseup or mousedown events here as we're covered with the click event
         .filter(event => event.type != "mouseup" && event.type != "mousedown")
@@ -343,6 +344,7 @@ EventRecorder.startRecordingEvents = () => {
         //then a simple filter to ensure that the double counting events do not make it through to the final output
         .filter(object => object != false);
     
+
     //MOUSE HOVER EVENTS
     EventRecorder.mouseHoverObservable = EventRecorder.MouseLocator
         //Get the time of the mouseover event - this moves the mouselocator event to the value key of an object and adds a timestamp key as well with milliseconds
@@ -376,6 +378,7 @@ EventRecorder.startRecordingEvents = () => {
             return newEvent;
         });
     
+
     //MOUSE RECAPTCHA EVENTS
     EventRecorder.mouseRecaptchaObservable = Rx.Observable.merge(...EventRecorder.mouseActionEventObervables)
         //we only care about mousedown events here - the click event does not work for listening to recaptchas
@@ -407,6 +410,7 @@ EventRecorder.startRecordingEvents = () => {
             return newEvent;
         });
 
+
     //INPUT EVENTS
     EventRecorder.inputObservable = Rx.Observable.merge(...EventRecorder.inputActionEventObservables)
         //then as each action occurs, we want to know the state of the element BEFORE the action took place
@@ -433,10 +437,7 @@ EventRecorder.startRecordingEvents = () => {
             return newEvent;
         });
     
-    //DROPDOWN SELECT
     
-
-
     //KEYBOARD EVENTS
     EventRecorder.keyboardObservable = Rx.Observable.merge(...EventRecorder.keyBoardActionEventObservables)
         //then we only want the keyup event - we have chosen this as we want keyboard enter and tab events after any input events have registered, which happens on keydown
