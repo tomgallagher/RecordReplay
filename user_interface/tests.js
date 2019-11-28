@@ -59,7 +59,7 @@ function addTestTableButtonListeners() {
                 $('.ui.editTestForm.form').removeClass('error');
 
                 //show the form
-                $('.editTestFooter').css("display", "table-footer-group");
+                $('.editTestFooter').css("display", "table-row");
             
             })
             //the get single object function will reject if object is not in database

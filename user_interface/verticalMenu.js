@@ -76,12 +76,15 @@ $(document).ready (function(){
                 $('.ui.verticalTabMenu.gettingStarted.segment').css('display', 'block');
                 break;
             case classArray.includes('savedProjects'):
-                $('.ui.verticalTabMenu.savedProjects.segment').css('display', 'block');
                 //make sure the projects table shows an updated account of the projects in storage, using function from projects.js which adds loading indicator
                 updateProjectsTable();
                 //then reset the form to the point at which the page loaded, where it has neither a success nor an error state
                 $('.ui.editProjectForm.form').removeClass('success');
                 $('.ui.editProjectForm.form').removeClass('error');
+                //then hide the form in the footer of the table
+                $('.editProjectFooter').css("display", "none");
+                //then we're finished and ready to show the segment
+                $('.ui.verticalTabMenu.savedProjects.segment').css('display', 'block');
                 break;
             case classArray.includes('newProject'):
                 //show the form to create a new project

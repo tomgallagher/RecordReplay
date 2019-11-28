@@ -83,7 +83,7 @@ function addRecordingTableButtonListeners() {
                 //clear any error state from the form
                 $('.ui.editRecordingForm.form').removeClass('error');
                 //show the form
-                $('.editRecordingFooter').css("display", "table-footer-group");
+                $('.editRecordingFooter').css("display", "table-row");
 
             })
             //the get single object function will reject if object is not in database
@@ -264,7 +264,7 @@ function addRecordingEventTableButtonListeners() {
                         console.log("No JSON Structure saved for unassertable events")
                 }
                 //show the form and the structure div
-                $('.viewDetailedTableEventsFooter').css("display", "table-footer-group");
+                $('.viewDetailedTableEventsFooter').css("display", "table-row");
             })
             //the get single object function will reject if object is not in database
             .catch(error => console.error(error));   

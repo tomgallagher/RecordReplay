@@ -21,7 +21,7 @@ function addProjectTableButtonListeners() {
                 //clear any error state from the form
                 $('.ui.editProjectForm.form').removeClass('error');
                 //show the form
-                $('.editProjectFooter').css("display", "table-footer-group");
+                $('.editProjectFooter').css("display", "table-row");
 
             })
             //the get single object function will reject if object is not in database
