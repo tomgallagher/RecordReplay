@@ -1,3 +1,5 @@
+//THIS FUNCTION IS SHARED BY RECORDINGS.JS
+//CHECK BOTH FILES BEFORE MAKING CHANGES
 function addNewRecordingEventToTable(recording, recordingEvent, table) {
 
     //target our table row template first, we only need to find the template once
@@ -66,7 +68,7 @@ function updateNewRecordingEventsTable(recording) {
     const table = document.querySelector('.ui.newRecordingRecordingEventsTable.table tbody')
     //then for each recordingEvent we need to add it to the table and the textarea
     for (let recordingEvent in recording.recordingEventArray) { 
-        //then borrow the function from newRecording.js
+        //then use the function that is shared by recordings.js
         addNewRecordingEventToTable(recording, recording.recordingEventArray[recordingEvent], table);
     }
     //add recording events table button listeners
