@@ -1,4 +1,4 @@
-class Messenger {
+class MessageMonitor {
 
     constructor() {
         

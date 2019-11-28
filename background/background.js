@@ -5,7 +5,7 @@ chrome.browserAction.onClicked.addListener(function() {
         //this then returns a tab, from which we need to keep track of the tab id
         let recordReplayTabId = tab.id;
         //then we need to activate our background process observables, we stay dormant with no user interface
-        var MessageListener = new Messenger().initialise();
+        var MessageListener = new MessageMonitor().initialise();
         //then we need to add a listener for our user interface closing
         chrome.tabs.onRemoved.addListener(function (tabId){
             //then if the tab id matches the record replay id, we just run our background shutdown processes

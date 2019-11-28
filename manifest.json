@@ -39,7 +39,7 @@
           "models/recordingModel.js",
           "models/activeRecordingModel.js",
           "models/recordingEventModel.js",
-          "background/messenger.js",
+          "background/messageMonitor.js",
           "background/tabRunner.js",
           "background/webNavigator.js",
           "background/background.js"
