@@ -1,3 +1,63 @@
+function addRecordingTableRowsFragment(recordingStorageArray) {
+
+    //add the loading indicator to the segment
+    $('.ui.savedRecordings.verticalTabMenu.segment').addClass('loading');
+    //empty the recordings table body so we can add the updated information
+    $('.ui.celled.recordingsTable.table tbody').empty();
+    //target our table row template first, we only need to find the template once
+    let targetNode = document.querySelector('.recordingTableRowTemplate');
+    //we need to do more work as we have to save the template in a table, which we don't need, we just want the row
+    let targetRow = targetNode.querySelector('tr');
+    //then create a document fragment that we will use as a container for each looped template
+    let docFrag = document.createDocumentFragment();
+
+    //use for-in loop as execution order is maintained
+    for (let recording in recordingStorageArray) { 
+
+        //then we make a clone of the row, that will serve the purpose
+        let tempNode = targetRow.cloneNode(true);
+        //then we need to find each of the elements of the template that need to be adjusted and input from the current project
+        let recordingNameNode = tempNode.querySelector('td[data-label="recordingName"]');
+        recordingNameNode.textContent = recordingStorageArray[recording].recordingName;
+        let recordingDescriptionNode = tempNode.querySelector('td[data-label="recordingDescription"]');
+        recordingDescriptionNode.textContent = recordingStorageArray[recording].recordingDescription;
+        let recordingAuthorNode = tempNode.querySelector('td[data-label="recordingAuthor"]');
+        recordingAuthorNode.textContent = recordingStorageArray[recording].recordingAuthor;
+        let recordingProjectNode = tempNode.querySelector('td[data-label="recordingProjectName"]');
+        recordingProjectNode.textContent = recordingStorageArray[recording].recordingProjectName;
+        let recordingTestNode = tempNode.querySelector('td[data-label="recordingTestName"]');
+        recordingTestNode.textContent = recordingStorageArray[recording].recordingTestName; 
+        let recordingStartUrlNode = tempNode.querySelector('td[data-label="recordingTestStartUrl"]');
+        recordingStartUrlNode.textContent = recordingStorageArray[recording].recordingTestStartUrl; 
+        let recordingAdditionalReportingNode = tempNode.querySelector('td[data-label="recordingAdditionalReporting"]');
+        var additionalReportsArray = [];
+        recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push('Mobile') : additionalReportsArray.push('Computer');
+        recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push(recordingStorageArray[recording].recordingMobileOrientation) : null;
+        recordingAdditionalReportingNode.textContent = additionalReportsArray.join(', ');
+
+        let recordingShowLink = tempNode.querySelector('.showRecordingLink');
+        recordingShowLink.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
+        let recordingEditLink = tempNode.querySelector('.editRecordingLink');
+        recordingEditLink.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
+        let recordingDeleteLink = tempNode.querySelector('.deleteRecordingLink');
+        recordingDeleteLink.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
+        //then we need to attach the clone of the template node to our container fragment
+        docFrag.appendChild(tempNode);
+    
+    }
+
+    //then after the entire loop has been executed we need to adjust the dom in one hit, avoid performance issues with redraw
+    //then we find the relevant table, using docuement.querySelector which helpfully returns the first Element within the document that matches the specified selector
+    let recordingsTable = document.querySelector('.ui.celled.recordingsTable.table tbody');
+    //then we append the fragment to the table
+    recordingsTable.appendChild(docFrag);
+    //then once all the work has been done remove class
+    $('.ui.savedRecordings.verticalTabMenu.segment').removeClass('loading');
+    //then add the listeners for the buttons built into the form
+    addRecordingTableButtonListeners();
+
+}
+
 //make sure the edit test project dropdown shows an updated account of the projects in storage
 function refreshEditRecordingTestDropdown() {
 
@@ -19,6 +79,49 @@ function refreshEditRecordingTestDropdown() {
             $('.ui.fluid.selection.editRecording.test.dropdown').dropdown();
 
         });  
+
+}
+
+function addRecordingTablePaginationListener() {
+
+    $('.ui.recordingsTable .ui.pagination.menu .item').on('mousedown', function(){
+
+        //get the current page displayed, set to zero by default
+        var currentPage = Number($('.ui.recordingsTable .ui.pagination.menu').attr('data-current-page'));
+        //get the classes of the active item as a list
+        const classArray = $(this).attr('class').split(/\s+/);
+        //then get all the current recordings from the database, as an array
+        StorageUtils.getAllObjectsInDatabaseTable('recordings.js', 'recordings')
+            //once we have the array then we can start populating the table by looping through the array
+            .then(recordingStorageArray => {
+                
+                //then we paginate here using the class
+                const paginator = new Pagination(recordingStorageArray);
+                //get the maximum number of possible pages
+                const maxPages = paginator.getTotalPagesRequired();
+                //then we need to work out the target page
+                switch(true) {
+                    case classArray.includes('back'):
+                        //if it's greater than 1, one page less
+                        currentPage > 1 ? currentPage-- : null
+                        break;
+                    case classArray.includes('forward'):
+                        //if it's less than maxpages, one page more
+                        currentPage < maxPages ? currentPage++ : null
+                        break;
+                    default:
+                        currentPage = Number($(this).attr('data-page-required'));
+                }
+                //then update the data property for current page
+                $('.ui.recordingsTable .ui.pagination.menu').attr('data-current-page', currentPage);
+                //then set the storage array to the current page 
+                recordingStorageArray = paginator.getParticularPage(currentPage);
+                //then update the table
+                addRecordingTableRowsFragment(recordingStorageArray);
+                
+        });
+
+    });
 
 }
 
@@ -116,66 +219,30 @@ function addRecordingTableButtonListeners() {
 
 function updateRecordingsTable() {
 
-    //add the loading indicator to the segment
-    $('.ui.savedRecordings.verticalTabMenu.segment').addClass('loading');
-    //empty the recordings table body so we can add the updated information
-    $('.ui.celled.recordingsTable.table tbody').empty();
-    //target our table row template first, we only need to find the template once
-    let targetNode = document.querySelector('.recordingTableRowTemplate');
-    //we need to do more work as we have to save the template in a table, which we don't need, we just want the row
-    let targetRow = targetNode.querySelector('tr');
-    //then create a document fragment that we will use as a container for each looped template
-    let docFrag = document.createDocumentFragment();
-
     //first get all the current recordings from the database, as an array, then loop through the array to update the UI
     StorageUtils.getAllObjectsInDatabaseTable('recordings.js', 'recordings')
         //once we have the array then we can start populating the table by looping through the array
         .then(recordingStorageArray => {
 
-            //use for-in loop as execution order is maintained
-            for (let recording in recordingStorageArray) { 
-
-                //then we make a clone of the row, that will serve the purpose
-                let tempNode = targetRow.cloneNode(true);
-                //then we need to find each of the elements of the template that need to be adjusted and input from the current project
-                let recordingNameNode = tempNode.querySelector('td[data-label="recordingName"]');
-                recordingNameNode.textContent = recordingStorageArray[recording].recordingName;
-                let recordingDescriptionNode = tempNode.querySelector('td[data-label="recordingDescription"]');
-                recordingDescriptionNode.textContent = recordingStorageArray[recording].recordingDescription;
-                let recordingAuthorNode = tempNode.querySelector('td[data-label="recordingAuthor"]');
-                recordingAuthorNode.textContent = recordingStorageArray[recording].recordingAuthor;
-                let recordingProjectNode = tempNode.querySelector('td[data-label="recordingProjectName"]');
-                recordingProjectNode.textContent = recordingStorageArray[recording].recordingProjectName;
-                let recordingTestNode = tempNode.querySelector('td[data-label="recordingTestName"]');
-                recordingTestNode.textContent = recordingStorageArray[recording].recordingTestName; 
-                let recordingStartUrlNode = tempNode.querySelector('td[data-label="recordingTestStartUrl"]');
-                recordingStartUrlNode.textContent = recordingStorageArray[recording].recordingTestStartUrl; 
-                let recordingAdditionalReportingNode = tempNode.querySelector('td[data-label="recordingAdditionalReporting"]');
-                var additionalReportsArray = [];
-                recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push('Mobile') : additionalReportsArray.push('Computer');
-                recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push(recordingStorageArray[recording].recordingMobileOrientation) : null;
-                recordingAdditionalReportingNode.textContent = additionalReportsArray.join(', ');
-
-                let recordingShowLink = tempNode.querySelector('.showRecordingLink');
-                recordingShowLink.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
-                let recordingEditLink = tempNode.querySelector('.editRecordingLink');
-                recordingEditLink.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
-                let recordingDeleteLink = tempNode.querySelector('.deleteRecordingLink');
-                recordingDeleteLink.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
-                //then we need to attach the clone of the template node to our container fragment
-                docFrag.appendChild(tempNode);
-            
+            //then we paginate here using the class
+            const paginator = new Pagination(recordingStorageArray);
+            //first we want to get the number of pages
+            if (paginator.getTotalPagesRequired() > 1) {
+                //then, if we have a number greater than 1 we need to build the paginator menu
+                const menu = paginator.buildMenu(paginator.getTotalPagesRequired());
+                //then grab the menu holder and empty it
+                $('.ui.recordingsTable .paginationMenuHolder').empty();
+                //then append our menu 
+                $('.ui.recordingsTable .paginationMenuHolder').append(menu);
+                //then show the menu holder
+                $('.ui.recordingsTable .paginationMenuRow').css("display", "table-row");
+                //then activate the buttons
+                addRecordingTablePaginationListener();
             }
-            
-            //then after the entire loop has been executed we need to adjust the dom in one hit, avoid performance issues with redraw
-            //then we find the relevant table, using docuement.querySelector which helpfully returns the first Element within the document that matches the specified selector
-            let recordingsTable = document.querySelector('.ui.celled.recordingsTable.table tbody');
-            //then we append the fragment to the table
-            recordingsTable.appendChild(docFrag);
-            //then once all the work has been done remove class
-            $('.ui.savedRecordings.verticalTabMenu.segment').removeClass('loading');
-            //then add the listeners for the buttons built into the form
-            addRecordingTableButtonListeners();
+            //then make sure the table is showing the first page
+            recordingStorageArray = paginator.getParticularPage(1);
+            //then update the table
+            addRecordingTableRowsFragment(recordingStorageArray);
 
         });
 

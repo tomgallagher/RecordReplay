@@ -1,3 +1,97 @@
+function addProjectTableRowsFragment(projectStorageArray) {
+
+    //add the loading indicator to the segment
+    $('.ui.savedProjects.verticalTabMenu.segment').addClass('loading');
+    //empty the projects table body so we can add the updated information
+    $('.ui.celled.projectsTable.table tbody').empty();
+    //target our table row template first, we only need to find the template once
+    let targetNode = document.querySelector('.projectTableRowTemplate');
+    //we need to do more work as we have to save the template in a table, which we don't need, we just want the row
+    let targetRow = targetNode.querySelector('tr');
+    //then create a document fragment that we will use as a container for each looped template
+    let docFrag = document.createDocumentFragment();
+
+    //use for-in loop as execution order is maintained
+    for (let project in projectStorageArray) { 
+
+        //first we make a clone of the row, that will serve the purpose
+        let tempNode = targetRow.cloneNode(true);
+        //then we need to find each of the elements of the template that need to be adjusted and input from the current project
+        //tempNode child <td data-label="projectName"></td> needs to have text content set to database projectName
+        let projectNameNode = tempNode.querySelector('td[data-label="projectName"]');
+        projectNameNode.textContent = projectStorageArray[project].projectName;
+        //tempNode child <td data-label="projectDescription"></td> needs to have text content set to database projectDescription
+        let projectDescriptionNode = tempNode.querySelector('td[data-label="projectDescription"]');
+        projectDescriptionNode.textContent = projectStorageArray[project].projectDescription;
+        //tempNode child <td data-label="projectAuthor"></td> needs to have text content set to database projectAuthor
+        let projectAuthorNode = tempNode.querySelector('td[data-label="projectAuthor"]');
+        projectAuthorNode.textContent = projectStorageArray[project].projectAuthor;
+        //tempNode child <button class="ui editProject button" data-project-id="0"></button> needs to have data-project-id set to the database id
+        let projectEditButton = tempNode.querySelector('.ui.editProject.button');
+        projectEditButton.setAttribute('data-project-id', projectStorageArray[project].id);
+        //tempNode child <button class="ui deleteProject negative button" data-project-id="0" data-tooltip="To delete project and all associated tests"></button> needs to have data-project-id set to the database id
+        let projectDeleteButton = tempNode.querySelector('.ui.deleteProject.button');
+        projectDeleteButton.setAttribute('data-project-id', projectStorageArray[project].id);
+        //then we need to attach the clone of the template node to our container fragment
+        docFrag.appendChild(tempNode);
+
+    }
+
+    //then after the entire loop has been executed we need to adjust the dom in one hit, avoid performance issues with redraw
+    //we find the relevant table, using document.querySelector which helpfully returns the first Element within the document that matches the specified selector
+    let projectsTable = document.querySelector('.ui.celled.projectsTable.table tbody');
+    //then we append each of the project fragments to the table
+    projectsTable.appendChild(docFrag);
+    //then once all the work has been done remove loading class to show the updated table 
+    $('.ui.savedProjects.verticalTabMenu.segment').removeClass('loading');
+    //then add the listeners for the buttoms built into the form
+    addProjectTableButtonListeners();
+
+} 
+
+function addProjectTablePaginationListener() {
+
+    $('.ui.projectsTable .ui.pagination.menu .item').on('mousedown', function(){
+
+        //get the current page displayed, set to zero by default
+        var currentPage = Number($('.ui.projectsTable .ui.pagination.menu').attr('data-current-page'));
+        //get the classes of the active item as a list
+        const classArray = $(this).attr('class').split(/\s+/);
+        //then get all the current projects from the database, as an array
+        StorageUtils.getAllObjectsInDatabaseTable('projects.js', 'projects')
+            //once we have the array then we can start populating the table by looping through the array
+            .then(projectStorageArray => {
+                
+                //then we paginate here using the class
+                const paginator = new Pagination(projectStorageArray);
+                //get the maximum number of possible pages
+                const maxPages = paginator.getTotalPagesRequired();
+                //then we need to work out the target page
+                switch(true) {
+                    case classArray.includes('back'):
+                        //if it's greater than 1, one page less
+                        currentPage > 1 ? currentPage-- : null
+                        break;
+                    case classArray.includes('forward'):
+                        //if it's less than maxpages, one page more
+                        currentPage < maxPages ? currentPage++ : null
+                        break;
+                    default:
+                        currentPage = Number($(this).attr('data-page-required'));
+                }
+                //then update the data property for current page
+                $('.ui.projectsTable .ui.pagination.menu').attr('data-current-page', currentPage);
+                //then set the storage array to the current page 
+                projectStorageArray = paginator.getParticularPage(currentPage);
+                //then update the table
+                addProjectTableRowsFragment(projectStorageArray);
+                
+        });
+
+    });
+
+}
+
 function addProjectTableButtonListeners() {
 
     //edit project button click handler
@@ -51,57 +145,31 @@ function addProjectTableButtonListeners() {
 
 function updateProjectsTable() {
 
-    //add the loading indicator to the segment
-    $('.ui.savedProjects.verticalTabMenu.segment').addClass('loading');
-    //empty the projects table body so we can add the updated information
-    $('.ui.celled.projectsTable.table tbody').empty();
-    //target our table row template first, we only need to find the template once
-    let targetNode = document.querySelector('.projectTableRowTemplate');
-    //we need to do more work as we have to save the template in a table, which we don't need, we just want the row
-    let targetRow = targetNode.querySelector('tr');
-    //then create a document fragment that we will use as a container for each looped template
-    let docFrag = document.createDocumentFragment();
     //then get all the current projects from the database, as an array
     StorageUtils.getAllObjectsInDatabaseTable('projects.js', 'projects')
         //once we have the array then we can start populating the table by looping through the array
         .then(projectStorageArray => {
             
-            //use for-in loop as execution order is maintained
-            for (let project in projectStorageArray) { 
-
-                //first we make a clone of the row, that will serve the purpose
-                let tempNode = targetRow.cloneNode(true);
-                //then we need to find each of the elements of the template that need to be adjusted and input from the current project
-                //tempNode child <td data-label="projectName"></td> needs to have text content set to database projectName
-                let projectNameNode = tempNode.querySelector('td[data-label="projectName"]');
-                projectNameNode.textContent = projectStorageArray[project].projectName;
-                //tempNode child <td data-label="projectDescription"></td> needs to have text content set to database projectDescription
-                let projectDescriptionNode = tempNode.querySelector('td[data-label="projectDescription"]');
-                projectDescriptionNode.textContent = projectStorageArray[project].projectDescription;
-                //tempNode child <td data-label="projectAuthor"></td> needs to have text content set to database projectAuthor
-                let projectAuthorNode = tempNode.querySelector('td[data-label="projectAuthor"]');
-                projectAuthorNode.textContent = projectStorageArray[project].projectAuthor;
-                //tempNode child <button class="ui editProject button" data-project-id="0"></button> needs to have data-project-id set to the database id
-                let projectEditButton = tempNode.querySelector('.ui.editProject.button');
-                projectEditButton.setAttribute('data-project-id', projectStorageArray[project].id);
-                //tempNode child <button class="ui deleteProject negative button" data-project-id="0" data-tooltip="To delete project and all associated tests"></button> needs to have data-project-id set to the database id
-                let projectDeleteButton = tempNode.querySelector('.ui.deleteProject.button');
-                projectDeleteButton.setAttribute('data-project-id', projectStorageArray[project].id);
-                //then we need to attach the clone of the template node to our container fragment
-                docFrag.appendChild(tempNode);
-
+            //then we paginate here using the class
+            const paginator = new Pagination(projectStorageArray);
+            //first we want to get the number of pages
+            if (paginator.getTotalPagesRequired() > 1) {
+                //then, if we have a number greater than 1 we need to build the paginator menu
+                const menu = paginator.buildMenu(paginator.getTotalPagesRequired());
+                //then grab the menu holder and empty it
+                $('.ui.projectsTable .paginationMenuHolder').empty();
+                //then append our menu 
+                $('.ui.projectsTable .paginationMenuHolder').append(menu);
+                //then show the menu holder
+                $('.ui.projectsTable .paginationMenuRow').css("display", "table-row");
+                //then activate the buttons
+                addProjectTablePaginationListener();
             }
-
-            //then after the entire loop has been executed we need to adjust the dom in one hit, avoid performance issues with redraw
-            //we find the relevant table, using document.querySelector which helpfully returns the first Element within the document that matches the specified selector
-            let projectsTable = document.querySelector('.ui.celled.projectsTable.table tbody');
-            //then we append each of the project fragments to the table
-            projectsTable.appendChild(docFrag);
-            //then once all the work has been done remove loading class to show the updated table 
-            $('.ui.savedProjects.verticalTabMenu.segment').removeClass('loading');
-            //then add the listeners for the buttoms built into the form
-            addProjectTableButtonListeners();
-
+            //then make sure the table is showing the first page
+            projectStorageArray = paginator.getParticularPage(1);
+            //then update the table
+            addProjectTableRowsFragment(projectStorageArray);
+        
         });
 
 }
