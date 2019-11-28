@@ -252,9 +252,9 @@ function updateRecordingsTable() {
 function addRecordingEventTableButtonListeners() {
 
     //delete recording event button click handler
-    $('.deleteRecordingEventRow').on('mousedown', function(){
+    $('.ui.editRecordingRecordingEventsTable .deleteRecordingEventRow').on('mousedown', function(){
         //close the event details form if it's open
-        $('.viewDetailedTableEventsFooter').css("display", "none");
+        $('.ui.editRecordingRecordingEventsTable .viewDetailedTableEventsFooter').css("display", "none");
         //find the recording in the database by id, using data-recording-id from the template
         const recordingKey = $(this).attr("data-recording-id");
         //do the same with the recording event key
@@ -282,7 +282,7 @@ function addRecordingEventTableButtonListeners() {
     });
 
     //delete recording event button click handler
-    $('.showRecordingEventRow').on('mousedown', function(){
+    $('.ui.editRecordingRecordingEventsTable .showRecordingEventRow').on('mousedown', function(){
         //find the recording in the database by id, using data-recording-id from the template
         const recordingKey = $(this).attr("data-recording-id");
         //do the same with the recording event key
@@ -354,7 +354,7 @@ function updateRecordingEventsTableAndCodeText(recording) {
     }
     //for code, we use Javascript as default
     const toJavascript = new JavascriptTranslator({});
-    $('.codeOutputTextArea').val(toJavascript.buildRecordingStringFromEvents(recording.recordingEventArray));
+    $('.ui.fluid.editRecording.container .codeOutputTextArea').val(toJavascript.buildRecordingStringFromEvents(recording.recordingEventArray));
     //add recording events table button listeners
     addRecordingEventTableButtonListeners();
 
@@ -363,7 +363,19 @@ function updateRecordingEventsTableAndCodeText(recording) {
 $(document).ready (function(){
 
     //activate the tab control
-    $('.ui.top.attached.recording.tabular.menu .item').tab();
+    $('.ui.top.attached.recording.tabular.menu .item').tab({
+        //we need to rehide stuff as tabs are shown
+        'onVisible': function(tab) {
+            switch (tab) {
+                case 'code':
+                    //close the event details form if it's open so it's gone when we come back
+                    $('.ui.editRecordingRecordingEventsTable .viewDetailedTableEventsFooter').css("display", "none");
+                    break;
+                case 'events':
+                    //nothing to do here at the moment
+            }
+        }
+    });
 
     //activate the copy to clipboard button
     $('.ui.copyCodeToClipBoard.icon.button').on('click', function() {
