@@ -33,7 +33,7 @@ class NodeBuilder {
 
     }
 
-    buildCheckBox = (label, attribute, value) => {
+    buildCheckBox = (label, attribute, value, attributeElementParent) => {
 
         //get a copy of the checkbox
         let checkbox = this.checkBox.cloneNode();
@@ -44,6 +44,7 @@ class NodeBuilder {
         input.setAttribute("data-title", `${label}`);
         input.setAttribute("data-name", attribute);
         input.setAttribute("data-value", value);
+        input.setAttribute("data-element-parent", attributeElementParent);
         //then attach
         checkbox.appendChild(input);
         //then the label
@@ -58,29 +59,47 @@ class NodeBuilder {
     }
 
     build = (jsonObject) => {
+        
+        //THE AIMS HERE ARE TO:
+        // 1) Recreate the json representation of the DOM node in visual form that make it easy for the user to select the attributes that need to be asserted
+        // 2) Find a way of identifying the exact element within the DOM node with the attributes that need to be asserted IN EXTERNAL VERIFICATION
 
         //set up the node variable that acts as a starting point, and the node type as well
-        var node, icon, content, header, nodeType = jsonObject.nodeType;
+        var visualNode, icon, content, header, nodeType = jsonObject.nodeType;
         //then each item in the json object has been allocated a node type, we are only really interested in element nodes and text nodes
         switch (nodeType) {
             //ELEMENT_NODE
             case 1:
+                //VISUAL REPRESENTATION
                 //each element node is a list item, with a tag name as a header and and icon indicating that it's an element node 
-                node = this.item.cloneNode();
+                visualNode = this.item.cloneNode();
                 //first we clone the icon from the constructor
                 icon = this.icon.cloneNode();
                 //then we add the specific type of icon
                 icon.classList.add('file', 'code', 'outline');
                 //then we append that icon to the parent item
-                node.appendChild(icon);
+                visualNode.appendChild(icon);
                 //then we create a container for content
                 content = this.content.cloneNode();
                 //then append the content to the node
-                node.appendChild(content);
+                visualNode.appendChild(content);
                 //then we create the header for the content
                 header = this.header.cloneNode();
                 //then we customize the header
                 header.textContent = jsonObject.tagName.toUpperCase();
+                //then we want to allow text assertion on elements with text child nodes
+                if (this.isReplay) {
+                    //check to see if the elments has child nodes and if any of those child nodes are text nodes
+                    if (jsonObject.childNodes.length > 0 && jsonObject.childNodes.some(node => node.nodeType == 3)) {
+                        //we need to know if there's an attribute element parent, which will allow us to search for nested elements
+                        let attributeParentNode = jsonObject.tagName.toUpperCase();
+                        //then we concatenate the textContent of all the child nodes
+                        let textValue = jsonObject.childNodes.filter(node => node.nodeType == 3).reduce((acc, node) => { return acc + node.nodeValue; }, '');
+                        //append the return value of the checkbox builder
+                        //we always need to have the attribute and the attribute value for assertions
+                        header.appendChild(this.buildCheckBox("Text Content", "Text", textValue, attributeParentNode))
+                    }
+                }
                 //then we append the header to the content
                 content.appendChild(header);
                 //then we create the list for holding attributes
@@ -115,6 +134,14 @@ class NodeBuilder {
                     let attributeName = attribute[0];
                     //then set the content of the title as the attribute name
                     title.textContent = attributeName;
+                    //then we allow a checkbox on the attribute being present
+                    if (this.isReplay) {
+                        //we need to know if there's an attribute element parent, which will allow us to search for nested elements
+                        let attributeParentNode = jsonObject.tagName.toUpperCase();
+                        //append the return value of the checkbox builder
+                        //we always need to have the attribute and the attribute value for assertions
+                        title.appendChild(this.buildCheckBox("Present", attributeName, "N/A", attributeParentNode))
+                    }
                     //then append that to the content
                     content.appendChild(title);
                     //then create the description
@@ -125,10 +152,11 @@ class NodeBuilder {
                     description.textContent = attributeValue.length > 75 ? `${attributeValue.slice(0, 75)} ...` : attributeValue;
                     //IF DISPLAY IS REPLAY, APPEND INLINE CHECK BOXES TO DESCRIPTION FOR ASSERTIONS OF ATTRIBUTES
                     if (this.isReplay) {
+                        //we need to know if there's an attribute element parent, which will allow us to search for nested elements
+                        let attributeParentNode = jsonObject.tagName.toUpperCase();
                         //append the return value of the checkbox builder
                         //we always need to have the attribute and the attribute value for assertions
-                        description.appendChild(this.buildCheckBox("Present", attributeName, attributeValue))
-                        description.appendChild(this.buildCheckBox("Content", attributeName, attributeValue))
+                        description.appendChild(this.buildCheckBox("Content", attributeName, attributeValue, attributeParentNode))
                     }
                     //then append the description
                     content.appendChild(description);
@@ -137,18 +165,19 @@ class NodeBuilder {
                 break;
             //TEXT_NODE
             case 3:
+                //VISUAL REPRESENTATION
                 //each text node is a list item, with 'TEXT' as a header and and icon indicating that it's a text node 
-                node = this.item.cloneNode();
+                visualNode = this.item.cloneNode();
                 //first we clone the icon from the constructor
                 icon = this.icon.cloneNode();
                 //then we add the specific type of icon
                 icon.classList.add('file', 'alternate', 'outline');
                 //then we append that icon to the parent item
-                node.appendChild(icon);
+                visualNode.appendChild(icon);
                 //then we create a container for content
                 content = this.content.cloneNode();
                 //then append the content to the node
-                node.appendChild(content);
+                visualNode.appendChild(content);
                 //then we create the header for the content
                 header = this.header.cloneNode();
                 //then we customize the header
@@ -159,13 +188,6 @@ class NodeBuilder {
                 let description = this.description.cloneNode();
                 //then we set the description equal to the text node's value
                 description.textContent = jsonObject.nodeValue.length > 75 ? `${jsonObject.nodeValue.slice(0, 75)} ...` : jsonObject.nodeValue; ;
-                //then if it's a replay situation we need to show the assertion possibilities with checkboxes
-                if (this.isReplay) {
-                    //with text, we need to get the text mainly
-                    //we have the css selector and we can just check for the text property in tests
-                    description.appendChild(this.buildCheckBox("Present", "text", "text"))
-                    description.appendChild(this.buildCheckBox("Content", "textContent", jsonObject.nodeValue))
-                }
                 //then we attach the text description to the content
                 content.appendChild(description);
                 //AND WE@RE DONE
@@ -190,7 +212,7 @@ class NodeBuilder {
             //if the node has any children we need to create a child list
             if (jsonObject.childNodes.length > 0) {
                 //find the last content node in the list
-                let allContentNodes = node.querySelectorAll('.content');
+                let allContentNodes = visualNode.querySelectorAll('.content');
                 //then get the last one so we can append a sublist
                 let lastContentNode = allContentNodes[allContentNodes.length -1];
                 //then create the sub list and add it to the last content node
@@ -202,12 +224,13 @@ class NodeBuilder {
             }
             //then for each of the childnodes we loop through
             for (let i = 0, len = childNodes.length; i < len; i++) {
+                //VISUAL REPRESENTATION
                 //and if we find a child node we need to go through the same process, adding the childnodes to the sublist
                 subList.appendChild(this.build(childNodes[i]));
             }
         }
-        //when we've finished up, just return the node 
-        return node;
+        //then just return the node 
+        return visualNode;
 
     }
 
