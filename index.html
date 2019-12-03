@@ -31,6 +31,7 @@
         <script src="user_interface/newTest.js"></script>
         <script src="user_interface/recordings.js"></script>
         <script src="user_interface/newRecording.js"></script>
+        <script src="user_interface/newReplay.js"></script>
 
         <!-- FOR RECORDING EVENT TESTING ONLY -->
         <script src="recordingScripts/cssSelectorGenerator.js"></script>
@@ -88,7 +89,7 @@
 
                         <p>Record/Replay is an open source project</p>
                         <p>Dedicated to Javascript automation testing</p> 
-                        <p>And powered by voluntary contributions</p>
+                        <p>Powered by voluntary contributions</p>
 
                         <a target="_blank" href="https://github.com/tomgallagher/RecordReplay">Check us out on Github</a>
 
@@ -1492,7 +1493,7 @@
                                         
                                     <label>Test Start Url</label>
                                         
-                                    <input type="text" name="recordingTestStartUrl" placeholder="Filled on test select">
+                                    <input type="text" name="recordingTestStartUrl" placeholder="Select test to add start URL">
                                         
                                 </div>
         
@@ -1757,7 +1758,103 @@
                     <!-- NEW REPLAY SEGMENT -->
 
                     <div class="ui newReplay verticalTabMenu segment" style="display: none; overflow-x: auto;">
-                        This is an stretched grid column for NEW REPLAY. This segment will always match the tab height
+
+                        <form class="ui newReplayForm form">
+
+                            <div class="three fields">
+        
+                                <div class="required field">
+
+                                    <label>For Recording</label>
+
+                                    <div class="ui fluid selection newReplay recording dropdown">
+                                                
+                                        <input type="hidden" name="replayRecordingId">
+                                                
+                                        <div class="default text">Select Recording</div>
+                                                
+                                        <i class="dropdown icon"></i>
+                                                
+                                        <div class="menu"></div>
+                                            
+                                    </div>
+                                    
+                                </div>
+                                        
+                                <div class="required disabled field">
+                                
+                                    <label>Replay Name</label>
+                                
+                                    <input type="text" name="replayName" placeholder="Select recording to add replay name">
+                                
+                                </div>
+
+                                <div class="required disabled field">
+                                
+                                    <label>Replay Start URL</label>
+                                
+                                    <input type="text" name="replayRecordingStartUrl" placeholder="Select recording to add start URL">
+                                
+                                </div>
+        
+                            </div>
+                            
+                            <div class="optionalAssertions field">
+
+                                <label>Add Assertions</label>
+
+                                <table class="ui small violet celled single line center aligned compact newReplayAssertionsTable table">
+                            
+                                    <thead>
+                                            
+                                        <tr> 
+                                            <th>Origin</th>
+                                            <th>Action</th>
+                                            <th>Type</th>
+                                            <th>Tag</th>
+                                            <th>Selector</th>
+                                            <th>Location</th>
+                                            <th>Action</th>
+                                        </tr>
+                                            
+                                    </thead>
+                                    
+                                    <tbody></tbody>
+    
+                                    <tfoot></tfoot>
+    
+                                </table>
+
+                                <div class="replayEventTargetStructureDisplay">
+                                                    
+                                    <div class="ui left aligned segment">
+                                    
+                                        <div class="ui small replayEventTargetStructureList list"></div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="ui stackable four column grid">
+                                
+                                <div class="column">
+                                    <div class="ui violet inverted submit button">Create Replay</div>
+                                </div>
+                                
+                                <div class="column">
+                                    <div class="ui mini attached error message"></div>
+                                    <div class="ui mini attached success message">
+                                        <div class="header">New Replay Created</div>
+                                        <p>Start replaying when ready</p>            
+                                    </div>
+                                </div>
+                                
+                            </div>
+                    
+                        </form>
+
                     </div>
 
                     <!-- TIPS AND TRICKS SEGMENT -->
@@ -1986,10 +2083,31 @@
                 </table>
             </div>
 
-            <div class="replayTableRowTemplate">
+            <div class="newReplayAssertionsTableRowTemplate">
                 <table>
                     <tbody>
-                        
+                        <tr data-label="replayAssertionRow">
+                            <td data-label="replay_recordingEventOrigin">User</td>
+                            <td data-label="replay_recordingEventAction">Mouse</td>
+                            <td data-label="replay_recordingEventActionType">Click</td>
+                            <td data-label="replay_recordingEventHTMLTag">BUTTON</td>
+                            <td data-label="replay_recordingEventCssSelectorPath" style="max-width: 1500px; overflow: hidden; text-overflow: ellipsis;">div > a</td>
+                            <td data-label="replay_recordingEventLocation" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
+                            <td data-label="replay_recordingEventAction" class="center aligned">
+                                <div class="ui mini divided horizontal list">
+                                    <div class="item">
+                                        <div class="content">
+                                            <a class="showAssertionEventRow" data-replay-id="0" data-replay-event-id="0" style="color: mediumseagreen" data-tooltip="To add assertions to this replay event" data-position="left center">Assert</a>
+                                        </div>    
+                                    </div>
+                                    <div class="item">
+                                        <div class="content" >
+                                            <a class="deleteAssertionEventRow" data-replay-id="0" data-replay-event-id="0" style="color: red" data-tooltip="To delete this event from replay" data-position="left center">Delete</a>
+                                        </div>    
+                                    </div>
+                                </div>
+                            </td>        
+                        </tr>
                     </tbody>
                 </table>
             </div>
