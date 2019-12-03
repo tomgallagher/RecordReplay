@@ -152,7 +152,9 @@ $(document).ready (function(){
                 //then reset the form to the point at which the page loaded, with neither success or error
                 $('.ui.newReplayAssertionsTable.form').removeClass('success');
                 $('.ui.newReplayAssertionsTable.form').removeClass('error');
-
+                //then hide the element structure block by default
+                $('.replayEventTargetStructureDisplay').css('display', 'none');
+                //then show the replay segment
                 $('.ui.verticalTabMenu.newReplay.segment').css('display', 'block');
                 break;
             case classArray.includes('help'):

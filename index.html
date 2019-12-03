@@ -4,7 +4,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-        <title>Record/Replay UI</title>
+        <title>Record/Replay</title>
         <link href="css/semantic.min.css" rel="stylesheet" type="text/css">
         <link href="css/userInterface.css" rel="stylesheet" type="text/css">
         <script src="third_party/jquery-3.1.1.min.js"></script>
@@ -1799,7 +1799,7 @@
         
                             </div>
                             
-                            <div class="optionalAssertions field">
+                            <div class="optionalAssertions field" style="display: none;">
 
                                 <label>Add Assertions</label>
 
@@ -1825,7 +1825,7 @@
     
                                 </table>
 
-                                <div class="replayEventTargetStructureDisplay">
+                                <div class="replayEventTargetStructureDisplay" style="display: none;">
                                                     
                                     <div class="ui left aligned segment">
                                     
@@ -2097,12 +2097,12 @@
                                 <div class="ui mini divided horizontal list">
                                     <div class="item">
                                         <div class="content">
-                                            <a class="showAssertionEventRow" data-replay-id="0" data-replay-event-id="0" style="color: mediumseagreen" data-tooltip="To add assertions to this replay event" data-position="left center">Assert</a>
+                                            <a class="assertEventLink" data-recording-event-id="0" data-recording-id="0" style="color: mediumseagreen" data-tooltip="To add assertions to this replay event" data-position="left center">Assert</a>
                                         </div>    
                                     </div>
                                     <div class="item">
                                         <div class="content" >
-                                            <a class="deleteAssertionEventRow" data-replay-id="0" data-replay-event-id="0" style="color: red" data-tooltip="To delete this event from replay" data-position="left center">Delete</a>
+                                            <a class="deleteEventLink" data-recording-event-id="0" data-recording-id="0" style="color: red" data-tooltip="To delete this event from replay" data-position="left center">Delete</a>
                                         </div>    
                                     </div>
                                 </div>

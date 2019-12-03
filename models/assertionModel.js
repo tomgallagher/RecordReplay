@@ -18,6 +18,8 @@ class Assertion {
             assertionNestedLevel: 0,
             //then we need to know if each assertion has passed or failed, started with null then boolean
             assertionStatus: null,
+            //then we should keep track of the parent recording event
+            assertionRecordingEventId: "N/A",
             //then we should keep track of the parent replay event
             assertionReplayEventId: "N/A"
         };
