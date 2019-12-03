@@ -44,7 +44,7 @@
 }
 
 .ui.assertion.checkbox label {
-    color: mediumseagreen;
+    color: mediumseagreen !important;
 }
 
 /*need an override here so inverted vertical menu opening out to right works OK in black*/

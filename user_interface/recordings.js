@@ -310,7 +310,7 @@ function addRecordingEventTableButtonListeners() {
                         $('.recordingEventTargetStructureList').empty();
                         //then we deliver the pre-cooked html fragment from the Node builder, which loops through the DOM structure to create a tree
                         //we can use the same builder for recordings and replays just by adding the isReplay marker as false, which shows no assertion checkboxes
-                        $('.recordingEventTargetStructureList').append(new NodeBuilder({isReplay: false}).build(recordingEvent.recordingEventHoverTargetAsJSON));
+                        $('.recordingEventTargetStructureList').append(new NodeBuilder({isReplay: false, eventId: recordingEventKey}).build(recordingEvent.recordingEventHoverTargetAsJSON));
                         //then once it has been built, and added, then we are ready to show the display
                         $('.recordingEventTargetStructureDisplay').show();
                         break;
@@ -318,7 +318,7 @@ function addRecordingEventTableButtonListeners() {
                         //same thing here, with a different recording event property to work on
                         $('.recordingEventTargetStructureList').empty();
                         //the text selection has a slightly different collection method, separating the two for the time being allws more optionality, via properties passed to builder
-                        $('.recordingEventTargetStructureList').append(new NodeBuilder({isReplay: false}).build(recordingEvent.recordingEventTextSelectTargetAsJSON));
+                        $('.recordingEventTargetStructureList').append(new NodeBuilder({isReplay: false, eventId: recordingEventKey}).build(recordingEvent.recordingEventTextSelectTargetAsJSON));
                         //then once we have finished the processing, show the results
                         $('.recordingEventTargetStructureDisplay').show();
                         break;

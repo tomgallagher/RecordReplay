@@ -2,7 +2,16 @@ class NodeBuilder {
 
     constructor(options) {
 
+        //we only show the assert checkboxes on replay
         this.isReplay = options.isReplay;
+        //then for replay checkboxes we need the id
+        this.eventId = options.eventId;
+        //then we need to define assertion types here
+        this.isTextAssertion = "Text Content";
+        this.isAttributePresentAssertion = "Present";
+        this.hasAttributeContentAssertion = "Content";
+        //then we need to only set the element parent if we are seeking to assert on nested elements
+        this.nestedLevel = 0;
         //then we need a representation of each building block in the list, starting with the list item
         this.item = document.createElement('div');
         this.item.className = 'item';
@@ -33,24 +42,34 @@ class NodeBuilder {
 
     }
 
-    buildCheckBox = (label, attribute, value, attributeElementParent) => {
+    buildCheckBox = (assertionType, assertionAttribute, assertionAttributeValue, attributeElementParent) => {
 
         //get a copy of the checkbox
         let checkbox = this.checkBox.cloneNode();
         //then get a copy of the input
         let input = this.checkBoxInput.cloneNode();
         //we need to retrieve these values from the checkbox checks
-        //the title tells us if we are asserting PRESENT or CONTENT
-        input.setAttribute("data-title", `${label}`);
-        input.setAttribute("data-name", attribute);
-        input.setAttribute("data-value", value);
-        input.setAttribute("data-element-parent", attributeElementParent);
+        //the assertion type tells us if we are asserting Present, Content or Text
+        input.setAttribute("data-assertion-type", `${assertionType}`);
+        //the assertion attribute gives us the attribute we are looking to assert on
+        input.setAttribute("data-assertion-attribute", assertionAttribute);
+        //the assertion attribute value gives is the attibute value we are looking to assert on
+        input.setAttribute("data-assertion-attribute-value", assertionAttributeValue);
+        //the parent gives us the parent we will need to look for when performing assertions, it should be "ROOT" when no nesting
+        this.nestedLevel == 0 ? attributeElementParent = "ROOT" : null;
+        input.setAttribute("data-assertion-element-parent", attributeElementParent);
+        //this reports the nested level
+        input.setAttribute("data-assertion-element-nested-level", this.nestedLevel);
+        //this reports the replay event id
+        input.setAttribute("data-assertion-replay-event-id", this.eventId);
+        //this is a placeholder for the assertion id
+        input.setAttribute("data-assertion-id", 0);
         //then attach
         checkbox.appendChild(input);
         //then the label
         let checkBoxlabel = this.checkBoxLabel.cloneNode();
         //so this should be either 'Present' or 'Content' 
-        checkBoxlabel.textContent = `Assert ${label}`;
+        checkBoxlabel.textContent = `Assert ${assertionType}`;
         //then attach  label to checkbox as well
         checkbox.appendChild(checkBoxlabel);
         //then return it
@@ -97,7 +116,7 @@ class NodeBuilder {
                         let textValue = jsonObject.childNodes.filter(node => node.nodeType == 3).reduce((acc, node) => { return acc + node.nodeValue; }, '');
                         //append the return value of the checkbox builder
                         //we always need to have the attribute and the attribute value for assertions
-                        header.appendChild(this.buildCheckBox("Text Content", "Text", textValue, attributeParentNode))
+                        header.appendChild(this.buildCheckBox(this.isTextAssertion, "Text", textValue, attributeParentNode))
                     }
                 }
                 //then we append the header to the content
@@ -140,7 +159,7 @@ class NodeBuilder {
                         let attributeParentNode = jsonObject.tagName.toUpperCase();
                         //append the return value of the checkbox builder
                         //we always need to have the attribute and the attribute value for assertions
-                        title.appendChild(this.buildCheckBox("Present", attributeName, "N/A", attributeParentNode))
+                        title.appendChild(this.buildCheckBox(this.isAttributePresentAssertion, attributeName, "N/A", attributeParentNode))
                     }
                     //then append that to the content
                     content.appendChild(title);
@@ -156,7 +175,7 @@ class NodeBuilder {
                         let attributeParentNode = jsonObject.tagName.toUpperCase();
                         //append the return value of the checkbox builder
                         //we always need to have the attribute and the attribute value for assertions
-                        description.appendChild(this.buildCheckBox("Content", attributeName, attributeValue, attributeParentNode))
+                        description.appendChild(this.buildCheckBox(this.hasAttributeContentAssertion, attributeName, attributeValue, attributeParentNode))
                     }
                     //then append the description
                     content.appendChild(description);
@@ -220,7 +239,9 @@ class NodeBuilder {
                 //mark it as an elements sublist
                 subList.classList.add('elements');
                 //then add the sublist to the last content node
-                lastContentNode.appendChild(subList)
+                lastContentNode.appendChild(subList);
+                //then mark the nested level as incremented
+                this.nestedLevel++;
             }
             //then for each of the childnodes we loop through
             for (let i = 0, len = childNodes.length; i < len; i++) {

@@ -4,7 +4,7 @@ class ActiveRecording extends Recording {
     constructor(recording, options) {
         // call the super class constructor and pass in the existing recording
         super(recording)
-        // set default values for the active recording class
+        // set extra default values for the active recording class
         const defaults = {
             //just so we can keep track of the recording id as indicated in the database
             recordingID: 0,
