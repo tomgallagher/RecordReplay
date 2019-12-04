@@ -30,18 +30,37 @@ class Replay extends Recording {
 
     }
 
-    deleteReplayEventById(replayEventId) {
+    //this function is used to create a functioning array when we have artificial assertion events inserted into the event array 
+    sortReplayEventsByTime() {
+
         this.replayEventArray = this.replayEventArray
-            //get rid of the element that has been deleted
-            .filter(item => item.replayEventId != replayEventId)
+            //first we need to sort the array by timestamp
+            .sort((previous, current) => { 
+                //we need to deal with the situation where assertions have exactly the same timestamp as their matching mouse hover or text select events
+                if (previous.recordingEventCreated == current.recordingEventCreated) {
+                    //so if the current item has own property indicating it is an assertion then we just put it second in the queue
+                    return current.hasOwnProperty('assertionId') ? -1 : 1;
+                } else {
+                    //otherwise we are happy to sort as normal
+                    return previous.recordingEventCreated - current.recordingEventCreated; 
+                }
+            })
             //then adjust the time since previous
             .map((replayEvent, index, array) => {
                 //the time since previous of the first item is always 0, so if the first item is deleted we end up with an absolute timestamp for the second item
                 if (index == 0) { replayEvent.recordingTimeSincePrevious = 0; return replayEvent; }
                 //otherwise we need to go through to the end of the array, comparing the current event with the one before it in the index
                 else {
-                    //so recording event time since previous is equal to the difference in their event created times
-                    replayEvent.recordingTimeSincePrevious = replayEvent.recordingEventCreated - array[index-1].recordingEventCreated;
+                    //again here we need a special exception for assertions with identical timestamps
+                    if (replayEvent.recordingEventCreated == array[index-1].recordingEventCreated && replayEvent.hasOwnProperty('assertionId')) {
+                        //where we have an exact match in timestamps we need to give a small difference so we can display a time difference that is not 0
+                        //we use 0 to indicate the first entry so we need to set it at 1, an arbitrary small figure
+                        //if we use a larger number, this could start to cause problems with many assertions
+                        replayEvent.recordingTimeSincePrevious = 1;
+                    } else {
+                        //so recording event time since previous is equal to the difference in their event created times
+                        replayEvent.recordingTimeSincePrevious = replayEvent.recordingEventCreated - array[index-1].recordingEventCreated;
+                    }
                     //then return the mutated element
                     return replayEvent;
                 }

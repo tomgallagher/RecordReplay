@@ -7,16 +7,14 @@ class ReplayEvent extends RecordingEvent {
         super(recordingEvent);
         // set extra default values for the replay event class
         const defaults = {
-            //general information applicable to all events
+            //we are going to need to have a unique id for each replay
             replayEventId: `replayEvent#${(Math.floor(Math.random() * 90000) + 10000)}#${Date.now()}`,
             //then we are going to want to know when the event was replayed
             replayEventReplayed: 0,
             //then we are going to want to know if the replay event has passed or failed, started with null then boolean
             replayEventStatus: null,
             //then we are going to want to know why the replay event has passed or failed, beyond assertion failures
-            replayEventMessages: [],
-            //then we want to have an array that can hold all of the assertions that are required for this replay event
-            replayEventAssertionArray: []
+            replayEventMessages: []
         };
         // create a new object with the defaults over-ridden by the options passed in
         let opts = Object.assign({}, defaults, options);
@@ -25,7 +23,7 @@ class ReplayEvent extends RecordingEvent {
 
     }
 
-    //then we need a way of deleting assertions from the replay event
+    //then we need a way of sorting that allows for 
     deleteAssertionById(assertionId) {
         this.replayEventAssertionArray = this.replayEventAssertionArray
             //get rid of the element that has been deleted

@@ -61,9 +61,7 @@ class NodeBuilder {
         //this reports the nested level
         input.setAttribute("data-assertion-element-nested-level", this.nestedLevel);
         //this reports the replay event id
-        input.setAttribute("data-assertion-replay-event-id", this.eventId);
-        //this is a placeholder for the assertion id
-        input.setAttribute("data-assertion-id", 0);
+        input.setAttribute("data-assertion-recording-event-id", this.eventId);
         //then attach
         checkbox.appendChild(input);
         //then the label

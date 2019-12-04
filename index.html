@@ -23,6 +23,9 @@
         <script src="models/testModel.js"></script>
         <script src="models/recordingModel.js"></script>
         <script src="models/recordingEventModel.js"></script>
+        <script src="models/assertionModel.js"></script>
+        <script src="models/replayModel.js"></script>
+        <script src="models/replayEventModel.js"></script>
         <script src="user_interface/horizontalMenu.js"></script>
         <script src="user_interface/verticalMenu.js"></script>
         <script src="user_interface/projects.js"></script>
@@ -1761,6 +1764,14 @@
 
                         <form class="ui newReplayForm form">
 
+                            <!-- HIDDEN FIELD FOR ASSERTIONS -->
+
+                            <div class="field" style="display: none;">
+                                                
+                                <input type="text" name="hiddenAssertionsCollector" value="[]">
+                                    
+                            </div>
+
                             <div class="three fields">
         
                                 <div class="required field">
@@ -1837,13 +1848,13 @@
 
                             </div>
 
-                            <div class="ui stackable four column grid">
+                            <div class="ui stackable eight column grid">
                                 
-                                <div class="column">
+                                <div class="two wide column">
                                     <div class="ui violet inverted submit button">Create Replay</div>
                                 </div>
                                 
-                                <div class="column">
+                                <div class="four wide column">
                                     <div class="ui mini attached error message"></div>
                                     <div class="ui mini attached success message">
                                         <div class="header">New Replay Created</div>
@@ -2097,12 +2108,12 @@
                                 <div class="ui mini divided horizontal list">
                                     <div class="item">
                                         <div class="content">
-                                            <a class="assertEventLink" data-recording-event-id="0" data-recording-id="0" style="color: mediumseagreen" data-tooltip="To add assertions to this replay event" data-position="left center">Assert</a>
+                                            <a class="assertEventLink" data-recording-event-id="0" data-recording-id="0" style="color: mediumseagreen" data-tooltip="To add assertions to this recording event" data-position="left center">Assert</a>
                                         </div>    
                                     </div>
                                     <div class="item">
                                         <div class="content" >
-                                            <a class="deleteEventLink" data-recording-event-id="0" data-recording-id="0" style="color: red" data-tooltip="To delete this event from replay" data-position="left center">Delete</a>
+                                            <a class="deleteEventLink" data-recording-event-id="0" data-recording-id="0" style="color: red" data-tooltip="To delete this event from recording" data-position="left center">Delete</a>
                                         </div>    
                                     </div>
                                 </div>

@@ -53,12 +53,165 @@ function addAssertableEventsToTable(recording, assertableArray) {
         //show the assertions field
         $('.optionalAssertions').css('display', 'block');
         //and add the button listeners
-
+        addAssertOrDeleteButtonListeners();
     } else {
          //hide the assertions field
          $('.optionalAssertions').css('display', 'none');
     }
     
+
+}
+
+function addAssertOrDeleteButtonListeners() {
+
+    //the assert function needs to open the assertion UI first, then add a processor for assertion checking
+    $('.ui.newReplayAssertionsTable .assertEventLink').on('mousedown', function(){
+        //first we need to get the recording key
+        const recordingKey = $(this).attr("data-recording-id");
+        //do the same with the recording event key
+        const recordingEventKey = $(this).attr("data-recording-event-id");
+        //the recording key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', recordingKey, 'recordings')
+            //then we have a returned js object with the recording details
+            .then(recording => {
+                //get a new instantiation of our recording, so we can use the search method
+                var searchableRecording = new Recording(recording);
+                //use the method to get the recording event
+                const recordingEvent = searchableRecording.findRecordingEventById(recordingEventKey);
+                //determine the json object holder according to type of recording event
+                let jsonObject;
+                switch(true) {
+                    case recordingEvent.recordingEventAction == 'Mouse' && recordingEvent.recordingEventActionType == 'hover':
+                        jsonObject = recordingEvent.recordingEventHoverTargetAsJSON;
+                        break;
+                    case recordingEvent.recordingEventAction == 'TextSelect' && recordingEvent.recordingEventActionType == 'selectstart':
+                        jsonObject = recordingEvent.recordingEventTextSelectTargetAsJSON;
+                        break;
+                    default:
+                        console.error("Unassertable Event in Assertion Event Table");
+                        return;
+                }
+                //on each call we empty the list container we are using to create a dom structure
+                $('.replayEventTargetStructureList').empty();
+                //then we deliver the pre-cooked html fragment from the Node builder, which loops through the DOM structure to create a tree
+                //we can use the same builder for recordings and replays just by adding the isReplay marker as false, which shows no assertion checkboxes
+                $('.replayEventTargetStructureList').append(new NodeBuilder({isReplay: true, eventId: recordingEventKey}).build(jsonObject));
+                //then we need to activate all the checkboxes
+                $('.ui.replayEventTargetStructureList .ui.assertion.checkbox').checkbox();
+                //then once it has been built, and added, then we are ready to show the display
+                $('.replayEventTargetStructureDisplay').show();
+                //then we add the listener for checkbox clicks, passing in the recording
+                addAssertionCheckboxListener(recording);
+
+            });
+
+    });
+
+    //the delete function is essentially the same as in the recordings.js routine
+    //we are just deleting an item from the recording
+    $('.ui.newReplayAssertionsTable .deleteEventLink').on('mousedown', function(){
+        //find the recording in the database by id, using data-recording-id from the template
+        const recordingKey = $(this).attr("data-recording-id");
+        //do the same with the recording event key
+        const recordingEventKey = $(this).attr("data-recording-event-id");
+        //the recording key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', recordingKey, 'recordings')
+            //then we have a returned js object with the recording details
+            .then(recording => {
+                //get a new instantiation of our recording, which will lose the id
+                var editedRecording = new Recording(recording);
+                //add the id back so we can save using the id
+                editedRecording.id = recording.id;
+                //remove the deleted item and order according to time stamp, using the method attached to the recording model
+                editedRecording.deleteRecordingEventById(recordingEventKey);
+                //then get the new assertable array for presentation
+                const assertableArray = editedRecording.recordingEventArray.filter(item => item.recordingEventActionType == "hover" || item.recordingEventActionType == "selectstart");
+                //then update the events table so we can see the changes
+                addAssertableEventsToTable(editedRecording, assertableArray);
+                //then return the edited recording, with new set of events, for saving in the database
+                return editedRecording;
+            })
+            //then we need to save the edited recording
+            .then(editedRecording => StorageUtils.updateModelObjectInDatabaseTable('recordings.js', editedRecording.id, editedRecording, 'recordings'))
+            //the get single object function will reject if object is not in database
+            .catch(error => console.error(error));   
+
+    });
+
+
+}
+
+function addAssertionCheckboxListener(recording) {
+
+    //first we need to create a searchable recording
+    const searchableRecording = new Recording(recording);
+
+    //then we need a process that deals with the checking of checkboxes
+    Rx.Observable.fromEvent(document.querySelectorAll('.ui.replayEventTargetStructureList .ui.assertion.checkbox'), 'change')
+        //then we filter for the event target being checked
+        .filter(event => event.target.checked)
+        //then we stop subscribing to these events when the end processing observable emits
+        .takeUntil(Rx.Observable.fromEvent(document.querySelector('.ui.newReplayForm .ui.submit.button'), 'mousedown'))
+        //then we need to map to the event target, we are particularly interested in the data properties of the event target, added by nodebuilder class
+        //these properties are available from the dataset object and are:
+        //{ assertionAttribute: <str>, assertionType: <str>, assertionAttributeValue: <str>, assertionElementNestedLevel: <int_str>, assertionElementParent: <tag_str>, assertionRecordingEventId: <str> }
+        .map(event => new Assertion(
+            //add the recording event to the assertion as it is an extension of the recording event model
+            searchableRecording.findRecordingEventById(event.target.dataset.assertionRecordingEventId),
+            {
+                assertionType: event.target.dataset.assertionType,
+                assertionAttribute: event.target.dataset.assertionAttribute,
+                assertionValue: event.target.dataset.assertionAttributeValue,
+                assertionElement: event.target.dataset.assertionElementParent,
+                assertionNestedLevel: event.target.dataset.assertionElementNestedLevel
+            }
+        ))
+        //then we need to update the hidden input array with our new assertion
+        .do(assertion => {
+            //get the current value of the assertions we have collected, parsed from the string version
+            const hiddenAssertionsCollectionArray = JSON.parse($('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val());
+            //push the new assertion into the collection
+            hiddenAssertionsCollectionArray.push(assertion);
+            //then put in the new value
+            $('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val(JSON.stringify(hiddenAssertionsCollectionArray));
+        })
+        //then we report
+        .subscribe(
+            x => console.log(x),
+            error => console.error(error),
+            () => console.log("IsChecked Processor Complete")
+        );
+
+    //and a process that deals with the unchecking of checkboxes
+    Rx.Observable.fromEvent(document.querySelectorAll('.ui.replayEventTargetStructureList .ui.assertion.checkbox'), 'change')
+        //then we filter for the event target being unchecked
+        .filter(event => !event.target.checked)
+        //then we stop subscribing to these events when the end processing observable emits
+        .takeUntil(Rx.Observable.fromEvent(document.querySelector('.ui.newReplayForm .ui.submit.button'), 'mousedown'))
+        //then we want to adjust the hidden assertion collection array, to remove the item that has been checked
+        .do(event => {
+            //get the current value of the assertions we have collected, parsed from the string version
+            const hiddenAssertionsCollectionArray = JSON.parse($('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val());
+            //set up the params we are looking to filter on
+            const assertionRecordingEventId = event.target.dataset.assertionRecordingEventId;
+            const assertionType = event.target.dataset.assertionType;
+            const assertionAttribute = event.target.dataset.assertionAttribute;
+            const assertionValue = event.target.dataset.assertionAttributeValue;
+            //filter the array for any items that contain our params
+            const filteredHiddenAssertionsCollectionArray = hiddenAssertionsCollectionArray
+                //first we allow entry into new array by the recording event id, so we don't get any weird crossover bugs
+                .filter(item => item.recordingEventId != assertionRecordingEventId)
+                //then we allow entry into the new array as long as the any of assertion type, attribute and value don't match 
+                .filter(item => item.assertionType != assertionType || item.assertionAttribute != assertionAttribute || item.assertionValue != assertionValue  )
+            //then we just paste in the new value of the array
+            $('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val(JSON.stringify(filteredHiddenAssertionsCollectionArray));
+        })
+        //then we report
+        .subscribe(
+            event => console.log(`Deleted Assertion on Recording Event ${event.target.dataset.assertionRecordingEventId}`),
+            error => console.error(error),
+            () => console.log("IsNotChecked Processor Complete")
+        );
 
 }
 
@@ -91,7 +244,8 @@ function refreshNewReplayRecordingDropdown() {
                     //populate the visible form but leave it disabled - it's readable but the form does not mutate and require reseting
                     $('.ui.newReplayForm.form input[name=replayName]').val(`${recording.recordingName}#${dateString}`);
                     $('.ui.newReplayForm.form input[name=replayRecordingStartUrl]').val(recording.recordingTestStartUrl);
-
+                    //then we want to reset the hidden assertions collector
+                    $('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val("[]");
                     //create an array from the recording recording events array with any hover and text select recording events - the only assertable events
                     const assertableArray = recording.recordingEventArray.filter(item => item.recordingEventActionType == "hover" || item.recordingEventActionType == "selectstart");
                     //then populate the table with events, if any
@@ -132,11 +286,65 @@ $(document).ready (function(){
                 },
             },
             onSuccess(event, fields) {
-                //console.log(event);
                 //always need to have this with a submit button otherwise the entire page reloads
                 event.preventDefault();
-                //add the loading indicator to the button, to indicate saving of the test to the database
+                //we're always interested in fields
+                console.log(fields);
+                //first we want to hide the assertions input section
+                $('.replayEventTargetStructureDisplay').hide();
+                //then we want to hide the assertions table
+                $('.optionalAssertions').css('display', 'none');
+                //add the loading indicator to the button, to indicate saving of the replay to the database
                 $('.ui.newReplayForm .ui.submit.button').addClass('loading');
+                //clear the new replay replay events table of any previous entries
+                $('.ui.newReplayReplayEventsTable.table tbody').empty();
+                //then we can start to create our new replay, starting with the fetching of the recording from the database
+                const recordingKey = fields.replayRecordingId;
+                //the recording key will be in string format - StorageUtils handles conversion
+                StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', recordingKey, 'recordings')
+                    //then we have a returned js object with the recording details
+                    .then(recording => {
+                        //then we need to create our new replay, which is an extension of recording and has its own fields as well
+                        //we can just push the fields in the constructor, any non-defaults just get ignored
+                        const newReplay = new Replay(recording, fields);
+                        //then we need to add all the replay events by extending the recording events, with the ability to customise in options object
+                        newReplay.replayEventArray = recording.recordingEventArray.map(recordingEvent => new ReplayEvent(recordingEvent, {}));
+                        //then we need to get hold of the assertions array
+                        const assertionsArray = JSON.parse(fields.hiddenAssertionsCollector);
+                        //then we add the assertions array in
+                        newReplay.replayEventArray = newReplay.replayEventArray.concat(assertionsArray);
+                        //then we need to create a sorted array, which generates mixed replay events and assertion events in the correct order
+                        //we also need the time since previous to be addjusted
+                        newReplay.sortReplayEventsByTime();
+                        console.log(newReplay);
+
+                        return newReplay;
+                    })
+                    //then we need to save the new replay to the database
+                    /*
+                    .then(newReplay => StorageUtils.addModelObjectToDatabaseTable('newReplay.js', newReplay, 'replays'))
+                    //then we need to get all the replay UI ready to start replay
+                    .then(createdReplayId => {
+                        //remove the loading indicator from the button
+                        $('.ui.newReplayForm .ui.submit.button').removeClass('loading');
+                        //undisable the button if we have had a previous new recording
+                        $('.ui.startReplay.positive.button').removeClass('disabled');
+                        //change the data-replay-id of the start and stop buttons, so we can retrieve the replay on replay start
+                        $('.ui.startReplay.positive.button, .ui.stopReplay.negative.button').attr("data-replay-id", createdReplayId);
+                        //show the replay events segment
+                        $('.ui.replayEvents.segment').css('display', 'block');
+                         //then we want to reset the hidden assertions collector
+                        //$('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val("[]");
+                        //then run the function that enables the vertical menu buttons
+                        enableVerticalMenuButtonsWhenDataAllows();
+                    })
+                    */
+                    //the get single object function will reject if object is not in database
+                    .catch(error => console.error(error));                 
+
+                
+                
+                
 
                 //remove the loading indicator from the button
                 $('.ui.newReplayForm .ui.submit.button').removeClass('loading');
