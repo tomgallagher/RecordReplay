@@ -9,9 +9,10 @@ StorageUtils.openModelObjectDatabaseConnection = function(caller) {
         var db = new Dexie("modelObjectDatabase");
         //set up the database with the required fields - this is where we add fields in a second version so we can update users' databases
         db.version(1).stores({
-            projects: "++id,projectName,projectDescription,projectAuthor",
-            tests: "++id,testName,testDescription,testAuthor,testProjectId,testProjectName,testStartUrl,testBandwidthValue,testBandwidthName,testLatencyValue,testLatencyName,testPerformanceTimings,testResourceLoads,testScreenshot",
-            recordings: "++id,recordingName,recordingDescription,recordingAuthor,recordingIsMobile,recordingMobileOrientation,recordingTestStartUrl,recordingProjectId,recordingProjectName,recordingTestId,recordingTestName,recordingTestBandwidthValue,recordingTestBandwidthName,recordingTestLatencyValue,recordingTestLatencyName,recordingTestPerformanceTimings,recordingTestResourceLoads,recordingTestScreenshot,recordingEventArray"
+            projects: "++id,projectName,projectDescription,projectAuthor,projectCreated",
+            tests: "++id,testName,testDescription,testAuthor,testCreated,testProjectId,testProjectName,testStartUrl,testBandwidthValue,testBandwidthName,testLatencyValue,testLatencyName,testPerformanceTimings,testResourceLoads,testScreenshot",
+            recordings: "++id,recordingName,recordingDescription,recordingAuthor,recordingCreated,recordingIsMobile,recordingMobileOrientation,recordingTestStartUrl,recordingProjectId,recordingProjectName,recordingTestId,recordingTestName,recordingTestBandwidthValue,recordingTestBandwidthName,recordingTestLatencyValue,recordingTestLatencyName,recordingTestPerformanceTimings,recordingTestResourceLoads,recordingTestScreenshot,recordingEventArray",
+            replays: "++id,replayName,replayRecordingStartUrl,replayCreated,replayExecuted,replayFailTime,replayStatus,replayEventArray,recordingName,recordingDescription,recordingAuthor,recordingCreated,recordingIsMobile,recordingMobileOrientation,recordingTestStartUrl,recordingProjectId,recordingProjectName,recordingTestId,recordingTestName,recordingTestBandwidthValue,recordingTestBandwidthName,recordingTestLatencyValue,recordingTestLatencyName,recordingTestPerformanceTimings,recordingTestResourceLoads,recordingTestScreenshot,recordingEventArray"
         });
         //report that the database connection is open
         console.log(`${caller} has opened modelObjectDatabase Connection`);
@@ -21,6 +22,9 @@ StorageUtils.openModelObjectDatabaseConnection = function(caller) {
 
 };
 
+ 
+
+
 //simple function to return all records count - this must be updated at same time as new tables are added
 StorageUtils.getRecordsCount = function() {
 
@@ -29,7 +33,7 @@ StorageUtils.getRecordsCount = function() {
         //open the database connection
         StorageUtils.openModelObjectDatabaseConnection("Storage")
         //then get all the records as a promise all, just projects at the moment
-            .then(db => Promise.all( [ db.projects.count(), db.tests.count(), db.recordings.count(), ] ) )
+            .then(db => Promise.all( [ db.projects.count(), db.tests.count(), db.recordings.count(), db.replays.count() ] ) )
             //then we return each of them as a value array
             .then(valuesArray => {
                 const countResponse = {
@@ -37,7 +41,7 @@ StorageUtils.getRecordsCount = function() {
                     projects: valuesArray[0],
                     tests: valuesArray[1],
                     recordings: valuesArray[2],
-                    replays: 0
+                    replays: valuesArray[3]
                 };
                 resolve(countResponse);
             })

@@ -26,6 +26,9 @@ function addProjectTableRowsFragment(projectStorageArray) {
         //tempNode child <td data-label="projectAuthor"></td> needs to have text content set to database projectAuthor
         let projectAuthorNode = tempNode.querySelector('td[data-label="projectAuthor"]');
         projectAuthorNode.textContent = projectStorageArray[project].projectAuthor;
+        //tempNode child <td data-label="projectCreated"></td> needs to have text content set to database projectCreated
+        let projectCreatedNode = tempNode.querySelector('td[data-label="projectCreated"]');
+        projectCreatedNode.textContent = new Date(projectStorageArray[project].projectCreated).toLocaleString();
         //tempNode child <button class="ui editProject button" data-project-id="0"></button> needs to have data-project-id set to the database id
         let projectEditButton = tempNode.querySelector('.ui.editProject.button');
         projectEditButton.setAttribute('data-project-id', projectStorageArray[project].id);

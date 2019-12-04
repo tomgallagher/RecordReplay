@@ -316,12 +316,11 @@ $(document).ready (function(){
                         //then we need to create a sorted array, which generates mixed replay events and assertion events in the correct order
                         //we also need the time since previous to be addjusted
                         newReplay.sortReplayEventsByTime();
-                        console.log(newReplay);
+                        
 
                         return newReplay;
                     })
                     //then we need to save the new replay to the database
-                    /*
                     .then(newReplay => StorageUtils.addModelObjectToDatabaseTable('newReplay.js', newReplay, 'replays'))
                     //then we need to get all the replay UI ready to start replay
                     .then(createdReplayId => {
@@ -334,11 +333,10 @@ $(document).ready (function(){
                         //show the replay events segment
                         $('.ui.replayEvents.segment').css('display', 'block');
                          //then we want to reset the hidden assertions collector
-                        //$('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val("[]");
+                        $('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val("[]");
                         //then run the function that enables the vertical menu buttons
                         enableVerticalMenuButtonsWhenDataAllows();
                     })
-                    */
                     //the get single object function will reject if object is not in database
                     .catch(error => console.error(error));                 
 

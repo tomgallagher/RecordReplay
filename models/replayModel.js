@@ -9,8 +9,8 @@ class Replay extends Recording {
         const defaults = {
             //we need to generate a replay name automatically as there can be many replays of the same recording
             replayName: 'N/A',
-            //we need to port the starting url over from the recording
-            replayName: 'N/A',
+            //then we need to port the start url
+            replayRecordingStartUrl: 'N/A',
             //we need to know when the replay was created
             replayCreated: Date.now(),
             //we need to know when the replay was executed

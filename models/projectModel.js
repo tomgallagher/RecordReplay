@@ -7,7 +7,8 @@ class Project {
         const defaults = {
             projectName: 'N/A',
             projectDescription: 'N/A',
-            projectAuthor: 'N/A'
+            projectAuthor: 'N/A',
+            projectCreated: Date.now()
         };      
         
         // create a new object with the defaults over-ridden by the options passed in

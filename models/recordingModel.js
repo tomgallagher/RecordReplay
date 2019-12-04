@@ -9,6 +9,7 @@ class Recording {
             recordingName: 'N/A',
             recordingDescription: 'N/A',
             recordingAuthor: 'N/A',
+            recordingCreated: Date.now(),
             recordingIsMobile: false,
             recordingMobileOrientation: 'portrait',
             //displayed defaults from selected test

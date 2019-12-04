@@ -46,11 +46,14 @@ function addTestTableRowsFragment(testStorageArray) {
         testStorageArray[test].testResourceLoads == true ? additionalReportsArray.push('Resource Loads') : null;
         testStorageArray[test].testScreenshot == true ? additionalReportsArray.push('Take Screenshot') : null;
         testAdditionalReportingNode.textContent = additionalReportsArray.join(', ');
-        //tempNode child <button class="ui editTest button" data-test-id="0"></button> needs to have data-test-id set to the database id
-        let testEditButton = tempNode.querySelector('.ui.editTest.button');
+        //tempNode child <td data-label="testCreated"></td> needs to have text content set to database testCreated
+        let testCreatedNode = tempNode.querySelector('td[data-label="testCreated"]');
+        testCreatedNode.textContent = new Date(testStorageArray[test].testCreated).toLocaleString();
+        //tempNode child <a class="editTestLink" data-test-id="0">Edit</a> needs to have data-test-id set to the database id
+        let testEditButton = tempNode.querySelector('.editTestLink');
         testEditButton.setAttribute('data-test-id', `${testStorageArray[test].id}`);
-        //tempNode child <button class="ui deleteTest negative button" data-test-id="0" data-tooltip="To delete test and all associated recordings and replays"></button> needs to have data-test-id set to the database id
-        let testDeleteButton = tempNode.querySelector('.ui.deleteTest.button');
+        //tempNode child <a class="deleteTestLink" style="color: red" data-test-id="0" data-tooltip="To delete test and all associated recordings and replays" data-position="left center">Edit</a> needs to have data-test-id set to the database id
+        let testDeleteButton = tempNode.querySelector('.deleteTestLink');
         testDeleteButton.setAttribute('data-test-id', `${testStorageArray[test].id}`);
         
         //then we need to attach the clone of the template node to our container fragment
@@ -140,7 +143,7 @@ function addTestTablePaginationListener() {
 function addTestTableButtonListeners() {
 
     //edit test button click handler
-    $('.ui.editTest.button:not(submit)').on('mousedown', function(){
+    $('.ui.testsTable.table .editTestLink').on('mousedown', function(){
         
         //find the test in the database by id, using data-test-id from the template
         const testKey = $(this).attr("data-test-id");
@@ -183,7 +186,7 @@ function addTestTableButtonListeners() {
     });
 
     //delete test button click handler
-    $('.ui.deleteTest.button').on('mousedown', function(){
+    $('.ui.testsTable.table .deleteTestLink').on('mousedown', function(){
         
         //delete the test in the database, using data-test-id from the template
         const testKey = $(this).attr("data-test-id");

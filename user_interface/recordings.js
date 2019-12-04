@@ -34,6 +34,8 @@ function addRecordingTableRowsFragment(recordingStorageArray) {
         recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push('Mobile') : additionalReportsArray.push('Computer');
         recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push(recordingStorageArray[recording].recordingMobileOrientation) : null;
         recordingAdditionalReportingNode.textContent = additionalReportsArray.join(', ');
+        let recordingCreatedNode = tempNode.querySelector('td[data-label="recordingCreated"]');
+        recordingCreatedNode.textContent = new Date(recordingStorageArray[recording].recordingCreated).toLocaleString(); 
 
         let recordingShowLink = tempNode.querySelector('.showRecordingLink');
         recordingShowLink.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);

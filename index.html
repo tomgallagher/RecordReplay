@@ -421,6 +421,7 @@
                                     <th>Name</th>
                                     <th>Description</th>
                                     <th>Author</th>
+                                    <th>Created</th>
                                     <th class="center aligned">Action</th>
                                 </tr>
                             </thead>
@@ -575,6 +576,7 @@
                                     <th>Bandwidth</th>
                                     <th>Latency</th>
                                     <th>Additional Reporting</th>
+                                    <th>Created</th>
                                     <th class="center aligned">Action</th>
                                 </tr>
                                 
@@ -1006,6 +1008,7 @@
                                     <th>For Test</th>
                                     <th>Start URL</th>
                                     <th>Additional Reporting</th>
+                                    <th>Created</th>
                                     <th class="center aligned">Action</th>
                                 </tr>
                                 
@@ -2071,6 +2074,7 @@
                             <td data-label="projectName"></td>
                             <td data-label="projectDescription"></td>
                             <td data-label="projectAuthor"></td>
+                            <td data-label="projectCreated"></td>
                             <td data-label="projectDelete" class="center aligned">
                                 <div class="ui mini buttons">
                                     <button class="ui editProject button" data-project-id="0">Edit</button>
@@ -2095,11 +2099,19 @@
                             <td data-label="testBandwidth"></td>
                             <td data-label="testLatency"></td>
                             <td data-label="testAdditionalReporting"></td>
-                            <td data-label="testDelete" class="center aligned">
-                                <div class="ui mini compact buttons">
-                                    <button class="ui editTest button" data-test-id="0">Edit</button>
-                                    <div class="or"></div>
-                                    <button class="ui deleteTest negative button" data-test-id="0" data-tooltip="To delete test and all associated recordings and replays" data-position="left center">Delete</button>
+                            <td data-label="testCreated"></td>
+                            <td data-label="testButtons" class="center aligned">
+                                <div class="ui mini divided horizontal list">
+                                    <div class="item">
+                                        <div class="content">
+                                            <a class="editTestLink" data-test-id="0">Edit</a>
+                                        </div>    
+                                    </div>
+                                    <div class="item">
+                                        <div class="content">
+                                            <a class="deleteTestLink" style="color: red" data-test-id="0" data-tooltip="To delete test and all associated recordings and replays" data-position="left center">Delete</a>
+                                        </div>    
+                                    </div>
                                 </div>
                             </td>
                         </tr>   
@@ -2118,6 +2130,7 @@
                             <td data-label="recordingTestName"></td>
                             <td data-label="recordingTestStartUrl" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">/td>
                             <td data-label="recordingAdditionalReporting"></td>
+                            <td data-label="recordingCreated"></td>
                             <td data-label="recordingButtons" class="center aligned">
                                 <div class="ui mini divided horizontal list">
                                     <div class="item">

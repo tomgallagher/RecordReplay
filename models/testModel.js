@@ -8,6 +8,7 @@ class Test {
             testName: 'N/A',
             testDescription: 'N/A',
             testAuthor: 'N/A',
+            testCreated: Date.now(),
             testProjectId: 0,
             testProjectName: 'N/A',
             testStartUrl: 'N/A',
