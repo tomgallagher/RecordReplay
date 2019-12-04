@@ -11,6 +11,8 @@ class ReplayEvent extends RecordingEvent {
             replayEventId: `replayEvent#${(Math.floor(Math.random() * 90000) + 10000)}#${Date.now()}`,
             //then we are going to want to know when the event was replayed
             replayEventReplayed: 0,
+            //then we are going to want the replay times since previous
+            replayTimeSincePrevious: 0,
             //then we are going to want to know if the replay event has passed or failed, started with null then boolean
             replayEventStatus: null,
             //then we are going to want to know why the replay event has passed or failed, beyond assertion failures

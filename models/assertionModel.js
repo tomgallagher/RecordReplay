@@ -14,6 +14,8 @@ class Assertion extends RecordingEvent {
             assertionId: `replayAssertion#${(Math.floor(Math.random() * 90000) + 10000)}#${Date.now()}`,
             //then we are going to want to know when the assertion was tested
             assertionEventReplayed: 0,
+            //then we are going to want the assertion time since previous
+            assertionTimeSincePrevious: 0,
             //then we need to know if each assertion has passed or failed, started with null then boolean
             assertionEventStatus: null,
             //then we are going to want to know why the assertion event has passed or failed

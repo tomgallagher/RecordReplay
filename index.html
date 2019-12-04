@@ -1866,6 +1866,86 @@
                     
                         </form>
 
+                        <div class="ui center aligned replayEvents segment" style="overflow-x: auto; display: none">
+
+                            <div class="ui left floated small compact buttons">
+                                <button class="ui startReplay positive button">Start</button>
+                                <div class="or"></div>
+                                <button class="ui stopReplay negative button">Stop</button>
+                            </div>
+
+                            <div class="ui right floated basic padded segment">
+                                <div class="ui text small replay loader">Replaying</div>
+                            </div>
+                            
+
+                            <h3 class="ui header">
+                                Replay Events
+                            </h3>
+
+                            <table class="ui small violet celled single line center aligned compact newReplayReplayEventsTable table">
+                            
+                                <thead>
+                                        
+                                    <tr> 
+                                        <th>Origin</th>
+                                        <th>Action</th>
+                                        <th>Type</th>
+                                        <th>Tag</th>
+                                        <th>Selector</th>
+                                        <th>Input</th>
+                                        <th>Value</th>
+                                        <th>Location</th>
+                                        <th>Replayed</th>
+                                        <th>Action</th>
+                                    </tr>
+                                        
+                                </thead>
+                                
+                                <tbody></tbody>
+
+                                <tfoot class="full-width">
+
+                                    <!-- NOT CURRENTLY USING PAGINATION FOR REPLAY EVENTS -->
+
+                                    <tr class="paginationMenuRow" style="display: none;">
+
+                                        <th colspan="5" class="paginationMenuHolder">
+                                        
+                                            <div class="ui right floated pagination menu">
+                                            
+                                                <a class="icon item">
+                                            
+                                                    <i class="left chevron icon"></i>
+                                            
+                                                </a>
+                                            
+                                                <a class="item">1</a>
+                                            
+                                                <a class="item">2</a>
+                                            
+                                                <a class="item">3</a>
+                                            
+                                                <a class="item">4</a>
+                                            
+                                                <a class="icon item">
+                                            
+                                                    <i class="right chevron icon"></i>
+                                            
+                                                </a>
+                                        
+                                            </div>
+                                        
+                                        </th>
+                                    
+                                    </tr>
+
+                                </tfoot>
+
+                            </table>
+
+                        </div>
+
                     </div>
 
                     <!-- TIPS AND TRICKS SEGMENT -->
@@ -2122,6 +2202,39 @@
                     </tbody>
                 </table>
             </div>
+
+            <div class="replayEventTableRowTemplate">
+                <table>
+                    <tbody>
+                        <tr data-label="replayEventRow">
+                            <td data-label="replay_recordingEventOrigin">User</td>
+                            <td data-label="replay_recordingEventAction">Mouse</td>
+                            <td data-label="replay_recordingEventActionType">Click</td>
+                            <td data-label="replay_recordingEventHTMLTag">BUTTON</td>
+                            <td data-label="replay_recordingEventCssSelectorPath" style="max-width: 1500px; overflow: hidden; text-overflow: ellipsis;">div > a</td>
+                            <td data-label="replay_recordingEventInputType">N/A</td>
+                            <td data-label="replay_recordingEventInputValue" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">N/A</td>
+                            <td data-label="replay_recordingEventLocation" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
+                            <td data-label="replay_timeSincePrevious">Some time</td>
+                            <td data-label="recordingEventAction" class="center aligned">
+                                <div class="ui mini divided horizontal list">
+                                    <div class="item">
+                                        <div class="content">
+                                            <a class="showReplayEventRow" data-replay-id="0" data-replay-event-id="0" data-tooltip="To show more details of this event" data-position="left center">Show</a>
+                                        </div>    
+                                    </div>
+                                    <div class="item">
+                                        <div class="content" >
+                                            <a class="deleteReplayEventRow" data-replay-id="0" data-replay-event-id="0" style="color: red" data-tooltip="To delete this event from replay and recording" data-position="left center">Delete</a>
+                                        </div>    
+                                    </div>
+                                </div>
+                            </td>        
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
 
 
         </div>

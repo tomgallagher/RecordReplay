@@ -150,10 +150,12 @@ $(document).ready (function(){
                 //make sure the new recording test dropdown shows an updated account of the tests in storage, using function from newReplay.js
                 refreshNewReplayRecordingDropdown();
                 //then reset the form to the point at which the page loaded, with neither success or error
-                $('.ui.newReplayAssertionsTable.form').removeClass('success');
-                $('.ui.newReplayAssertionsTable.form').removeClass('error');
+                $('.ui.newReplayForm.form').removeClass('success');
+                $('.ui.newReplayForm.form').removeClass('error');
                 //then hide the element structure block by default
                 $('.replayEventTargetStructureDisplay').css('display', 'none');
+                //and hide the replay events table
+                $('.ui.center.aligned.replayEvents.segment').css('display', 'none');
                 //then show the replay segment
                 $('.ui.verticalTabMenu.newReplay.segment').css('display', 'block');
                 break;

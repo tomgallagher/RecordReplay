@@ -27,7 +27,6 @@ class Replay extends Recording {
         // assign options to instance data (using only property names contained in defaults object to avoid copying properties we don't want)
         Object.keys(defaults).forEach(prop => { this[prop] = opts[prop]; });
 
-
     }
 
     //this function is used to create a functioning array when we have artificial assertion events inserted into the event array 
