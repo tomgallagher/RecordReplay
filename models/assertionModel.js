@@ -38,4 +38,16 @@ class Assertion extends RecordingEvent {
 
     }
 
+    printStatus = () => {
+        switch(this.assertionEventStatus) {
+            case null: return "None"
+            case true: return "Success"
+            case false: return "Failed"
+        }
+    }
+
+    printAssertionMessages = () => {
+        return this.assertionEventMessages.join(', ');
+    }
+
 }

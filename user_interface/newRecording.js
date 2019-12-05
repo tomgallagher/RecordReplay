@@ -13,8 +13,8 @@ function addNewRecordingEventToTable(recording, recordingEvent, table) {
 
     //if the event has taken place in an iframe we add the warning class
     if (recordingEvent.recordingEventIsIframe) { tempNode.classList.add('warning');}
+    //if the event has been passed in from the web navigator then we show it as disabled
     if (recordingEvent.recordingEventAction == "Page") { tempNode.classList.add('disabled');}
-    //then we should also change row for navigation events
 
     //then we just take the data from the recording event and paste it in
     //<td data-field="recordingEventOrigin">User</td>

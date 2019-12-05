@@ -29,8 +29,21 @@ class Replay extends Recording {
 
     }
 
+    printExecutionTime = () => {
+        if (this.replayExecuted == 0) return "Never"
+        else return new Date(this.replayExecuted).toLocaleString();
+    }
+
+    printStatus = () => {
+        switch(this.replayStatus) {
+            case null: return "None"
+            case true: return "Success"
+            case false: return "Failed"
+        }
+    }
+
     //this function is used to create a functioning array when we have artificial assertion events inserted into the event array 
-    sortReplayEventsByTime() {
+    sortReplayEventsByTime = () => {
 
         this.replayEventArray = this.replayEventArray
             //first we need to sort the array by timestamp

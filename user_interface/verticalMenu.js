@@ -144,6 +144,8 @@ $(document).ready (function(){
                 $('.ui.verticalTabMenu.newRecording.segment').css('display', 'block');
                 break;
             case classArray.includes('savedReplays'):
+                //make sure the recordings table shows an updated account of the tests in storage, using function from recordings.js which adds loading indicator
+                updateReplaysTable();
                 $('.ui.verticalTabMenu.savedReplays.segment').css('display', 'block');
                 break;
             case classArray.includes('newReplay'):

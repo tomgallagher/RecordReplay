@@ -215,6 +215,124 @@ function addAssertionCheckboxListener(recording) {
 
 }
 
+//THIS FUNCTION IS SHARED BY REPLAYS.JS
+//CHECK BOTH FILES BEFORE MAKING CHANGES
+function addNewReplayEventToTable(replay, replayEvent, table) {
+
+    //target our table row template first, we only need to find the template once
+    let targetNode = document.querySelector('.replayEventTableRowTemplate');
+    //we need to do more work as we have to save the template in a table, which we don't need, we just want the row
+    let targetRow = targetNode.querySelector('tr');
+    //then create a document fragment that we will use as a container for each looped template
+    let docFrag = document.createDocumentFragment();
+    //then we make a clone of the row, that will serve the purpose
+    let tempNode = targetRow.cloneNode(true);
+
+    //if the event has taken place in an iframe we add the warning class
+    if (replayEvent.recordingEventIsIframe) { tempNode.classList.add('warning');}
+    //if the event has been passed in from the web navigator then we show it as disabled
+    if (replayEvent.recordingEventAction == "Page") { tempNode.classList.add('disabled');}
+    //if the event is an assertion event then we need to add the active class
+    if (replayEvent.assertionId) { tempNode.classList.add('assertionTableRow'); }
+
+    //then we need to have a reference to the replay event on the table row itself, so we can alter it
+    //need to handle replays and assertions
+    tempNode.setAttribute("data-replay-event-id", replayEvent.assertionId || replayEvent.replayEventId);
+
+    //<td data-label="replay_recordingEventOrigin">User</td>
+    let replayEventOriginNode = tempNode.querySelector('td[data-label="replay_recordingEventOrigin"]');
+    //then we need to handle both replays and assertions
+    replayEventOriginNode.textContent = replayEvent.assertionEventOrigin || replayEvent.recordingEventOrigin;
+                            
+    //<td data-label="replay_recordingEventAction">Mouse</td>
+    let replayEventActionNode = tempNode.querySelector('td[data-label="replay_recordingEventAction"]');
+    //then we need to handle both replays and assertions
+    replayEventActionNode.textContent = replayEvent.assertionEventAction || replayEvent.recordingEventAction;
+                            
+    //<td data-label="replay_recordingEventActionType">Click</td>
+    let replayEventTypeNode = tempNode.querySelector('td[data-label="replay_recordingEventActionType"]');
+    //then we need to handle both replays and assertions
+    replayEventTypeNode.textContent = replayEvent.assertionType || replayEvent.recordingEventActionType;
+                            
+    //<td data-label="replay_recordingEventHTMLTag">BUTTON</td>
+    let replayEventTagNode = tempNode.querySelector('td[data-label="replay_recordingEventHTMLTag"]');
+    //same for both
+    replayEventTagNode.textContent = replayEvent.recordingEventHTMLTag;
+
+    //<td data-label="replay_recordingEventCssSelectorPath" style="max-width: 1500px; overflow: hidden; text-overflow: ellipsis;">div > a</td>
+    let replayEventCssSelectorNode = tempNode.querySelector('td[data-label="replay_recordingEventCssSelectorPath"]');
+    //same for both
+    replayEventCssSelectorNode.textContent = replayEvent.recordingEventCssSelectorPath;
+    
+    //<td data-label="replay_recordingEventInputType">N/A</td>
+    let replayEventInputNode = tempNode.querySelector('td[data-label="replay_recordingEventInputType"]');
+    //then we need to handle both replays and assertions
+    replayEventInputNode.textContent = replayEvent.assertionAttribute || replayEvent.recordingEventInputType;
+
+    //<td data-label="replay_recordingEventInputValue" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">N/A</td>
+    let replayEventInputValueNode = tempNode.querySelector('td[data-label="replay_recordingEventInputValue"]');
+    //then we need to handle both replays and assertions
+    replayEventInputValueNode.textContent = replayEvent.assertionValue || replayEvent.recordingEventInputValue;
+                            
+    //<td data-label="replay_recordingEventLocation" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
+    let replayEventLocationNode = tempNode.querySelector('td[data-label="replay_recordingEventLocation"]');
+    //same for both
+    replayEventLocationNode.textContent = replayEvent.recordingEventLocation;
+
+    //<td data-label="replay_timestamp_created">Some time</td>
+    let replayEventTimeCreatedNode = tempNode.querySelector('td[data-label="replay_timestamp_created"]');
+    //same for both
+    replayEventTimeCreatedNode.textContent = replayEvent.recordingTimeSincePrevious == 0 ? new Date(replayEvent.recordingEventCreated).toLocaleString() : `+ ${Math.ceil(replayEvent.recordingTimeSincePrevious / 1000)} sec`
+
+    //<td data-label="replay_timestamp_executed"></td>
+    //then we only need to add an executed timestamp if we actually have an execution
+    if (replayEvent.assertionEventStatus && replayEvent.assertionEventStatus !== null) {  
+        let replayEventTimeExecutedNode = tempNode.querySelector('td[data-label="replay_timestamp_executed"]');
+        //then we need to handle both replays and assertions
+        replayEventTimeExecutedNode.textContent = replayEvent.assertionEventReplayed;
+    }
+
+    if (replayEvent.replayEventStatus && replayEvent.replayEventStatus !== null) {  
+        let replayEventTimeExecutedNode = tempNode.querySelector('td[data-label="replay_timestamp_executed"]');
+        //then we need to handle both replays and assertions
+        replayEventTimeExecutedNode.textContent = replayEvent.replayEventReplayed;
+    }
+
+    //then the buttons need the replay event id
+    let replayEventShowLink = tempNode.querySelector('.showReplayEventRow');
+    //then we need to handle both replays and assertions
+    replayEventShowLink.setAttribute('data-replay-event-id', `${replayEvent.assertionId || replayEvent.replayEventId}`);
+    //same for both
+    replayEventShowLink.setAttribute('data-replay-id', `${replay.id}`);
+
+    let replayEventDeleteLink = tempNode.querySelector('.deleteReplayEventRow');
+    //then we need to handle both replays and assertions
+    replayEventDeleteLink.setAttribute('data-replay-event-id', `${replayEvent.assertionId || replayEvent.replayEventId}`);
+    //same for both
+    replayEventDeleteLink.setAttribute('data-replay-id', `${replay.id}`);
+
+    //then we need to attach the clone of the template node to our container fragment
+    docFrag.appendChild(tempNode);
+    //then we append the fragment to the table
+    table.appendChild(docFrag);   
+
+
+}
+
+function updateNewReplayEventsTable(newReplay) {
+
+    //empty the table body first
+    $('.ui.newReplayReplayEventsTable.table tbody').empty();
+    //get a reference to the table
+    const table = document.querySelector('.ui.newReplayReplayEventsTable.table tbody')
+    //then for each recordingEvent we need to add it to the table and the textarea
+    for (let replayEvent in newReplay.replayEventArray) { 
+        //then use the function that is shared by replays.js
+        addNewReplayEventToTable(newReplay, newReplay.replayEventArray[replayEvent], table);
+    }
+
+}
+
 function refreshNewReplayRecordingDropdown() {
 
     //get the tests data from the database so we can have recordings linked to tests
@@ -314,38 +432,41 @@ $(document).ready (function(){
                         //then we add the assertions array in
                         newReplay.replayEventArray = newReplay.replayEventArray.concat(assertionsArray);
                         //then we need to create a sorted array, which generates mixed replay events and assertion events in the correct order
-                        //we also need the time since previous to be addjusted
+                        //we also need the time since previous to be adjusted in cases where assertions share the same timestamp as the hover or text select event
                         newReplay.sortReplayEventsByTime();
-                        
-
+                        //then we just need to return the replay for saving in the database
                         return newReplay;
                     })
                     //then we need to save the new replay to the database
-                    .then(newReplay => StorageUtils.addModelObjectToDatabaseTable('newReplay.js', newReplay, 'replays'))
-                    //then we need to get all the replay UI ready to start replay
-                    .then(createdReplayId => {
+                    .then(newReplay => StorageUtils.addModelObjectToDatabaseTable('newReplay.js', newReplay, 'replays') )
+                    //then we need to get all the replay UI ready to start replay, for which we need the replay with the id
+                    .then(createdReplayId => StorageUtils.getSingleObjectFromDatabaseTable('newReplay.js', createdReplayId, 'replays') )
+                    //then we need to do the updates
+                    .then(savedReplay => {
+                        
+                        //SHOW THE USER INTERFACE UPDATES
                         //remove the loading indicator from the button
                         $('.ui.newReplayForm .ui.submit.button').removeClass('loading');
-                        //undisable the button if we have had a previous new recording
-                        $('.ui.startReplay.positive.button').removeClass('disabled');
-                        //change the data-replay-id of the start and stop buttons, so we can retrieve the replay on replay start
-                        $('.ui.startReplay.positive.button, .ui.stopReplay.negative.button').attr("data-replay-id", createdReplayId);
-                        //show the replay events segment
+                        //then we need to populate the replay table with the sorted events, so it can then indicate progress, success and failure
+                        //this uses a generic function that will be shares by replays.js, and takes a reference to the replay and the table 
+                        updateNewReplayEventsTable(savedReplay);
+                        //we need to show the replay events segment after we have populated the table
                         $('.ui.replayEvents.segment').css('display', 'block');
-                         //then we want to reset the hidden assertions collector
-                        $('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val("[]");
                         //then run the function that enables the vertical menu buttons
                         enableVerticalMenuButtonsWhenDataAllows();
+                        
+                        //GETTING READY FOR SECOND TIME AROUND
+                        //undisable the button if we have had a previous new replay
+                        $('.ui.startReplay.positive.button').removeClass('disabled');
+                        //change the data-replay-id of the start and stop buttons, so we can retrieve the replay on replay start
+                        $('.ui.startReplay.positive.button, .ui.stopReplay.negative.button').attr("data-replay-id", savedReplay.id);
+                        //then we want to reset the hidden assertions collector
+                        $('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val("[]");
+
                     })
                     //the get single object function will reject if object is not in database
                     .catch(error => console.error(error));                 
 
-                
-                
-                
-
-                //remove the loading indicator from the button
-                $('.ui.newReplayForm .ui.submit.button').removeClass('loading');
             }
 
         });

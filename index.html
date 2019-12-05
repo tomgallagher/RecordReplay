@@ -34,6 +34,7 @@
         <script src="user_interface/newTest.js"></script>
         <script src="user_interface/recordings.js"></script>
         <script src="user_interface/newRecording.js"></script>
+        <script src="user_interface/replays.js"></script>
         <script src="user_interface/newReplay.js"></script>
 
         <!-- FOR RECORDING EVENT TESTING ONLY -->
@@ -1232,7 +1233,7 @@
                                             <th>Type</th>
                                             <th>Tag</th>
                                             <th>Selector</th>
-                                            <th>Input</th>
+                                            <th>Target</th>
                                             <th>Value</th>
                                             <th>Location</th>
                                             <th>Recorded</th>
@@ -1622,7 +1623,7 @@
                                         <th>Type</th>
                                         <th>Tag</th>
                                         <th>Selector</th>
-                                        <th>Input</th>
+                                        <th>Target</th>
                                         <th>Value</th>
                                         <th>Location</th>
                                         <th>Recorded</th>
@@ -1758,7 +1759,68 @@
                     <!-- REPLAYS SEGMENT -->
 
                     <div class="ui savedReplays verticalTabMenu segment" style="display: none; overflow-x: auto;">
-                        This is an stretched grid column for SAVED REPLAYS. This segment will always match the tab height
+                        
+
+                        <table class="ui violet celled striped small compact replaysTable table">
+                            
+                            <thead>
+                                
+                                <tr>      
+                                    <th>Name</th>
+                                    <th>For Project</th>
+                                    <th>For Test</th>
+                                    <th>Start URL</th>
+                                    <th>Assertions</th>
+                                    <th>Created</th>
+                                    <th>Executed</th>
+                                    <th>Status</th>
+                                    <th class="center aligned">Action</th>
+                                </tr>
+                                
+                            </thead>
+
+                            <tbody>
+        
+                            </tbody>
+
+                            <tfoot class="full-width">
+
+                                <tr class="paginationMenuRow" style="display: none;">
+
+                                    <th colspan="16" class="paginationMenuHolder">
+                                    
+                                        <div class="ui right floated pagination menu">
+                                        
+                                            <a class="icon item">
+                                        
+                                                <i class="left chevron icon"></i>
+                                        
+                                            </a>
+                                        
+                                            <a class="item">1</a>
+                                        
+                                            <a class="item">2</a>
+                                        
+                                            <a class="item">3</a>
+                                        
+                                            <a class="item">4</a>
+                                        
+                                            <a class="icon item">
+                                        
+                                                <i class="right chevron icon"></i>
+                                        
+                                            </a>
+                                    
+                                        </div>
+                                    
+                                    </th>
+                                
+                                </tr>
+
+                            </tfoot>
+
+                        </table>
+
                     </div>
 
                     <!-- NEW REPLAY SEGMENT -->
@@ -1896,9 +1958,10 @@
                                         <th>Type</th>
                                         <th>Tag</th>
                                         <th>Selector</th>
-                                        <th>Input</th>
+                                        <th>Target</th>
                                         <th>Value</th>
                                         <th>Location</th>
+                                        <th>Recorded</th>
                                         <th>Replayed</th>
                                         <th>Action</th>
                                     </tr>
@@ -2128,7 +2191,7 @@
                             <td data-label="recordingAuthor"></td>
                             <td data-label="recordingProjectName"></td>
                             <td data-label="recordingTestName"></td>
-                            <td data-label="recordingTestStartUrl" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">/td>
+                            <td data-label="recordingTestStartUrl" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;"></td>
                             <td data-label="recordingAdditionalReporting"></td>
                             <td data-label="recordingCreated"></td>
                             <td data-label="recordingButtons" class="center aligned">
@@ -2163,7 +2226,7 @@
                             <td data-label="recordingEventAction">Mouse</td>
                             <td data-label="recordingEventActionType">Click</td>
                             <td data-label="recordingEventHTMLTag">BUTTON</td>
-                            <td data-label="recordingEventCssSelectorPath" style="max-width: 1500px; overflow: hidden; text-overflow: ellipsis;">div > a</td>
+                            <td data-label="recordingEventCssSelectorPath" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">div > a</td>
                             <td data-label="recordingEventInputType">N/A</td>
                             <td data-label="recordingEventInputValue" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">N/A</td>
                             <td data-label="recordingEventLocation" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
@@ -2187,6 +2250,42 @@
                 </table>
             </div>
 
+            <div class="replayTableRowTemplate">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td data-label="replayName"></td>
+                            <td data-label="replay_recordingProjectName"></td>
+                            <td data-label="replay_recordingTestName"></td>
+                            <td data-label="replayRecordingStartUrl" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;"></td>
+                            <td data-label="replayAssertionsCount"></td>
+                            <td data-label="replayCreated"></td>
+                            <td data-label="replayExecuted"></td>
+                            <td data-label="replayStatus"></td>
+                            <td data-label="replayButtons" class="center aligned">
+                                <div class="ui mini divided horizontal list">
+                                    <div class="item">
+                                        <div class="content">
+                                            <a class="showReplayLink" data-replay-id="0">Show</a>
+                                        </div>    
+                                    </div>
+                                    <div class="item">
+                                        <div class="content">
+                                            <a class="editReplayLink" data-replay-id="0">Edit</a>
+                                        </div>    
+                                    </div>
+                                    <div class="item">
+                                        <div class="content" >
+                                            <a class="deleteReplayLink" data-replay-id="0" style="color: red" data-tooltip="To delete replay" data-position="left center">Delete</a>
+                                        </div>    
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>   
+                    </tbody>
+                </table>
+            </div>
+
             <div class="newReplayAssertionsTableRowTemplate">
                 <table>
                     <tbody>
@@ -2195,7 +2294,7 @@
                             <td data-label="replay_recordingEventAction">Mouse</td>
                             <td data-label="replay_recordingEventActionType">Click</td>
                             <td data-label="replay_recordingEventHTMLTag">BUTTON</td>
-                            <td data-label="replay_recordingEventCssSelectorPath" style="max-width: 1500px; overflow: hidden; text-overflow: ellipsis;">div > a</td>
+                            <td data-label="replay_recordingEventCssSelectorPath" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">div > a</td>
                             <td data-label="replay_recordingEventLocation" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
                             <td data-label="replay_recordingEventAction" class="center aligned">
                                 <div class="ui mini divided horizontal list">
@@ -2224,12 +2323,13 @@
                             <td data-label="replay_recordingEventAction">Mouse</td>
                             <td data-label="replay_recordingEventActionType">Click</td>
                             <td data-label="replay_recordingEventHTMLTag">BUTTON</td>
-                            <td data-label="replay_recordingEventCssSelectorPath" style="max-width: 1500px; overflow: hidden; text-overflow: ellipsis;">div > a</td>
+                            <td data-label="replay_recordingEventCssSelectorPath" style="max-width: 125px; overflow: hidden; text-overflow: ellipsis;">div > a</td>
                             <td data-label="replay_recordingEventInputType">N/A</td>
-                            <td data-label="replay_recordingEventInputValue" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">N/A</td>
-                            <td data-label="replay_recordingEventLocation" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
-                            <td data-label="replay_timeSincePrevious">Some time</td>
-                            <td data-label="recordingEventAction" class="center aligned">
+                            <td data-label="replay_recordingEventInputValue" style="max-width: 125px; overflow: hidden; text-overflow: ellipsis;">N/A</td>
+                            <td data-label="replay_recordingEventLocation" style="max-width: 125px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
+                            <td data-label="replay_timestamp_created">Some time</td>
+                            <td data-label="replay_timestamp_executed"></td>
+                            <td data-label="replayEventAction" class="center aligned">
                                 <div class="ui mini divided horizontal list">
                                     <div class="item">
                                         <div class="content">
@@ -2247,8 +2347,6 @@
                     </tbody>
                 </table>
             </div>
-
-
 
         </div>
         

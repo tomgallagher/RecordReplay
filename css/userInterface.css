@@ -51,3 +51,14 @@
 .ui.inverted.checkbox label {
     color: rgba(255,255,255,.7) !important;
 }
+
+/*need an override here for our assertionTableRow*/
+.ui.table td.assertionTableRow, .ui.table tr.assertionTableRow {
+    background: #6435c91f !important;
+    color: rgba(0,0,0,.87)!important;
+}
+/*need an override here for our assertionTableRow in inverted style*/
+.ui.inverted.table td.assertionTableRow, .ui.inverted.table tr.assertionTableRow {
+    background: #6435c91f !important;
+    color: white!important;
+}

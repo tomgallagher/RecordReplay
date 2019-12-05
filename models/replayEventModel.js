@@ -25,11 +25,12 @@ class ReplayEvent extends RecordingEvent {
 
     }
 
-    //then we need a way of sorting that allows for 
-    deleteAssertionById(assertionId) {
-        this.replayEventAssertionArray = this.replayEventAssertionArray
-            //get rid of the element that has been deleted
-            .filter(item => item.assertionId != assertionId);
+    printStatus = () => {
+        switch(this.replayEventStatus) {
+            case null: return "None"
+            case true: return "Success"
+            case false: return "Failed"
+        }
     }
 
 }
