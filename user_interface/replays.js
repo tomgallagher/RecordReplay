@@ -45,7 +45,7 @@ function addReplayTableRowsFragment(replayStorageArray) {
 
         let replayShowLink = tempNode.querySelector('.showReplayLink');
         replayShowLink.setAttribute('data-replay-id', `${replayStorageArray[replay].id}`);
-        let replayEditLink = tempNode.querySelector('.editReplayLink');
+        let replayEditLink = tempNode.querySelector('.runReplayLink');
         replayEditLink.setAttribute('data-replay-id', `${replayStorageArray[replay].id}`);
         let replayDeleteLink = tempNode.querySelector('.deleteReplayLink');
         replayDeleteLink.setAttribute('data-replay-id', `${replayStorageArray[replay].id}`);
