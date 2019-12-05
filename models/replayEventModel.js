@@ -25,12 +25,21 @@ class ReplayEvent extends RecordingEvent {
 
     }
 
+    printReplayTime = () => {
+        if (this.replayEventReplayed == 0) return "Never"
+        else return new Date(this.replayEventReplayed).toLocaleString();
+    }
+
     printStatus = () => {
         switch(this.replayEventStatus) {
             case null: return "None"
             case true: return "Success"
             case false: return "Failed"
         }
+    }
+
+    printReplayMessages = () => {
+        return this.replayEventMessages.join(', ');
     }
 
 }

@@ -50,4 +50,9 @@ class Assertion extends RecordingEvent {
         return this.assertionEventMessages.join(', ');
     }
 
+    printReplayTime = () => {
+        if (this.assertionEventReplayed == 0) return "Never"
+        else return new Date(this.assertionEventReplayed).toLocaleString();
+    }
+
 }
