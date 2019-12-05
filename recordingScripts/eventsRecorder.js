@@ -190,11 +190,16 @@ var EventRecorder = {
         //just the standard message passing from extension - all listeners to these events are asynchronous so don't evpect a response
         chrome.runtime.sendMessage({recordingEvent: recordingEvent});
     },
+    //we need to know if we are in an iframe - has implications right through the application
     contextIsIframe: () => { 
         try { return window.self !== window.top; } 
         catch (e) { return true; } 
     },
-    contextIsContentScript: () => { return typeof chrome.runtime.getManifest != 'undefined' }
+    //we should always be in the context of a content script
+    contextIsContentScript: () => { return typeof chrome.runtime.getManifest != 'undefined' },
+    //we need an array for testing purposes
+    testingEventsArray: []
+
     
 }
 
@@ -531,9 +536,17 @@ EventRecorder.startRecordingEvents = () => {
     )
     //and log the output  
     .subscribe(recordingEvent => {
-        //if we are not running in the extension testing environment, send the message
-        EventRecorder.sendEvent(recordingEvent);
-        console.log(recordingEvent)
+        //if we are not running in the extension testing environment, log the event and send the message
+        if (window.location.href != chrome.runtime.getURL('index.html')) {
+            //we need to see the events so we can check that the recorder is working properly in all contexts
+            console.log(recordingEvent);
+            EventRecorder.sendEvent(recordingEvent);
+        } else {
+            //otherwise, we just log the stringified event
+            console.log(recordingEvent);
+            //then push to the array
+            EventRecorder.testingEventsArray.push(recordingEvent);
+        }
     });
 
 }
