@@ -26,10 +26,12 @@
 }
 /*small stylistic adjustment for dropdowns which appear to have no inverted CSS*/
 .ui.selection.inverted.dropdown {
-    background: dimgray !important;
+    background: #69696973 !important;
+    color: white !important;
 }
 .ui.inverted.dropdown .menu>.item {
-    background: darkgray !important;
+    background: #1b1c1dd1!important;
+    color: white !important;
 }
 
 /*need an override here so inverted vertical menu opening out to right works OK in black*/
