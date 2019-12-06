@@ -1,4 +1,5 @@
 $(document).ready (function(){
+
     //info popup
     $('.ui.stackable.compact.menu .link.item').popup({
         popup : $('.ui.flowing.popup'),
@@ -50,4 +51,11 @@ $(document).ready (function(){
                 break;
         }
     });
+
+    //then make sure the theme matches on load
+    const inverted = localStorage.getItem("ThemeInverted");
+    if (inverted == "true") {
+        $('.ui.stackable.compact.menu .themeSettings.item').trigger('mousedown');
+    }
+
 }); 
