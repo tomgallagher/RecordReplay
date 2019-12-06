@@ -15,8 +15,10 @@ class ReplayEvent extends RecordingEvent {
             replayTimeSincePrevious: 0,
             //then we are going to want to know if the replay event has passed or failed, started with null then boolean
             replayEventStatus: null,
-            //then we are going to want to know why the replay event has passed or failed, beyond assertion failures
-            replayEventMessages: []
+            //then we are going to want to have log messages so we can report to the user
+            replayLogMessages: [],
+            //then we are going to want to know why the replay event has failed
+            replayErrorMessages: []
         };
         // create a new object with the defaults over-ridden by the options passed in
         let opts = Object.assign({}, defaults, options);
