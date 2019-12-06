@@ -194,6 +194,7 @@ class MouseReplay {
         this.cssSelectorPath = replayEvent.recordingEventCssSelectorPath;
         this.domPath = replayEvent.recordingEventCssDomPath;
         this.simmerPath = replayEvent.recordingEventCssSimmerPath;
+        this.isIframe = EventReplayer.contextIsIframe();
         this.chosenSelectorReport = null;
 
         //then there are generic state properties that we need for reporting back to the user interface
@@ -423,6 +424,8 @@ EventReplayer.startReplayingEvents = () => {
                     //TO DO
                     //we should send a message back to the user interface at this point
 
+                    //and then we should return the typeReplayer - it will be filtered out
+                    return typeReplayer;
                 }
                 //otherwise we need to get the xpath of the event target
                 const eventTargetXpath = EventReplayer.getXPath(event.target);
@@ -437,6 +440,8 @@ EventReplayer.startReplayingEvents = () => {
                     //TO DO
                     //we should send a message back to the user interface at this point
 
+                    //and then we should return the typeReplayer - it will be filtered out
+                    return typeReplayer;
                 }
                 //otherwise we have a successful event replay and we need to update the event player to indicate that
                 // we report the time of the fail
@@ -449,7 +454,7 @@ EventReplayer.startReplayingEvents = () => {
                 return typeReplayer;
             }
         )
-        .filter(typeReplayer => typeReplayer.replayEventStatus != false)
+        .filter(typeReplayer => typeReplayer.replayEventStatus)
         
 
 
