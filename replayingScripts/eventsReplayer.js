@@ -2,62 +2,19 @@
 
 /*
 
-//so we have an incoming set of events that need to be actioned and verified
+USER EVENTS
 
-//USER EVENTS
+For User Events, we need to do several things, logging with error messages as well
 
-For User Events, we need to do several things
+1: ReplaySelectorReport: Check that the target element is on page, match HTMLElement and tag, fail if none, assess the performance of the selectors, save xpath of the element for matching with playback
+2: TypeReplayer: Simulate the event on the element, we know the element is on the page. Artificial return value of true. Generate observable listener targeted at specific selector.
+3: Messaging Observable: Listen to simulated event being played back, with matching xpath as css class selectors can change, fail if none, final confirmation that the replay has worked as intended
 
-1: First check that the target element is on the page, some kind of fail if none, then assess the performance of the selectors if one or more
-2: Simulate the event on the element, we know the element is on the page, what return value can we get from here?
-3: Listen to the simulated event being reflected back, this is final confirmation that the replay has worked as intended
+USER ASSERTIONS
 
-1 Checking the target element is on the page
-
-For all three CSS selectors we can use:
-
-we can use document.querySelector, which returns the first element to match the selector or null
-we can use document.querySelectorAll, which returns an array-like structure with 0 to many elements in it
-
-We can then evaluate the performance of the selectors, we should get an element and an array with one element if the selector is doing its job properly
-If we get more than one element in array then this should be a WARNING
-
-we can use xpath document.evaluate(
-  xpathExpression, a string representing the XPath to be evaluated
-  contextNode, It's common to pass document as the context node
-  namespaceResolver, null is common for HTML documents or when no namespace prefixes are used.
-  resultType, Use named constant properties, such as XPathResult.ANY_TYPE
-  result result is an existing XPathResult to use for the results. null is the most common and will create a new XPathResult
-);
-
-to FIND elements = although it's hard to see how this will succeed when others fail. We could have changing classes, which would cause a fail
-If so, then we need to emit a WARNING, if the matching HTMLElement and tag succeed
-
-We can then check that the target element is matching in terms of HTMLElement and tag, information that we have from the event, make sure we choose the right method regarding uppercase etc
-
-We then save the xpath of the element for matching with playback
-
-2 Simulate the event on the element
-
-Use the standard dispatchEvent method for most of the replays
-
-3 Listen to Playback
-
-Here we cannot rely on the CSS selector being the same as the target can mutate after clicks. 
-We can do what the event handler does and get the pre-click selector
-Or we can check the xpath of the selected element and then the xpath of the event element and compare the two - this is better as it confirms the equality of position in the document
-Port the xpath function from eventRecorder
-
-
-//USER ASSERTIONS
-
-Just need to do a search as in Step 1 of User Events
-
-Then we need to check either
-
-1) PRESENT: Has attribute
-2) CONTENT: Has Attribute, Get attribute
-3) TEXT CONTENT: Has text childnodes, get textContent
+1: ReplaySelectorReport: Check that the target element is on page, match HTMLElement and tag, fail if none, assess the performance of the selectors, save xpath of the element for matching with playback
+2: TypeReplayer: Return value important: true for assertion passes. Simulate an artificial 'mouseenter' event on the element, generate an observable 'mouseenter' listener targeted at specific selector.
+3: Messaging Observable: Check return value. Listen to simulated event being played back, with matching xpath as css class selectors can change, fail if none, final confirmation that the replay has worked as intended
 
 */
 
@@ -173,6 +130,7 @@ class ReplaySelectorReport {
 
 class TextSelectReplay {
 
+    //incoming replayEvent should have message.SendResponse({}) attached
     constructor(replayEvent) {
 
         
@@ -183,9 +141,10 @@ class TextSelectReplay {
 }
 class MouseReplay {
 
+    //incoming replayEvent should have message.SendResponse({}) attached
     constructor(replayEvent) {
 
-        //so there are generic properties that need to be imported into all specific replay classes
+        //so there are generic properties that need to be imported into all specific replay classes from the replay event
         this.replayId = replayEvent.replayEventId;
         this.action = replayEvent.recordingEventAction;
         this.actionType = replayEvent.recordingEventActionType;
@@ -194,12 +153,13 @@ class MouseReplay {
         this.cssSelectorPath = replayEvent.recordingEventCssSelectorPath;
         this.domPath = replayEvent.recordingEventCssDomPath;
         this.simmerPath = replayEvent.recordingEventCssSimmerPath;
-        this.isIframe = EventReplayer.contextIsIframe();
-        this.chosenSelectorReport = null;
+        this.sendResponse = replayEvent.sendResponse || null;
 
         //then there are generic state properties that we need for reporting back to the user interface
         this.replayLogMessages = [];
         this.replayErrorMessages = [];
+        this.isIframe = EventReplayer.contextIsIframe();
+        this.chosenSelectorReport = null;
         this.replayEventReplayed = 0;
         this.replayEventStatus = null;
 
@@ -228,8 +188,15 @@ class MouseReplay {
             this.replayEventReplayed = Date.now();
             //and we set the status to false to indicate a failed replay
             this.replayEventStatus = false;
-            //TO DO
-            //we should send a message back to the user interface at this point
+            //then send the response if we have the facility
+            if (this.sendResponse != null) {
+                //first we make a clone of this 
+                var replayExecution = Object.assign({}, this);
+                //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
+                delete replayExecution.sendResponse;
+                //then we send the clean clone
+                this.sendResponse({replayExecution: replayExecution});
+            }            
 
         }
 
@@ -242,27 +209,39 @@ class MouseReplay {
         return new Promise(resolve => {
             //we use setTimeout and resolve to introduce the delay
             setTimeout( () => {
+                //set up our event
+                var event;
                 //for the mouse we have a variety of types that we need to handle when dispatching events
                 switch(this.actionType) {
                     case 'click':
                     case 'contextmenu':
                     case 'dblclick':
                         //we can handle all the normal click functions with the same bit of code, first creating the event
-                        const event = new MouseEvent(this.actionType, {view: window, bubbles: true, cancelable: false}); 
+                        event = new MouseEvent(this.actionType, {view: window, bubbles: true, cancelable: false}); 
                         //then dispatching the event
                         document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( event );
                         //then report to the log messages array
                         this.replayLogMessages.push(`${this.actionType.toUpperCase()} Event Dispatched`);
                         break;
                     case 'hover':
-                        //TO DO
+                         //we can handle all the normal click functions with the same bit of code, first creating the event
+                         event = new MouseEvent('mouseenter', {view: window, bubbles: true, cancelable: false}); 
+                         //then dispatching the event
+                         document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( event );
+                         //then report to the log messages array
+                         this.replayLogMessages.push(`${this.actionType.toUpperCase()} Event Dispatched`);
                         break;
                     case 'recaptcha':
-                        //TO DO
+                         //we can handle all the normal click functions with the same bit of code, first creating the event
+                         event = new MouseEvent('click', {view: window, bubbles: true, cancelable: false}); 
+                         //then dispatching the event
+                         document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( event );
+                         //then report to the log messages array
+                         this.replayLogMessages.push(`${this.actionType.toUpperCase()} Event Dispatched`);
                         break;
                 }
                 //then we just return the action type for checking on execution of the function
-                resolve(this.actionType);
+                resolve(true);
             //we have the delay at 5 milliseconds but it could be longer
             }, 5);
         });
@@ -278,11 +257,9 @@ class MouseReplay {
                 //we can handle all the normal click functions with the same bit of code, 
                 return Rx.Observable.fromEvent(document.querySelector(this.chosenSelectorReport.selectorString), this.actionType)
             case 'hover':
-                //TO DO
-                break;
+                return Rx.Observable.fromEvent(document.querySelector(this.chosenSelectorReport.selectorString), 'mouseenter')
             case 'recaptcha':
-                //TO DO
-                break;
+                return Rx.Observable.fromEvent(document.querySelector(this.chosenSelectorReport.selectorString), 'click')
         }
 
     }
@@ -291,23 +268,57 @@ class MouseReplay {
 
 class InputReplay {
 
+    //incoming replayEvent should have message.SendResponse({}) attached
     constructor(replayEvent) {
 
 
 
     }
-    //this is going to have to be sensitive to different types of click, also hover and recaptcha
+    
 
 }
 
 class KeyboardReplay {
 
+    //incoming replayEvent should have message.SendResponse({}) attached
     constructor(replayEvent) {
 
 
 
     }
-    //this is going to have to be sensitive to different types of click, also hover and recaptcha
+    
+
+}
+
+class ScrollReplay {
+
+    //incoming replayEvent should have message.SendResponse({}) attached
+    constructor(replayEvent) {
+
+
+
+    }
+    
+
+}
+
+class AssertionReplay {
+
+    //incoming replayEvent should have message.SendResponse({}) attached
+    constructor(replayEvent) {
+
+
+
+    }
+    
+    /*
+    Then we need to check either
+
+    1) PRESENT: Has attribute
+    2) CONTENT: Has Attribute, Get attribute
+    3) TEXT CONTENT: Has text childnodes, get textContent
+
+    */
 
 }
 
@@ -319,6 +330,7 @@ var EventReplayer = {
             case 'Input': return new InputReplay(replayEvent)
             case 'Keyboard': return new KeyboardReplay(replayEvent)
             case 'Scroll': return new ScrollReplay(replayEvent)
+            case 'Assertion': return new AssertionReplay(replayEvent)
         }
     },
     //we need to know if we are in an iframe - has implications right through the application
@@ -397,6 +409,10 @@ EventReplayer.startReplayingEvents = () => {
         //this adds the delay - ONLY FOR TESTING - we must do this in the user interface as it sends messages to many different windows
         .concatMap(replayEvent => Rx.Observable.of(replayEvent).delay(replayEvent.recordingTimeSincePrevious))
         
+        //WHEN WE ARE MESSAGING WE HAVE TO CREATE A REPLAY EVENT FROM THE INCOMING messageObject.request.replayEvent AND ADD the messageObject.sendResponse TO THE REPLAY EVENT
+
+        //then we operate a filter so we only receive origin 'User' mouse or keyboard events and 'Replay' assertion events
+        .filter(replayEvent => replayEvent.recordingEventOrigin == 'User' || replayEvent.recordingEventOrigin == 'Replay')
         //then we start operating our replay logic - we start by mapping the event to our individual event type handlers
         .map(replayEvent => EventReplayer.mapEventToReplayer(replayEvent) )
         //then we can filter all those event handlers that return with a state of false
@@ -412,7 +428,7 @@ EventReplayer.startReplayingEvents = () => {
             //then we take either the first emission from the action / playback observable or the timer 
             ).take(1), 
             //we need the original event replayer and the array that is returned by the zip function
-            (typeReplayer, [event, actionType]) =>{
+            (typeReplayer, [event, actionFunctionResult]) =>{
                 //then at this point we need to do multiple checks, starting with the check that the function has executed within the time frame
                 if (event == "Execution Playback Timeout") {
                     // we report the time of the fail
@@ -420,10 +436,16 @@ EventReplayer.startReplayingEvents = () => {
                     //and we set the status to false to indicate a failed replay
                     typeReplayer.replayEventStatus = false;
                     //and we need to provide information on why the replay failed
-                    typeReplayer.replayErrorMessages.push(`${actionType.toUpperCase()} ${event}`)
-                    //TO DO
-                    //we should send a message back to the user interface at this point
-
+                    typeReplayer.replayErrorMessages.push(`${typeReplayer.actionType.toUpperCase()} ${event}`)
+                    //then send the response if we have the facility
+                    if (typeReplayer.sendResponse != null) {
+                        //first we make a clone of this 
+                        var replayExecution = Object.assign({}, typeReplayer);
+                        //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
+                        delete replayExecution.sendResponse;
+                        //then we send the clean clone
+                        typeReplayer.sendResponse({replayExecution: replayExecution});
+                    }   
                     //and then we should return the typeReplayer - it will be filtered out
                     return typeReplayer;
                 }
@@ -436,12 +458,24 @@ EventReplayer.startReplayingEvents = () => {
                     //and we set the status to false to indicate a failed replay
                     typeReplayer.replayEventStatus = false;
                     //and we need to provide information on why the replay failed
-                    typeReplayer.replayErrorMessages.push(`${actionType.toUpperCase()} ${event} Execution Playback Misalignment`)
-                    //TO DO
-                    //we should send a message back to the user interface at this point
-
+                    typeReplayer.replayErrorMessages.push(`${typeReplayer.actionType.toUpperCase()} ${event} Execution Playback Misalignment`)
+                    //then send the response if we have the facility
+                    if (typeReplayer.sendResponse != null) {
+                        //first we make a clone of this 
+                        var replayExecution = Object.assign({}, typeReplayer);
+                        //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
+                        delete replayExecution.sendResponse;
+                        //then we send the clean clone
+                        typeReplayer.sendResponse({replayExecution: replayExecution});
+                    }   
                     //and then we should return the typeReplayer - it will be filtered out
                     return typeReplayer;
+                }
+                //then we need to check if our assertion actionFunctionResult has failed
+                if (actionFunctionResult == false) {
+
+                    //here we have some kind of attribute check failure as they are the only kind of typereplayer that can return false from action function
+
                 }
                 //otherwise we have a successful event replay and we need to update the event player to indicate that
                 // we report the time of the fail
@@ -449,7 +483,7 @@ EventReplayer.startReplayingEvents = () => {
                 //and we set the status to false to indicate a failed replay
                 typeReplayer.replayEventStatus = true;
                 //then report to the log messages array
-                typeReplayer.replayLogMessages.push(`${actionType.toUpperCase()} Event Playback Confirmed`);
+                typeReplayer.replayLogMessages.push(`${typeReplayer.actionType.toUpperCase()} Event Playback Confirmed`);
                 //then return so we can send the message back to the user interface
                 return typeReplayer;
             }
@@ -460,8 +494,17 @@ EventReplayer.startReplayingEvents = () => {
 
 
         .subscribe(
-            x => {
-                console.log(x)
+            typeReplayer => {
+                console.log(typeReplayer)
+                //then send the response if we have the facility
+                if (typeReplayer.sendResponse != null) {
+                    //first we make a clone of this 
+                    var replayExecution = Object.assign({}, typeReplayer);
+                    //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
+                    delete replayExecution.sendResponse;
+                    //then we send the clean clone
+                    typeReplayer.sendResponse({replayExecution: replayExecution});
+                }   
             },
             error => console.error(error),
             () => console.log("EventReplayer.startReplayingEvents: COMPLETE")
