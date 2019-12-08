@@ -18,6 +18,55 @@ USER ASSERTIONS
 
 */
 
+class MatchingUrlReport {
+
+    constructor(replayEvent) {
+
+        //we need to work out if the incoming message is intended for this content script - this can be complex with iframes which change their search params
+        this.contentScriptUrl = new URL(window.location.href);
+        this.eventTargetUrl = new URL(replayEvent.recordingEventLocationHref);
+        //then we need to take some decisions based on the comparison between the two urls
+        switch(true){
+            //this differentiates host pages from third party iframes
+            case this.contentScriptUrl.origin != this.eventTargetUrl.origin:
+                EventReplayer.logWithContext(`Not Replaying ${replayEvent.assertionId || replayEvent.replayEventId} from Unmatched Origin`);
+                return false;
+            //this differentiates host pages from same domain iframes
+            case this.contentScriptUrl.pathname != this.eventTargetUrl.pathname:
+                EventReplayer.logWithContext(`Not Replaying ${replayEvent.assertionId || replayEvent.replayEventId} from Unmatched Path`);
+                return false;
+            //then we need to look in more detail at search params, which can vary on each loading of same domain or third party iframes
+            case this.contentScriptUrl.search != this.eventTargetUrl.search:
+                //we are going to need an object for each set of search params to make a more detailed judgment
+                const contentScriptSearchParams = Object.fromEntries(this.contentScriptUrl.searchParams);
+                const eventTargetSearchParams = Object.fromEntries(this.eventTargetUrl.searchParams);
+                //so we can look for the equivalence is keys length by getting the keys array from each object
+                const contentScriptKeys = Object.keys(contentScriptSearchParams);
+                const eventTargetKeys = Object.keys(eventTargetSearchParams);
+                //then work out if the length matches
+                const lengthMatched = contentScriptKeys.length == eventTargetKeys.length;
+                //then work out if the keys are the same, even if the values might have changed, using stringify to enable comparison of keys array
+                const keysMatched = JSON.stringify(contentScriptKeys) == JSON.stringify(eventTargetKeys);
+                //if they both match then it's a decent guess we are operating in the right ifrAme
+                if (lengthMatched && keysMatched) {
+                    //then we can return true
+                    return true;
+                } else {
+                    //otherwise we need to report 
+                    EventReplayer.logWithContext(`Not Replaying ${replayEvent.assertionId || replayEvent.replayEventId} from Unmatched Search Params`);
+                    return false;
+                }
+            //when we have no fails then we can just return true
+                default:
+                    EventReplayer.logWithContext(`Matched Location: Executing ${replayEvent.assertionId || replayEvent.replayEventId}`);
+                    return true;
+
+        }
+
+    }
+
+}
+
 class ReplaySelectorReport {
 
     constructor(options) {
@@ -133,12 +182,108 @@ class TextSelectReplay {
     //incoming replayEvent should have message.SendResponse({}) attached
     constructor(replayEvent) {
 
-        
+        //so there are generic properties that need to be imported into all specific replay classes from the replay event
+        this.replayId = replayEvent.replayEventId;
+        this.action = replayEvent.recordingEventAction;
+        this.actionType = replayEvent.recordingEventActionType;
+        this.targetHTMLName = replayEvent.recordingEventHTMLElement;
+        this.targetTagName = replayEvent.recordingEventHTMLTag;
+        this.cssSelectorPath = replayEvent.recordingEventCssSelectorPath;
+        this.domPath = replayEvent.recordingEventCssDomPath;
+        this.simmerPath = replayEvent.recordingEventCssSimmerPath;
+        this.sendResponse = replayEvent.sendResponse || null;
 
+        //then special property for text select checking
+        this.selectedText = replayEvent.recordingEventTextSelectTextContent;
+
+        //then there are generic state properties that we need for reporting back to the user interface
+        this.replayLogMessages = [];
+        this.replayErrorMessages = [];
+        this.isIframe = EventReplayer.contextIsIframe();
+        this.chosenSelectorReport = null;
+        this.replayEventReplayed = 0;
+        this.replayEventStatus = null;
+
+        //first we check in each class that we have a matching url
+        this.matchingUrlReport = new MatchingUrlReport(replayEvent);
+
+        //if the matching url report returns false then we add the property that ensures it will be filtered
+        if (this.matchingUrlReport == false) {
+            //set the property
+            this.replayEventStatus = false;
+            //then just return this early as we have no need to so any further work
+            //we also offer no report via return message from non-matching locations
+            return this;
+        }
+
+        //then each replay class must have a collected set of Replay Selector Reports
+        this.replaySelectorReports = [
+            new ReplaySelectorReport({ key: "CssSelector", selectorString: this.cssSelectorPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
+            new ReplaySelectorReport({ key: "DomPathSelector", selectorString: this.domPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
+            new ReplaySelectorReport({ key: "SimmerSelector", selectorString: this.simmerPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName })
+        ];
+        
+        //see if we have any invalid selector reports
+        this.failedReplaySelectorReports = this.replaySelectorReports.filter(report => report.invalidSelector);
+        //if we have invalid selectors then we need to know
+        if (this.failedReplaySelectorReports.length > 0) this.replayErrorMessages.push(this.failedReplaySelectorReports.map(report => report.warningMessages).join(', '));
+        //see if we have any valid selector reports, and if we do, we save as the definitive selector reports 
+        this.replaySelectorReports = this.replaySelectorReports.filter(report => !report.invalidSelector);
+        //if we have valid selectors then we need to know about which ones remain valid
+        if (this.replaySelectorReports.length > 0) this.replayLogMessages.push(this.replaySelectorReports.map(report => report.logMessages).join(', '));
+
+        //then we need to have an outcome
+        if (this.replaySelectorReports.length > 0) {
+            //select the first report that has provided a positive response
+            this.chosenSelectorReport = this.replaySelectorReports[0];
+        } else {
+            //otherwise we report the time of the fail
+            this.replayEventReplayed = Date.now();
+            //and we set the status to false to indicate a failed replay
+            this.replayEventStatus = false;
+            //then send the response if we have the facility
+            if (this.sendResponse != null) {
+                //first we make a clone of this 
+                var replayExecution = Object.assign({}, this);
+                //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
+                delete replayExecution.sendResponse;
+                //then we send the clean clone
+                this.sendResponse({replayExecution: replayExecution});
+            }            
+
+        }
 
     }
 
+    //all of the replayers must have an action function that will instantiate the replay - make it happen on the page
+    actionFunction = () => {
+        //here we need a very slight delay to ensure that our listener is in place before the action function executes
+        return new Promise(resolve => {
+            //we use setTimeout and resolve to introduce the delay
+            setTimeout( () => {
+
+                //we can handle all the normal click functions with the same bit of code, first creating the event
+                const selectEvent = new Event("selectstart", {view: window, bubbles: true, cancelable: false}); 
+                //then dispatching the event
+                document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( selectEvent );
+                //then we depend on a mouseup event at the same location for our event recorder
+                const mouseEvent = new MouseEvent("mouseup", {view: window, bubbles: true, cancelable: false}); 
+                //then dispatching the event
+                document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( mouseEvent );
+                //then report to the log messages array
+                this.replayLogMessages.push(`${this.actionType.toUpperCase()} Event Dispatched`);
+                //then return the window selection is the same as our saved selection
+                resolve(window.getSelection().toString() == this.selectedText);
+
+            }, 5);
+        });
+
+    }
+
+    returnPlayBackObservable = () => Rx.Observable.fromEvent(document.querySelector(this.chosenSelectorReport.selectorString), "selectstart")
+
 }
+
 class MouseReplay {
 
     //incoming replayEvent should have message.SendResponse({}) attached
@@ -162,6 +307,17 @@ class MouseReplay {
         this.chosenSelectorReport = null;
         this.replayEventReplayed = 0;
         this.replayEventStatus = null;
+
+        //first we check in each class that we have a matching url
+        this.matchingUrlReport = new MatchingUrlReport(replayEvent);
+
+        //if the matching url report returns false then we add the property that ensures it will be filtered
+        if (this.matchingUrlReport == false) {
+            //set the property
+            this.replayEventStatus = false;
+            //then just return this early as we have no need to so any further work
+            return this;
+        }
 
         //then each replay class must have a collected set of Replay Selector Reports
         this.replaySelectorReports = [
@@ -240,7 +396,7 @@ class MouseReplay {
                          this.replayLogMessages.push(`${this.actionType.toUpperCase()} Event Dispatched`);
                         break;
                 }
-                //then we just return the action type for checking on execution of the function
+                //then we just return true for mouse events - this boolean is only activated as a false marker by assertion events
                 resolve(true);
             //we have the delay at 5 milliseconds but it could be longer
             }, 5);
@@ -306,7 +462,7 @@ class AssertionReplay {
 
     //incoming replayEvent should have message.SendResponse({}) attached
     constructor(replayEvent) {
-
+        //as an assertion event, this has special properties
 
 
     }
@@ -323,6 +479,13 @@ class AssertionReplay {
 }
 
 var EventReplayer = {
+    logWithContext: message => {
+        if (EventReplayer.contextIsIframe()) {
+            console.log(`%cEvent Replayer: ${window.location.origin}: ${message}`, 'color: green');
+        } else {
+            console.log(`%cEvent Replayer: ${window.location.origin}: ${message}`, 'color: blue');
+        }
+    },
     mapEventToReplayer: replayEvent => {
         switch(replayEvent.recordingEventAction) {
             case 'TextSelect': return new TextSelectReplay(replayEvent)
@@ -458,7 +621,7 @@ EventReplayer.startReplayingEvents = () => {
                     //and we set the status to false to indicate a failed replay
                     typeReplayer.replayEventStatus = false;
                     //and we need to provide information on why the replay failed
-                    typeReplayer.replayErrorMessages.push(`${typeReplayer.actionType.toUpperCase()} ${event} Execution Playback Misalignment`)
+                    typeReplayer.replayErrorMessages.push(`${typeReplayer.actionType.toUpperCase()} Execution Playback Misalignment`)
                     //then send the response if we have the facility
                     if (typeReplayer.sendResponse != null) {
                         //first we make a clone of this 
@@ -473,9 +636,26 @@ EventReplayer.startReplayingEvents = () => {
                 }
                 //then we need to check if our assertion actionFunctionResult has failed
                 if (actionFunctionResult == false) {
-
-                    //here we have some kind of attribute check failure as they are the only kind of typereplayer that can return false from action function
-
+                    // we report the time of the fail
+                    typeReplayer.replayEventReplayed = Date.now();
+                    //and we set the status to false to indicate a failed replay
+                    typeReplayer.replayEventStatus = false;
+                    //and we need to provide information on why the replay failed
+                    typeReplayer.replayErrorMessages.push(`${typeReplayer.actionType.toUpperCase()} Assertion Failed`)
+                    //then send the response if we have the facility
+                    if (typeReplayer.sendResponse != null) {
+                        //first we make a clone of this 
+                        var replayExecution = Object.assign({}, typeReplayer);
+                        //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
+                        delete replayExecution.sendResponse;
+                        //then we send the clean clone
+                        typeReplayer.sendResponse({replayExecution: replayExecution});
+                    }   
+                    //and then we should return the typeReplayer - it will be filtered out
+                    return typeReplayer;
+                } else {
+                    //we need to confirm we have matching text content, attributes, etc
+                    typeReplayer.replayLogMessages.push(`${typeReplayer.actionType.toUpperCase()} Assertion Passed`);
                 }
                 //otherwise we have a successful event replay and we need to update the event player to indicate that
                 // we report the time of the fail
