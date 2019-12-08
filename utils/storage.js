@@ -12,7 +12,7 @@ StorageUtils.openModelObjectDatabaseConnection = function(caller) {
             projects: "++id,projectName,projectDescription,projectAuthor,projectCreated",
             tests: "++id,testName,testDescription,testAuthor,testCreated,testProjectId,testProjectName,testStartUrl,testBandwidthValue,testBandwidthName,testLatencyValue,testLatencyName,testPerformanceTimings,testResourceLoads,testScreenshot",
             recordings: "++id,recordingName,recordingDescription,recordingAuthor,recordingCreated,recordingIsMobile,recordingMobileOrientation,recordingTestStartUrl,recordingProjectId,recordingProjectName,recordingTestId,recordingTestName,recordingTestBandwidthValue,recordingTestBandwidthName,recordingTestLatencyValue,recordingTestLatencyName,recordingTestPerformanceTimings,recordingTestResourceLoads,recordingTestScreenshot,recordingEventArray",
-            replays: "++id,replayName,replayRecordingStartUrl,replayCreated,replayExecuted,replayFailTime,replayStatus,replayEventArray,recordingName,recordingDescription,recordingAuthor,recordingCreated,recordingIsMobile,recordingMobileOrientation,recordingTestStartUrl,recordingProjectId,recordingProjectName,recordingTestId,recordingTestName,recordingTestBandwidthValue,recordingTestBandwidthName,recordingTestLatencyValue,recordingTestLatencyName,recordingTestPerformanceTimings,recordingTestResourceLoads,recordingTestScreenshot,recordingEventArray"
+            replays: "++id,replayName,replayRecordingStartUrl,replayRecordingId,replayCreated,replayExecuted,replayFailTime,replayStatus,replayEventArray,recordingName,recordingDescription,recordingAuthor,recordingCreated,recordingIsMobile,recordingMobileOrientation,recordingTestStartUrl,recordingProjectId,recordingProjectName,recordingTestId,recordingTestName,recordingTestBandwidthValue,recordingTestBandwidthName,recordingTestLatencyValue,recordingTestLatencyName,recordingTestPerformanceTimings,recordingTestResourceLoads,recordingTestScreenshot,recordingEventArray"
         });
         //report that the database connection is open
         console.log(`${caller} has opened modelObjectDatabase Connection`);
@@ -52,7 +52,7 @@ StorageUtils.getRecordsCount = function() {
 //add a new model object to the database
 StorageUtils.addModelObjectToDatabaseTable = function(caller, object, table) {
 
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
 
         //open the database connection
         StorageUtils.openModelObjectDatabaseConnection("Storage")
@@ -63,6 +63,12 @@ StorageUtils.addModelObjectToDatabaseTable = function(caller, object, table) {
                 //helps us to keep track of which operations have been performed and when
                 console.log(`Storage has saved new model object with id ${id} to table ${table} for ${caller}`);
                 resolve(id);
+            })
+            .catch(error => {
+                //report a failed add using key, table and caller
+                console.log(object);
+                console.log (`Storage has failed to add model object to table ${table} for ${caller}`);
+                reject(error);
             });
             
     });
@@ -136,15 +142,13 @@ StorageUtils.cascadeDeleteByProjectID = function(caller, key) {
                 db.projects.delete(checkedKey),
                 db.tests.filter(obj => obj.testProjectId == checkedKey).delete(),
                 db.recordings.filter(obj => obj.recordingProjectId == checkedKey).delete(),
-                //db.replays.filter(obj => obj.recordingProjectId == checkedKey).delete(),
-                //TO DO - add bulk replay deletes by project id
+                db.replays.filter(obj => obj.recordingProjectId == checkedKey).delete()
             ]))
             .then(counts => {
                 if (counts[0] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[0]} projects for ${caller}.`); }
                 if (counts[1] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[1]} tests for ${caller}.`); }
                 if (counts[2] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[2]} recordings for ${caller}.`); }
-                //if (counts[3] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[3]} replays for ${caller}.`); }
-                //TO DO - add bulk replay delete reporting
+                if (counts[3] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[3]} replays for ${caller}.`); }
                 resolve();
             });
             
@@ -163,13 +167,13 @@ StorageUtils.cascadeDeleteByTestID = function(caller, key) {
             //then with the opened database connection, update the existing object to the database, using the object shorthand to get the right database
             .then(db => Promise.all([
                 db.tests.delete(checkedKey),
-                db.recordings.filter(obj => obj.recordingTestId == checkedKey).delete()
-                //TO DO - add bulk replay deletes by test id
+                db.recordings.filter(obj => obj.recordingTestId == checkedKey).delete(),
+                db.replays.filter(obj => obj.recordingTestId == checkedKey).delete()
             ]))
             .then(counts => {
                 if (counts[0] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[0]} tests for ${caller}.`); }
                 if (counts[1] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[1]} recordings for ${caller}.`); }
-                //TO DO - add bulk replay delete reporting
+                if (counts[2] > 1) { console.log(`cascadeDeleteByProjectID: Deleted ${counts[1]} replays for ${caller}.`); }
                 resolve();
             })
             .catch(err => console.log(`cascadeDeleteByTestID: ${err.message}`)); 
@@ -177,6 +181,7 @@ StorageUtils.cascadeDeleteByTestID = function(caller, key) {
     });
 
 };
+
 
 //return an array of model objects from the database
 StorageUtils.getAllObjectsInDatabaseTable = function(caller, table) {

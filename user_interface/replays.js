@@ -1,5 +1,18 @@
 function addReplayTableRowsFragment(replayStorageArray) {
 
+    //formatting functions for dates
+    function printExecutionTime(replayExecuted) {
+        if (replayExecuted == 0) return "Never"
+        else return new Date(replayExecuted).toLocaleString();
+    }
+    function printStatus(replayStatus) {
+        switch(replayStatus) {
+            case null: return "None"
+            case true: return "Success"
+            case false: return "Failed"
+        }
+    }
+
     //add the loading indicator to the segment
     $('.ui.savedReplays.verticalTabMenu.segment').addClass('loading');
     //empty the replays table body so we can add the updated information
@@ -37,11 +50,11 @@ function addReplayTableRowsFragment(replayStorageArray) {
         //<td data-label="replayExecuted"></td>
         let replayExecutedNode = tempNode.querySelector('td[data-label="replayExecuted"]');
         //this makes a very shallow copy of the replay WITH NONE OF THE RIGHT RECORDING PARAMETERS to access the formatting functions
-        replayExecutedNode.textContent = new Replay({}, replayStorageArray[replay]).printExecutionTime();
+        replayExecutedNode.textContent = printExecutionTime(replayStorageArray[replay].replayExecuted);
         //<td data-label="replayStatus"></td>
         let replayStatusNode = tempNode.querySelector('td[data-label="replayStatus"]');
         //this makes a very shallow copy of the replay WITH NONE OF THE RIGHT RECORDING PARAMETERS to access the formatting functions
-        replayStatusNode.textContent = new Replay({}, replayStorageArray[replay]).printStatus();
+        replayStatusNode.textContent = printStatus(replayStorageArray[replay].replayStatus);
 
         let replayShowLink = tempNode.querySelector('.showReplayLink');
         replayShowLink.setAttribute('data-replay-id', `${replayStorageArray[replay].id}`);
