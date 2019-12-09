@@ -71,12 +71,12 @@ function addReplayTableRowsFragment(replayStorageArray) {
         replayCreatedNode.textContent = new Date(replayStorageArray[replay].replayCreated).toLocaleString();
         //<td data-label="replayExecuted"></td>
         let replayExecutedNode = tempNode.querySelector('td[data-label="replayExecuted"]');
-        //this makes a very shallow copy of the replay WITH NONE OF THE RIGHT RECORDING PARAMETERS to access the formatting functions
-        replayExecutedNode.textContent = new Replay({}, replayStorageArray[replay]).printExecutionTime();
+        //this makes a copy of the replay WITH THE RIGHT RECORDING PARAMETERS to access the formatting functions
+        replayExecutedNode.textContent = new Replay(replayStorageArray[replay], replayStorageArray[replay]).printExecutionTime();
         //<td data-label="replayStatus"></td>
         let replayStatusNode = tempNode.querySelector('td[data-label="replayStatus"]');
-        //this makes a very shallow copy of the replay WITH NONE OF THE RIGHT RECORDING PARAMETERS to access the formatting functions
-        replayStatusNode.textContent = new Replay({}, replayStorageArray[replay]).printStatus();
+        //this makes a copy of the replay WITH THE RIGHT RECORDING PARAMETERS to access the formatting functions
+        replayStatusNode.textContent = new Replay(replayStorageArray[replay], replayStorageArray[replay]).printStatus();
 
         let replayShowLink = tempNode.querySelector('.showReplayLink');
         replayShowLink.setAttribute('data-replay-id', `${replayStorageArray[replay].id}`);
@@ -111,7 +111,7 @@ function addReplayTablePaginationListener() {
         var currentPage = Number($('.ui.replaysTable .ui.pagination.menu').attr('data-current-page'));
         //get the classes of the active item as a list
         const classArray = $(this).attr('class').split(/\s+/);
-        //then get all the current recordings from the database, as an array
+        //then get all the current replays from the database, as an array
         StorageUtils.getAllObjectsInDatabaseTable('replays.js', 'replays')
             //once we have the array then we can start populating the table by looping through the array
             .then(replayStorageArray => {
@@ -167,9 +167,9 @@ function addReplayTableButtonListeners() {
                 $('.ui.showReplayReplayEventsTable.table .noReplayInformationMessageRow').hide();
                 //add the loading indicator to the table section
                 $('.ui.fluid.showReplay.container .ui.bottom.attached.active.tab.segment ').addClass('loading');
-                //update the checkboxes to have the current recording id                
+                //update the checkboxes to have the current replay id                
                 $('.ui.fluid.showReplay.container .ui.code.form .ui.radio.checkbox input[name="outputCodeType"]').attr('data-replay-id', replayKey);
-                //then update the edit recording events table
+                //then update the edit replay events table
                 updateReplayEventsTableAndCodeText(replay);
                 //then remove the loading indicator
                 $('.ui.fluid.showReplay.container .ui.bottom.attached.active.tab.segment ').removeClass('loading');
@@ -228,7 +228,7 @@ function addReplayTableButtonListeners() {
                 updateReplaysTable();
             })
             //the delete single object function will reject if object is not in database
-            .catch( () => console.error(`Error Deleting Replay ${recordingKey}`));
+            .catch( () => console.error(`Error Deleting Replay ${replayKey}`));
 
     });
 
@@ -265,7 +265,7 @@ function addShowReplayReplayEventsTableButtonListeners() {
         const replayKey = $(this).attr("data-replay-id");
         //do the same with the replay event key
         const replayEventKey = $(this).attr("data-replay-event-id");
-        //the recording key will be in string format - StorageUtils handles conversion
+        //the replay key will be in string format - StorageUtils handles conversion
         StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
             //then we have a returned js object with the replay details
             .then(replay => {
@@ -294,7 +294,7 @@ function addShowReplayReplayEventsTableButtonListeners() {
         const replayKey = $(this).attr("data-replay-id");
         //do the same with the replay event key
         const replayEventKey = $(this).attr("data-replay-event-id");
-        //the recording key will be in string format - StorageUtils handles conversion
+        //the replay key will be in string format - StorageUtils handles conversion
         StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
             //then we have a returned js object with the replay details
             .then(replay => {
@@ -344,7 +344,7 @@ function addRunReplayReplayEventsTableButtonListeners() {
         const replayKey = $(this).attr("data-replay-id");
         //do the same with the replay event key
         const replayEventKey = $(this).attr("data-replay-event-id");
-        //the recording key will be in string format - StorageUtils handles conversion
+        //the replay key will be in string format - StorageUtils handles conversion
         StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
             //then we have a returned js object with the replay details
             .then(replay => {
@@ -373,11 +373,10 @@ function addRunReplayReplayEventsTableButtonListeners() {
         const replayKey = $(this).attr("data-replay-id");
         //do the same with the replay event key
         const replayEventKey = $(this).attr("data-replay-event-id");
-        //the recording key will be in string format - StorageUtils handles conversion
+        //the replay key will be in string format - StorageUtils handles conversion
         StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
             //then we have a returned js object with the replay details
             .then(replay => {
-                console.log(replay)
                 //first we need to create a new replay, with our recording properties and replay properties
                 const newReplay = new Replay(replay, replay);
                 //then we need to filter the new replay's event table

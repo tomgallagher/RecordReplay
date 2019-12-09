@@ -1,6 +1,6 @@
 function addAssertableEventsToTable(recording, assertableArray) {
 
-    //empty the recordings table body so we can add the updated information
+    //empty the replay assertions table body so we can add the updated information
     $('.ui.celled.newReplayAssertionsTable.table tbody').empty();
     //first we have to check that there are assertable elements that require the table and element structure to be shown
     if (assertableArray.length) {
@@ -325,7 +325,7 @@ function updateNewReplayEventsTable(newReplay) {
     $('.ui.newReplayReplayEventsTable.table tbody').empty();
     //get a reference to the table
     const table = document.querySelector('.ui.newReplayReplayEventsTable.table tbody')
-    //then for each recordingEvent we need to add it to the table and the textarea
+    //then for each replay Event we need to add it to the table
     for (let replayEvent in newReplay.replayEventArray) { 
         //then use the function that is shared by replays.js
         addNewReplayEventToTable(newReplay, newReplay.replayEventArray[replayEvent], table);

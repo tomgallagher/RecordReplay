@@ -60,15 +60,15 @@ function addRecordingTableRowsFragment(recordingStorageArray) {
 
 }
 
-//make sure the edit test project dropdown shows an updated account of the projects in storage
+//make sure the edit recording test dropdown shows an updated account of the tests in storage
 function refreshEditRecordingTestDropdown() {
 
-    //get the projects data from the database so we can have tests linked to projects
+    //get the tests data from the database so we can have recordings linked to tests
     StorageUtils.getAllObjectsInDatabaseTable('recordings.js', 'tests')
-        //once we have the array then we can start populating the new test form projects dropdwon by looping through the array
+        //once we have the array then we can start populating the new recording form tests dropdoqn by looping through the array
         .then(testStorageArray => {
 
-            //get a reference to the drop down in the new test form
+            //get a reference to the drop down in thee edit recording form
             var editRecordingDropDownMenu = $('.ui.fluid.selection.editRecording.test.dropdown .menu');
             //empty the dropdown of existing items
             editRecordingDropDownMenu.empty();
@@ -203,9 +203,9 @@ function addRecordingTableButtonListeners() {
         $('.editRecordingFooter').css("display", "none");
         //close the show recording / edit recording recordingEvents table
         $('.ui.fluid.editRecording.container').css('display', 'none');
-        //delete the test in the database, using data-test-id from the template
+        //delete the recording in the database, using data-recording-id from the template
         const recordingKey = $(this).attr("data-recording-id");
-        //the test key will be in string format - StorageUtils handles conversion
+        //the recording key will be in string format - StorageUtils handles conversion
         StorageUtils.cascadeDeleteByRecordingID('recordings.js', recordingKey)
             //then we have nothing returned
             .then( () => {
@@ -476,9 +476,9 @@ $(document).ready (function(){
                         $('.ui.editRecordingForm .ui.submit.button').removeClass('loading');
                         //then redraw the table
                         updateRecordingsTable();
-                        //clear the edit test form
+                        //clear the edit recording form
                         $('.ui.editRecordingForm.form').form('clear');
-                        //hide the edit test form container
+                        //hide the edit recording form container
                         $('.editRecordingFooter').css("display", "none");
                     })
                     .catch( () => console.error(`Error Updating Recording ${fields.hiddenRecordingId}`));
