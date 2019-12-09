@@ -163,6 +163,8 @@ function addReplayTableButtonListeners() {
                 $('.ui.fluid.runReplay.container').css('display', 'none');
                 //show the section that has the table in one tab and the code in another tab
                 $('.ui.fluid.showReplay.container').css('display', 'block');
+                //hide the information message about being unable to show events that have not been run at least once
+                $('.ui.showReplayReplayEventsTable.table .noReplayInformationMessageRow').hide();
                 //add the loading indicator to the table section
                 $('.ui.fluid.showReplay.container .ui.bottom.attached.active.tab.segment ').addClass('loading');
                 //update the checkboxes to have the current recording id                
@@ -190,6 +192,8 @@ function addReplayTableButtonListeners() {
                 $('.ui.fluid.showReplay.container').css('display', 'none');
                 //show the section that has the table in one tab and the code in another tab
                 $('.ui.fluid.runReplay.container').css('display', 'block');
+                //hide the information message about being unable to show events that have not been run at least once
+                $('.ui.runReplayReplayEventsTable.table .noReplayInformationMessageRow').hide();
                 //empty the table body first
                 $('.ui.runReplayReplayEventsTable.table tbody').empty();
                 //get a reference to the table
