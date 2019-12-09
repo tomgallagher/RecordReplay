@@ -148,9 +148,9 @@ $(document).ready (function(){
                 updateReplaysTable();
                 //close the show replay / run replay sections
                 $('.ui.fluid.showReplay.container').css('display', 'none');
-
-                //TO DO run /replay section hide
-
+                //close the run replay replayEvents table
+                $('.ui.fluid.runReplay.container').css('display', 'none');
+                //then show the replays segment
                 $('.ui.verticalTabMenu.savedReplays.segment').css('display', 'block');
                 break;
             case classArray.includes('newReplay'):
