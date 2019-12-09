@@ -1,18 +1,5 @@
 function addReplayTableRowsFragment(replayStorageArray) {
 
-    //formatting functions for dates
-    function printExecutionTime(replayExecuted) {
-        if (replayExecuted == 0) return "Never"
-        else return new Date(replayExecuted).toLocaleString();
-    }
-    function printStatus(replayStatus) {
-        switch(replayStatus) {
-            case null: return "None"
-            case true: return "Success"
-            case false: return "Failed"
-        }
-    }
-
     //add the loading indicator to the segment
     $('.ui.savedReplays.verticalTabMenu.segment').addClass('loading');
     //empty the replays table body so we can add the updated information
@@ -27,6 +14,7 @@ function addReplayTableRowsFragment(replayStorageArray) {
     //use for-in loop as execution order is maintained
     for (let replay in replayStorageArray) { 
 
+        console.log(replayStorageArray[replay]);
         //then we make a clone of the row, that will serve the purpose
         let tempNode = targetRow.cloneNode(true);
         //<td data-label="replayName"></td>
@@ -50,11 +38,11 @@ function addReplayTableRowsFragment(replayStorageArray) {
         //<td data-label="replayExecuted"></td>
         let replayExecutedNode = tempNode.querySelector('td[data-label="replayExecuted"]');
         //this makes a very shallow copy of the replay WITH NONE OF THE RIGHT RECORDING PARAMETERS to access the formatting functions
-        replayExecutedNode.textContent = printExecutionTime(replayStorageArray[replay].replayExecuted);
+        replayExecutedNode.textContent = new Replay({}, replayStorageArray[replay]).printExecutionTime();
         //<td data-label="replayStatus"></td>
         let replayStatusNode = tempNode.querySelector('td[data-label="replayStatus"]');
         //this makes a very shallow copy of the replay WITH NONE OF THE RIGHT RECORDING PARAMETERS to access the formatting functions
-        replayStatusNode.textContent = printStatus(replayStorageArray[replay].replayStatus);
+        replayStatusNode.textContent = new Replay({}, replayStorageArray[replay]).printStatus();
 
         let replayShowLink = tempNode.querySelector('.showReplayLink');
         replayShowLink.setAttribute('data-replay-id', `${replayStorageArray[replay].id}`);

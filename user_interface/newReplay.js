@@ -377,43 +377,6 @@ function refreshNewReplayRecordingDropdown() {
 
 }
 
-function sortReplayEventsByTime(replayEventArray) {
-
-    return replayEventArray
-        //first we need to sort the array by timestamp
-        .sort((previous, current) => { 
-            //we need to deal with the situation where assertions have exactly the same timestamp as their matching mouse hover or text select events
-            if (previous.recordingEventCreated == current.recordingEventCreated) {
-                //so if the current item has own property indicating it is an assertion then we just put it second in the queue
-                return current.hasOwnProperty('assertionId') ? -1 : 1;
-            } else {
-                //otherwise we are happy to sort as normal
-                return previous.recordingEventCreated - current.recordingEventCreated; 
-            }
-        })
-        //then adjust the time since previous
-        .map((replayEvent, index, array) => {
-            //the time since previous of the first item is always 0, so if the first item is deleted we end up with an absolute timestamp for the second item
-            if (index == 0) { replayEvent.recordingTimeSincePrevious = 0; return replayEvent; }
-            //otherwise we need to go through to the end of the array, comparing the current event with the one before it in the index
-            else {
-                //again here we need a special exception for assertions with identical timestamps
-                if (replayEvent.recordingEventCreated == array[index-1].recordingEventCreated && replayEvent.hasOwnProperty('assertionId')) {
-                    //where we have an exact match in timestamps we need to give a small difference so we can display a time difference that is not 0
-                    //we use 0 to indicate the first entry so we need to set it at 1, an arbitrary small figure
-                    //if we use a larger number, this could start to cause problems with many assertions
-                    replayEvent.recordingTimeSincePrevious = 1;
-                } else {
-                    //so recording event time since previous is equal to the difference in their event created times
-                    replayEvent.recordingTimeSincePrevious = replayEvent.recordingEventCreated - array[index-1].recordingEventCreated;
-                }
-                //then return the mutated element
-                return replayEvent;
-            }
-        });
-
-}
-
 $(document).ready (function(){
 
     $('.ui.newReplayForm.form')
@@ -471,7 +434,13 @@ $(document).ready (function(){
                         newReplay.replayEventArray = newReplay.replayEventArray.concat(assertionsArray);
                         //then we need to create a sorted array, which generates mixed replay events and assertion events in the correct order
                         //we also need the time since previous to be adjusted in cases where assertions share the same timestamp as the hover or text select event
-                        newReplay.replayEventArray = sortReplayEventsByTime(newReplay.replayEventArray);
+                        newReplay.sortReplayEventsByTime();
+                        //storage does not save replays with the class methods attached
+                        //it is not clear why, as the recordings are saved OK with class methods attached
+                        //probably something to do with extending the recording class with replay
+                        delete newReplay.printExecutionTime;
+                        delete newReplay.printStatus;
+                        delete newReplay.sortReplayEventsByTime;
                         //then we just need to return the replay for saving in the database
                         return newReplay;
                     })

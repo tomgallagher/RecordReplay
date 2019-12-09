@@ -182,6 +182,29 @@ StorageUtils.cascadeDeleteByTestID = function(caller, key) {
 
 };
 
+//delete all items from all tables related to a specific recording id
+StorageUtils.cascadeDeleteByRecordingID = function(caller, key) {
+
+    return new Promise(resolve => {
+
+        const checkedKey = StorageUtils.standardiseKey(key);
+        //open the database connection
+        StorageUtils.openModelObjectDatabaseConnection("Storage")
+            //then with the opened database connection, update the existing object to the database, using the object shorthand to get the right database
+            .then(db => Promise.all([
+                db.recordings.delete(checkedKey),
+                db.replays.filter(obj => obj.replayRecordingId == checkedKey).delete()
+            ]))
+            .then(counts => {
+                if (counts[0] > 1) { console.log(`cascadeDeleteByRecordingID: Deleted ${counts[0]} recordings for ${caller}.`); }
+                if (counts[1] > 1) { console.log(`cascadeDeleteByRecordingID: Deleted ${counts[1]} replays for ${caller}.`); }
+                resolve();
+            })
+            .catch(err => console.log(`cascadeDeleteByTestID: ${err.message}`)); 
+    
+    });
+
+};
 
 //return an array of model objects from the database
 StorageUtils.getAllObjectsInDatabaseTable = function(caller, table) {

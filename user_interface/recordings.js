@@ -206,7 +206,7 @@ function addRecordingTableButtonListeners() {
         //delete the test in the database, using data-test-id from the template
         const recordingKey = $(this).attr("data-recording-id");
         //the test key will be in string format - StorageUtils handles conversion
-        StorageUtils.deleteModelObjectInDatabaseTable('recordings.js', recordingKey, 'recordings')
+        StorageUtils.cascadeDeleteByRecordingID('recordings.js', recordingKey)
             //then we have nothing returned
             .then( () => {
                 //then redraw the table
