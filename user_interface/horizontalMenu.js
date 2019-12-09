@@ -18,14 +18,14 @@ $(document).ready (function(){
             //getting started shows on first load but after it should revert to projects
             case classArray.includes('themeSettings'):
                 //check to see if we are predominantly not inverted
-                if ($(".ui.inverted").length < 10) { 
+                if ($(".ui.inverted").length < 20) { 
                     //if so, then we invert each of our semantic components 
                     $( ".ui" ).addClass( "inverted" );
                     //then we change the background colour
                     $( ".mainSection" ).css( "background-color", "black" );
                     //then we change the vertical menu colour to grey
-                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table, .ui.editRecordingRecordingEventsTable, .ui.newRecordingRecordingEventsTable, .ui.newReplayAssertionsTable, .ui.newReplayReplayEventsTable" ).removeClass( "violet" );
-                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table, .ui.editRecordingRecordingEventsTable, .ui.newRecordingRecordingEventsTable, .ui.newReplayAssertionsTable, .ui.newReplayReplayEventsTable" ).addClass( "black" );
+                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table, .ui.editRecordingRecordingEventsTable, .ui.newRecordingRecordingEventsTable, .ui.newReplayAssertionsTable, .ui.newReplayReplayEventsTable, .ui.showReplayReplayEventsTable" ).removeClass( "violet" );
+                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table, .ui.editRecordingRecordingEventsTable, .ui.newRecordingRecordingEventsTable, .ui.newReplayAssertionsTable, .ui.newReplayReplayEventsTable, .ui.showReplayReplayEventsTable" ).addClass( "black" );
                     //then save the marker to local storage on the page
                     localStorage.setItem("ThemeInverted", "true");
                 } else {
@@ -34,8 +34,8 @@ $(document).ready (function(){
                     //then we change the background colour of the whole project
                     $( ".mainSection" ).css( "background-color", "#fff" );
                     //then we change the vertical menu colour back to violet
-                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table, .ui.editRecordingRecordingEventsTable, .ui.newRecordingRecordingEventsTable, .ui.newReplayAssertionsTable, .ui.newReplayReplayEventsTable" ).removeClass( "black" );
-                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table, .ui.editRecordingRecordingEventsTable, .ui.newRecordingRecordingEventsTable, .ui.newReplayAssertionsTable, .ui.newReplayReplayEventsTable" ).addClass( "violet" );
+                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table, .ui.editRecordingRecordingEventsTable, .ui.newRecordingRecordingEventsTable, .ui.newReplayAssertionsTable, .ui.newReplayReplayEventsTable, .ui.showReplayReplayEventsTable" ).removeClass( "black" );
+                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table, .ui.editRecordingRecordingEventsTable, .ui.newRecordingRecordingEventsTable, .ui.newReplayAssertionsTable, .ui.newReplayReplayEventsTable, .ui.showReplayReplayEventsTable" ).addClass( "violet" );
                     //then save the marker to local storage on the page
                     localStorage.setItem("ThemeInverted", "false");
                 }

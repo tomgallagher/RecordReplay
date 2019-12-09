@@ -1,3 +1,38 @@
+//MASTER REPLAY TABLE POPULATION - THIS SHOWS ALL THE REPLAYS, PAGINATES THE REPLAYS AND ADDS THE TABLE ROWS VIA FUNCTION
+
+function updateReplaysTable() {
+
+    //first get all the current replays from the database, as an array, then loop through the array to update the UI
+    StorageUtils.getAllObjectsInDatabaseTable('replays.js', 'replays')
+        //once we have the array then we can start populating the table by looping through the array
+        .then(replayStorageArray => {
+
+            //then we paginate here using the class
+            const paginator = new Pagination(replayStorageArray);
+            //first we want to get the number of pages
+            if (paginator.getTotalPagesRequired() > 1) {
+                //then, if we have a number greater than 1 we need to build the paginator menu
+                const menu = paginator.buildMenu(paginator.getTotalPagesRequired());
+                //then grab the menu holder and empty it
+                $('.ui.replaysTable .paginationMenuHolder').empty();
+                //then append our menu 
+                $('.ui.replaysTable .paginationMenuHolder').append(menu);
+                //then show the menu holder
+                $('.ui.replaysTable .paginationMenuRow').css("display", "table-row");
+                //then activate the buttons
+                addReplayTablePaginationListener();
+            }
+            //then make sure the table is showing the first page
+            replayStorageArray = paginator.getParticularPage(1);
+            //then update the table
+            addReplayTableRowsFragment(replayStorageArray);
+
+        });
+
+}
+
+//MASTER REPLAY TABLE POPULATION - THIS FUNCTION DELIVERS TABLE ROWS INTO THE MASTER REPLAY TABLE
+
 function addReplayTableRowsFragment(replayStorageArray) {
 
     //add the loading indicator to the segment
@@ -14,7 +49,6 @@ function addReplayTableRowsFragment(replayStorageArray) {
     //use for-in loop as execution order is maintained
     for (let replay in replayStorageArray) { 
 
-        console.log(replayStorageArray[replay]);
         //then we make a clone of the row, that will serve the purpose
         let tempNode = targetRow.cloneNode(true);
         //<td data-label="replayName"></td>
@@ -63,11 +97,13 @@ function addReplayTableRowsFragment(replayStorageArray) {
     //then once all the work has been done remove class
     $('.ui.savedReplays.verticalTabMenu.segment').removeClass('loading');
     //then add the listeners for the buttons built into the form
-    //addReplayTableButtonListeners();
+    addReplayTableButtonListeners();
 
 }
 
-function addRecordingTablePaginationListener() {
+//MASTER REPLAY TABLE OPERATION - THIS ADDS PAGINATION TO THE MASTER REPLAY TABLE
+
+function addReplayTablePaginationListener() {
 
     $('.ui.replaysTable .ui.pagination.menu .item').on('mousedown', function(){
 
@@ -110,37 +146,292 @@ function addRecordingTablePaginationListener() {
 
 }
 
-function updateReplaysTable() {
+//MASTER REPLAY TABLE OPERATION - THIS ADDS BUTTON LISTENERS FOR THE MASTER TABLE SHOW, RUN AND DELETE OPERATIONS
 
-    //first get all the current replays from the database, as an array, then loop through the array to update the UI
-    StorageUtils.getAllObjectsInDatabaseTable('replays.js', 'replays')
-        //once we have the array then we can start populating the table by looping through the array
-        .then(replayStorageArray => {
+function addReplayTableButtonListeners() {
 
-            //then we paginate here using the class
-            const paginator = new Pagination(replayStorageArray);
-            //first we want to get the number of pages
-            if (paginator.getTotalPagesRequired() > 1) {
-                //then, if we have a number greater than 1 we need to build the paginator menu
-                const menu = paginator.buildMenu(paginator.getTotalPagesRequired());
-                //then grab the menu holder and empty it
-                $('.ui.replaysTable .paginationMenuHolder').empty();
-                //then append our menu 
-                $('.ui.replaysTable .paginationMenuHolder').append(menu);
-                //then show the menu holder
-                $('.ui.replaysTable .paginationMenuRow').css("display", "table-row");
-                //then activate the buttons
-                addReplayTablePaginationListener();
-            }
-            //then make sure the table is showing the first page
-            replayStorageArray = paginator.getParticularPage(1);
-            //then update the table
-            addReplayTableRowsFragment(replayStorageArray);
+    //delete replay button click handler
+    $('.ui.replaysTable .showReplayLink').on('mousedown', function(){
+        
+        //find the replay in the database by id, using data-replay-id from the template
+        const replayKey = $(this).attr("data-replay-id");
+        //the replay key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
+            //then we have a returned js object with the replay details
+            .then(replay => {
+                //close the run replay replayEvents table
+                $('.ui.fluid.runReplay.container').css('display', 'none');
+                //show the section that has the table in one tab and the code in another tab
+                $('.ui.fluid.showReplay.container').css('display', 'block');
+                //add the loading indicator to the table section
+                $('.ui.fluid.showReplay.container .ui.bottom.attached.active.tab.segment ').addClass('loading');
+                //update the checkboxes to have the current recording id                
+                $('.ui.fluid.showReplay.container .ui.code.form .ui.radio.checkbox input[name="outputCodeType"]').attr('data-replay-id', replayKey);
+                //then update the edit recording events table
+                updateReplayEventsTableAndCodeText(replay);
+                //then remove the loading indicator
+                $('.ui.fluid.showReplay.container .ui.bottom.attached.active.tab.segment ').removeClass('loading');
+            })
+            //the get single object function will reject if object is not in database
+            .catch(error => console.error(error));   
 
-        });
+    });
+
+    //run replay button click handler
+    $('.ui.replaysTable .runReplayLink').on('mousedown', function(){
+        
+        //find the replay in the database by id, using data-replay-id from the template
+        const replayKey = $(this).attr("data-replay-id");
+        //the replay key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
+            //then we have a returned js object with the replay details
+            .then(replay => {
+                //close the show replay replayEvents table
+                $('.ui.fluid.showReplay.container').css('display', 'none');
+                //show the section that has the table in one tab and the code in another tab
+                $('.ui.fluid.runReplay.container').css('display', 'block');
+                //empty the table body first
+                $('.ui.runReplayReplayEventsTable.table tbody').empty();
+                //get a reference to the table
+                const table = document.querySelector('.ui.runReplayReplayEventsTable.table tbody')
+                //then for each replayEvent we need to add it to the table and the textarea
+                for (let replayEvent in replay.replayEventArray) { 
+                    //then borrow the function from newReplay.js
+                    addNewReplayEventToTable(replay, replay.replayEventArray[replayEvent], table);
+                }
+                //add listeners for the clicks in the show replay replay events table
+                addRunReplayReplayEventsTableButtonListeners();
+            })
+            //the get single object function will reject if object is not in database
+            .catch(error => console.error(error));   
+
+    });
+
+    //delete replay button click handler
+    $('.ui.replaysTable .deleteReplayLink').on('mousedown', function(){
+        
+        //close the show replay replayEvents table
+        $('.ui.fluid.showReplay.container').css('display', 'none');
+        //close the run replay replayEvents table
+        $('.ui.fluid.runReplay.container').css('display', 'none');
+        //delete the test in the database, using data-test-id from the template
+        const replayKey = $(this).attr("data-replay-id");
+        //the test key will be in string format - StorageUtils handles conversion
+        StorageUtils.deleteModelObjectInDatabaseTable('replays.js', replayKey, 'replays')
+            //then we have nothing returned
+            .then( () => {
+                //then redraw the table
+                updateReplaysTable();
+            })
+            //the delete single object function will reject if object is not in database
+            .catch( () => console.error(`Error Deleting Replay ${recordingKey}`));
+
+    });
 
 }
 
+//SLAVE SHOW REPLAY EVENTS TABLE OPERATION - THIS POPULATES THE SHOW EVENTS TABLE WITH ALL THE REPLAY EVENTS FROM THE SELECTED REPLAY
+//THIS HAS A SEPARATE FUNCTION DUE TO THE COMPEXITIES OF THE CODE GENERATION - THE SLAVE RUN REPLAY POPULATION IS DONE INLINE IN THE BUTTON LISTENER
+
+function updateReplayEventsTableAndCodeText(replay) {
+
+    //empty the table body first
+    $('.ui.showReplayReplayEventsTable.table tbody').empty();
+    //get a reference to the table
+    const table = document.querySelector('.ui.showReplayReplayEventsTable.table tbody')
+    //then for each replayEvent we need to add it to the table and the textarea
+    for (let replayEvent in replay.replayEventArray) { 
+        //then borrow the function from newReplay.js
+        addNewReplayEventToTable(replay, replay.replayEventArray[replayEvent], table);
+    }
+    //add listeners for the clicks in the show replay replay events table
+    addShowReplayReplayEventsTableButtonListeners();
+
+    //TO DO - CODE FOR JEST AND PUPPETEER
+
+}
+
+//SLAVE SHOW REPLAY EVENTS TABLE OPERATION - THIS ADDS BUTTON LISTENERS FOR SUBORDINATE SHOW REPLAY, REPLAY EVENTS TABLE
+
+function addShowReplayReplayEventsTableButtonListeners() {
+
+    $('.ui.showReplayReplayEventsTable.table .showReplayEventRow').on('mousedown', function(){
+
+        //find the replay in the database by id, using data-replay-id from the template
+        const replayKey = $(this).attr("data-replay-id");
+        //do the same with the replay event key
+        const replayEventKey = $(this).attr("data-replay-event-id");
+        //the recording key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
+            //then we have a returned js object with the replay details
+            .then(replay => {
+                //use either the replay or assertion id to get the replay event
+                const replayEvent = replay.replayEventArray.find(event => event.replayEventId == replayEventKey || event.assertionId == replayEventKey);
+                //then we only display events which have a status otherwise there's no information to show
+                switch(true) {
+                    //first we deal with the case where it is an assertion with a null event status value, indicating it has never been run
+                    case replayEvent.assertionEventStatus == null || replayEvent.replayEventStatus == null:
+                        //show the warning message
+                        $('.ui.showReplayReplayEventsTable.table .noReplayInformationMessageRow').css('display', 'table-row');
+                        break;
+                    //otherwise we show the relevant information by default
+                    default:
+
+                    //TO DO - when we know what kind of event information we want to show in the table footer
+                        
+                }
+            });
+
+    });
+
+    $('.ui.showReplayReplayEventsTable.table .deleteReplayEventRow').on('mousedown', function(){
+
+        //find the replay in the database by id, using data-replay-id from the template
+        const replayKey = $(this).attr("data-replay-id");
+        //do the same with the replay event key
+        const replayEventKey = $(this).attr("data-replay-event-id");
+        //the recording key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
+            //then we have a returned js object with the replay details
+            .then(replay => {
+                console.log(replay)
+                //first we need to create a new replay, with our recording properties and replay properties
+                const newReplay = new Replay(replay, replay);
+                //then we need to filter the new replay's event table
+                newReplay.replayEventArray = newReplay.replayEventArray
+                    //get rid of the element that has been deleted, by reference to the replay event id or the aeertion id
+                    .filter(item => item.replayEventId != replayEventKey && item.assertionId != replayEventKey)
+                //then we need to create a sorted array, which generates mixed replay events and assertion events in the correct order
+                //we also need the time since previous to be adjusted in cases where assertions share the same timestamp as the hover or text select event
+                newReplay.sortReplayEventsByTime();
+                //storage does not save replays with the class methods attached
+                //it is not clear why, as the recordings are saved OK with class methods attached
+                //probably something to do with extending the recording class with replay
+                delete newReplay.printExecutionTime;
+                delete newReplay.printStatus;
+                delete newReplay.sortReplayEventsByTime;
+                //then we just need to return the replay for saving in the database
+                return newReplay;
+            })
+            //then we need to save the updated replay to the database
+            .then(newReplay => StorageUtils.updateModelObjectInDatabaseTable('replays.js', replayKey, newReplay, 'replays') )
+            //then we need to retrieve the edited replay to update the table to reflect the deleted event
+            .then( () => StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays') )
+            //then we need to do the update to the table 
+            .then(savedReplay => {
+                //this is specific to the showReplayReplayEventsTable, also used on initial display
+                updateReplayEventsTableAndCodeText(savedReplay);
+            })  
+            //the get single object function will reject if object is not in database
+            .catch(error => console.error(error));      
+
+
+    });
+
+}
+
+//SLAVE RUN REPLAY EVENTS TABLE OPERATION - THIS ADDS BUTTON LISTENERS FOR SUBORDINATE RUN REPLAY, REPLAY EVENTS TABLE
+
+function addRunReplayReplayEventsTableButtonListeners() {
+
+    $('.ui.runReplayReplayEventsTable.table .showReplayEventRow').on('mousedown', function(){
+
+        //find the replay in the database by id, using data-replay-id from the template
+        const replayKey = $(this).attr("data-replay-id");
+        //do the same with the replay event key
+        const replayEventKey = $(this).attr("data-replay-event-id");
+        //the recording key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
+            //then we have a returned js object with the replay details
+            .then(replay => {
+                //use either the replay or assertion id to get the replay event
+                const replayEvent = replay.replayEventArray.find(event => event.replayEventId == replayEventKey || event.assertionId == replayEventKey);
+                //then we only display events which have a status otherwise there's no information to show
+                switch(true) {
+                    //first we deal with the case where it is an assertion with a null event status value, indicating it has never been run
+                    case replayEvent.assertionEventStatus == null || replayEvent.replayEventStatus == null:
+                        //show the warning message
+                        $('.ui.runReplayReplayEventsTable.table .noReplayInformationMessageRow').css('display', 'table-row');
+                        break;
+                    //otherwise we show the relevant information by default
+                    default:
+
+                    //TO DO - when we know what kind of event information we want to show in the table footer
+                        
+                }
+            });
+
+    });
+
+    $('.ui.runReplayReplayEventsTable.table .deleteReplayEventRow').on('mousedown', function(){
+
+        //find the replay in the database by id, using data-replay-id from the template
+        const replayKey = $(this).attr("data-replay-id");
+        //do the same with the replay event key
+        const replayEventKey = $(this).attr("data-replay-event-id");
+        //the recording key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
+            //then we have a returned js object with the replay details
+            .then(replay => {
+                console.log(replay)
+                //first we need to create a new replay, with our recording properties and replay properties
+                const newReplay = new Replay(replay, replay);
+                //then we need to filter the new replay's event table
+                newReplay.replayEventArray = newReplay.replayEventArray
+                    //get rid of the element that has been deleted, by reference to the replay event id or the aeertion id
+                    .filter(item => item.replayEventId != replayEventKey && item.assertionId != replayEventKey)
+                //then we need to create a sorted array, which generates mixed replay events and assertion events in the correct order
+                //we also need the time since previous to be adjusted in cases where assertions share the same timestamp as the hover or text select event
+                newReplay.sortReplayEventsByTime();
+                //storage does not save replays with the class methods attached
+                //it is not clear why, as the recordings are saved OK with class methods attached
+                //probably something to do with extending the recording class with replay
+                delete newReplay.printExecutionTime;
+                delete newReplay.printStatus;
+                delete newReplay.sortReplayEventsByTime;
+                //then we just need to return the replay for saving in the database
+                return newReplay;
+            })
+            //then we need to save the updated replay to the database
+            .then(newReplay => StorageUtils.updateModelObjectInDatabaseTable('replays.js', replayKey, newReplay, 'replays') )
+            //then we need to retrieve the edited replay to update the table to reflect the deleted event
+            .then( () => StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays') )
+            //then we need to do the update to the table 
+            .then(savedReplay => {
+                //empty the table body first
+                $('.ui.runReplayReplayEventsTable.table tbody').empty();
+                //get a reference to the table
+                const table = document.querySelector('.ui.runReplayReplayEventsTable.table tbody')
+                //then for each replayEvent we need to add it to the table and the textarea
+                for (let replayEvent in savedReplay.replayEventArray) { 
+                    //then borrow the function from newReplay.js
+                    addNewReplayEventToTable(savedReplay, savedReplay.replayEventArray[replayEvent], table);
+                }
+            })  
+            //the get single object function will reject if object is not in database
+            .catch(error => console.error(error));      
+
+
+    });
+
+}
+
+
 $(document).ready (function(){
+
+    //activate the tab control
+    $('.ui.top.attached.replay.tabular.menu .item').tab({
+        //we need to rehide stuff as tabs are shown
+        'onVisible': function(tab) {
+            switch (tab) {
+                case 'code':
+                    
+                    break;
+                case 'events':
+                    //hide the warning message about events with no information by default
+                    $('.ui.showReplayReplayEventsTable.table .noReplayInformationMessageRow').css('display', 'none');
+            }
+        }
+    });
 
 });

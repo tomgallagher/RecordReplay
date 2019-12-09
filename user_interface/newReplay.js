@@ -421,7 +421,7 @@ $(document).ready (function(){
                 StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', recordingKey, 'recordings')
                     //then we have a returned js object with the recording details
                     .then(recording => {
-                        //then we need to make sure the replay's recording id is in a number format, so we can search
+                        //then we need to make sure the replay's recording id is in a number format, so we can search and delete
                         fields.replayRecordingId = StorageUtils.standardiseKey(fields.replayRecordingId);
                         //then we need to create our new replay, which is an extension of recording and has its own fields as well
                         //we can just push the fields in the constructor, any non-defaults just get ignored
