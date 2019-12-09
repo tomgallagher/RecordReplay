@@ -57,10 +57,15 @@
 /*need an override here for our assertionTableRow*/
 .ui.table td.assertionTableRow, .ui.table tr.assertionTableRow {
     background: #6435c91f !important;
-    color: rgba(0,0,0,.87)!important;
+    color: rgba(0,0,0,.87) !important;
 }
 /*need an override here for our assertionTableRow in inverted style*/
 .ui.inverted.table td.assertionTableRow, .ui.inverted.table tr.assertionTableRow {
     background: #6435c91f !important;
     color: white!important;
+}
+/*need an override here for divider in inverted style*/
+.ui.inverted.divider {
+    border-top: 1px solid transparent !important;
+    border-bottom: 1px solid transparent !important;
 }

@@ -13,6 +13,16 @@ $(document).ready (function(){
     $('.ui.stackable.compact.menu .item').on('mousedown', function() {
         //then get the classes of the active item as a list
         const classArray = $(this).attr('class').split(/\s+/);
+        const specialTablesArray = [
+            ".ui.vertical.fluid.tabular.menu",
+            ".ui.celled.striped.table",
+            ".ui.editRecordingRecordingEventsTable",
+            ".ui.newRecordingRecordingEventsTable", 
+            ".ui.newReplayAssertionsTable", 
+            ".ui.newReplayReplayEventsTable", 
+            ".ui.showReplayReplayEventsTable", 
+            ".ui.runReplayReplayEventsTable"
+        ];
         //then show the segment accordingly
         switch(true) {
             //getting started shows on first load but after it should revert to projects
@@ -24,8 +34,8 @@ $(document).ready (function(){
                     //then we change the background colour
                     $( ".mainSection" ).css( "background-color", "black" );
                     //then we change the vertical menu colour to grey
-                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table, .ui.editRecordingRecordingEventsTable, .ui.newRecordingRecordingEventsTable, .ui.newReplayAssertionsTable, .ui.newReplayReplayEventsTable, .ui.showReplayReplayEventsTable" ).removeClass( "violet" );
-                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table, .ui.editRecordingRecordingEventsTable, .ui.newRecordingRecordingEventsTable, .ui.newReplayAssertionsTable, .ui.newReplayReplayEventsTable, .ui.showReplayReplayEventsTable" ).addClass( "black" );
+                    $( specialTablesArray.join(', ') ).removeClass( "violet" );
+                    $( specialTablesArray.join(', ') ).addClass( "black" );
                     //then save the marker to local storage on the page
                     localStorage.setItem("ThemeInverted", "true");
                 } else {
@@ -34,8 +44,8 @@ $(document).ready (function(){
                     //then we change the background colour of the whole project
                     $( ".mainSection" ).css( "background-color", "#fff" );
                     //then we change the vertical menu colour back to violet
-                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table, .ui.editRecordingRecordingEventsTable, .ui.newRecordingRecordingEventsTable, .ui.newReplayAssertionsTable, .ui.newReplayReplayEventsTable, .ui.showReplayReplayEventsTable" ).removeClass( "black" );
-                    $( ".ui.vertical.fluid.tabular.menu, .ui.celled.striped.table, .ui.editRecordingRecordingEventsTable, .ui.newRecordingRecordingEventsTable, .ui.newReplayAssertionsTable, .ui.newReplayReplayEventsTable, .ui.showReplayReplayEventsTable" ).addClass( "violet" );
+                    $( specialTablesArray.join(', ') ).removeClass( "black" );
+                    $( specialTablesArray.join(', ') ).addClass( "violet" );
                     //then save the marker to local storage on the page
                     localStorage.setItem("ThemeInverted", "false");
                 }
