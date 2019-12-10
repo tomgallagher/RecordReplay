@@ -469,6 +469,11 @@ function addStartReplayHandler() {
             $(`.ui.runReplayReplayEventsTable.table tr`).removeClass('negative');
             //show the replay loader
             $('.ui.runReplay.container .ui.text.small.replay.loader').addClass('active');  
+            //and hide the 'replay has not run' message if it's showing
+            $('.ui.warning.noDetails.message').css('display', 'none');
+            //and the various logging messages
+            $('.ui.runReplayReplayEventsTable.table .ui.info.logging.message').css('display', 'none');
+            $('.ui.runReplayReplayEventsTable.table .ui.negative.error.message').css('display', 'none');
         })
         //get the replay from storage using the data id from the button
         .switchMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('replays.js', event.target.getAttribute('data-replay-id') , 'replays')))
