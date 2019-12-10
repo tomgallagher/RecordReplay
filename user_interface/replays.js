@@ -453,6 +453,11 @@ function addStartReplayHandler() {
         .do(event => {
             //show the start replay button as disabled
             event.target.className += " disabled";
+            //show the stop replay button as enabled
+            $('.ui.runReplay.container .ui.stopReplay.negative.button').removeClass('disabled');
+            //remove all the indicators from the table rows, apart from disabled and assertion rwo
+            $(`.ui.runReplayReplayEventsTable.table tr`).removeClass('positive');
+            $(`.ui.runReplayReplayEventsTable.table tr`).removeClass('negative');
             //show the replay loader
             $('.ui.runReplay.container .ui.text.small.replay.loader').addClass('active');  
         })
@@ -553,13 +558,6 @@ function addStartReplayHandler() {
                 return replay;
             }
         )
-        
-
-        
-        
-        
-
-        
         //we only want to continue to process replay events until the user interface stop replay button is clicked 
         .takeUntil(
             //merge the two sources of potential recording stop commands, either will do
@@ -613,6 +611,8 @@ function addStartReplayHandler() {
                 $('.ui.text.small.replay.loader').removeClass('active');
                 //show the start button as enabled
                 $('.ui.runReplay.container .ui.startReplay.positive.button').removeClass('disabled');
+                //show the stop replay button as disabled
+                $('.ui.runReplay.container .ui.stopReplay.negative.button').addClass('disabled');
                 //then we need to add the start recording handler again
                 addStartReplayHandler();
             }
