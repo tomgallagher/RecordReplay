@@ -302,7 +302,7 @@ function addRecordingEventTableButtonListeners() {
                 $('.ui.viewRecordingEvent.form input[name=recordingEventCssDomPath]').val(recordingEvent.recordingEventCssDomPath);
                 $('.ui.viewRecordingEvent.form input[name=recordingEventCssSimmerPath]').val(recordingEvent.recordingEventCssSimmerPath);
                 $('.ui.viewRecordingEvent.form input[name=recordingEventXPath]').val(recordingEvent.recordingEventXPath);
-                $('.ui.viewRecordingEvent.form input[name=recordingEventLocation]').val(recordingEvent.recordingEventLocation);
+                $('.ui.viewRecordingEvent.form input[name=recordingEventLocation]').val(recordingEvent.recordingEventLocationHref);
                 //then the checkbox
                 recordingEvent.recordingEventIsIframe == true ? $('.ui.viewRecordingEvent .ui.checkbox input[name=recordingEventIsIframe]').prop('checked', true) : $('.ui.viewRecordingEvent .ui.checkbox input[name=recordingEventIsIframe]').prop('checked', false);
                 //then if the recording event is either a hover or a text select, we can fill the target strucure

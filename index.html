@@ -1845,7 +1845,8 @@
                                             <th>Value</th>
                                             <th>Location</th>
                                             <th>Recorded</th>
-                                            <th>Replayed</th>
+                                             <!-- FOR SHOW REPLAY EVENTS WE HIDE THIS COLUMN HEADER AND THE TABLE DATA WHEN WE ADD IT-->
+                                            <th style="display: none;">Replayed</th>
                                             <th>Action</th>
                                         </tr>
                                                 
@@ -1889,20 +1890,82 @@
                                         
                                         </tr>
 
-                                        <tr class="noReplayInformationMessageRow" style="display: none;">
-                                            
-                                            <th colspan="12" class="paginationMenuHolder">
+                                        <tr class="viewDetailedTableReplayEventsFooter" style="display: none">
 
-                                                <div class="ui warning message">
-                                                
-                                                    <div class="header">Replay event has never been run</div>
-                                                
-                                                    Replay event information appears here after the replay has been run at least once
-                                            
-                                                </div>
-                                            
+                                            <th colspan="16">
+                
+                                                <form class="ui viewReplayEvent form">
+                
+                                                    <div class="two fields">
+                                                                
+                                                        <div class="field">
+                                
+                                                            <label>CSS Selector 1</label>
+                                
+                                                            <input type="text" name="replay_recordingEventCssSelectorPath" readonly="readonly">
+                                                                    
+                                                        </div>
+                                                                        
+                                                        <div class="field">
+
+                                                            <label>CSS Selector 2</label>
+                                                                
+                                                            <input type="text" name="replay_recordingEventCssDomPath" readonly="readonly">
+                                                                
+                                                        </div>
+                                
+                                                    </div>
+                
+                                                    <div class="two fields">
+                        
+                                                        <div class="field">
+                                                                
+                                                            <label>CSS Selector 3</label>
+                                                                            
+                                                            <input type="text" name="replay_recordingEventCssSimmerPath" readonly="readonly">
+                                                                            
+                                                        </div>
+
+                                                        <div class="field">
+                                                                
+                                                            <label>Xpath Selector</label>
+                                                                            
+                                                            <input type="text" name="replay_recordingEventXPath" readonly="readonly">
+                                                                            
+                                                        </div>
+                                        
+                                                    </div>
+
+                                                    <div class="two fields">
+                        
+                                                        <div class="field">
+                                                                
+                                                            <label>Location</label>
+                                                                            
+                                                            <input type="text" name="replay_recordingEventLocation" readonly="readonly">
+                                                                            
+                                                        </div>
+
+                                                        <div class="field">
+                                                            
+                                                            <label>Additional Reporting</label>
+
+                                                            <div class="ui checkbox">
+                                                                
+                                                                <input type="checkbox" name="replay_recordingEventIsIframe" readonly="readonly">
+                                                                    
+                                                                <label>Event in iframe</label>
+                                                                  
+                                                            </div>
+                                                                            
+                                                        </div>
+                                        
+                                                    </div>
+                
+                                                </form>
+                                                        
                                             </th>
-
+                
                                         </tr>
 
                                     </tfoot>

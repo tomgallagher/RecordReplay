@@ -163,8 +163,8 @@ function addReplayTableButtonListeners() {
                 $('.ui.fluid.runReplay.container').css('display', 'none');
                 //show the section that has the table in one tab and the code in another tab
                 $('.ui.fluid.showReplay.container').css('display', 'block');
-                //hide the information message about being unable to show events that have not been run at least once
-                $('.ui.showReplayReplayEventsTable.table .informationMessageRow').hide();
+                //hide the form that shows the detail of the replay event
+                $('.viewDetailedTableReplayEventsFooter').css('display', 'none');
                 //add the loading indicator to the table section
                 $('.ui.fluid.showReplay.container .ui.bottom.attached.active.tab.segment ').addClass('loading');
                 //update the checkboxes to have the current replay id                
@@ -255,6 +255,8 @@ function updateReplayEventsTableAndCodeText(replay) {
         //then borrow the function from newReplay.js
         addNewReplayEventToTable(replay, replay.replayEventArray[replayEvent], table);
     }
+    //then for the show table we don't show the replayed column - it only has meaning in the run events context
+    $('.ui.showReplayReplayEventsTable.table td[data-label="replay_timestamp_executed"]').css('display', 'none');
     //add listeners for the clicks in the show replay replay events table
     addShowReplayReplayEventsTableButtonListeners();
 
@@ -278,12 +280,19 @@ function addShowReplayReplayEventsTableButtonListeners() {
             .then(replay => {
                 //use either the replay or assertion id to get the replay event
                 const replayEvent = replay.replayEventArray.find(event => event.replayEventId == replayEventKey || event.assertionId == replayEventKey);
-                
-                //TO DO then we show the details of the replay event in a form
-
-
-
-            });
+                //fill the form fields with the data from the replay event
+                $('.ui.viewReplayEvent.form input[name=replay_recordingEventCssSelectorPath]').val(replayEvent.recordingEventCssSelectorPath);
+                $('.ui.viewReplayEvent.form input[name=replay_recordingEventCssDomPath]').val(replayEvent.recordingEventCssDomPath);
+                $('.ui.viewReplayEvent.form input[name=replay_recordingEventCssSimmerPath]').val(replayEvent.recordingEventCssSimmerPath);
+                $('.ui.viewReplayEvent.form input[name=replay_recordingEventXPath]').val(replayEvent.recordingEventXPath);
+                $('.ui.viewReplayEvent.form input[name=replay_recordingEventLocation]').val(replayEvent.recordingEventLocationHref);
+                //then the checkbox
+                replayEvent.recordingEventIsIframe == true ? $('.ui.viewReplayEvent .ui.checkbox input[name=replay_recordingEventIsIframe]').prop('checked', true) : $('.ui.viewReplayEvent .ui.checkbox input[name=replay_recordingEventIsIframe]').prop('checked', false);
+                //show the form 
+                $('.viewDetailedTableReplayEventsFooter').css("display", "table-row");
+            })
+            //the get single object function will reject if object is not in database
+            .catch(error => console.error(error));   
 
     });
 
@@ -474,6 +483,8 @@ function addStartReplayHandler() {
 
                 //THIS IS WHERE THE EVENT MUST BE EXECUTED AND MUTATED
                 //WE MUST DO THIS WITH A CHROME MESSAGE sendMessageGetResponse AND A TIMER FOR FAILS
+                //WE ALSO NEED A METHOD OF HANDLING INCOMING NAVIGATION MESSAGES THAT DO NOT HAPPEN ON A sendMessageGetResponse basis
+                //THE NAVIGATION MESSAGE MUST BE SENT AS A REPLAY EVENT
                 
                 //various mutations of the replay event have to occur here
                 //so the message response.replayExecution.replayEventReplayed needs to be mapped to the replayEvent.replayEventReplayed
