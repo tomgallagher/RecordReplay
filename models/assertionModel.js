@@ -18,8 +18,10 @@ class Assertion extends RecordingEvent {
             assertionTimeSincePrevious: 0,
             //then we need to know if each assertion has passed or failed, started with null then boolean
             assertionEventStatus: null,
-            //then we are going to want to know why the assertion event has passed or failed
-            assertionEventMessages: [],
+            //then we are going to want to have log messages so we can report to the user
+            assertionLogMessages: [],
+            //then we are going to want to know why the assertion event has failed
+            assertionErrorMessages: [],
             //we need to have the kind of assertion, is it Text Content, Present or Content
             assertionType: "Present",
             //we need to have the attribute we are looking to assert on

@@ -2023,16 +2023,44 @@
                                     
                                     </tr>
 
-                                    <tr class="noReplayInformationMessageRow" style="display: none;">
+                                    <tr class="informationMessageRow" style="display: none;">
                                             
-                                        <th colspan="12" class="paginationMenuHolder">
+                                        <th colspan="12">
 
-                                            <div class="ui warning message">
+                                            <div class="ui warning noDetails message" style="display: none;">
                                             
-                                                <div class="header">Replay event has never been run</div>
+                                                <div class="header">Replay event has not run</div>
                                             
-                                                Replay event information appears here after the replay has been run at least once
+                                                Replay event information appears here after the replay has been run
                                         
+                                            </div>
+
+                                            <div class="ui equal width stackable padded grid">
+                                                
+                                                <div class="column">
+
+                                                    <div class="ui info logging message" style="display: none;">
+                                                
+                                                        <div class="header">Event Logging</div>
+                                                        
+                                                        <ul class="logging list"></ul>
+        
+                                                    </div>
+
+                                                </div>
+                                                
+                                                <div class="column">
+
+                                                    <div class="ui negative error message" style="display: none;">
+                                                
+                                                        <div class="header">Error Logging</div>
+                                                                
+                                                        <ul class="error list"></ul>
+                
+                                                    </div>
+
+                                                </div>
+                                                
                                             </div>
                                         
                                         </th>
@@ -2559,7 +2587,7 @@
                                 <div class="ui mini divided horizontal list">
                                     <div class="item">
                                         <div class="content">
-                                            <a class="showReplayEventRow" data-replay-id="0" data-replay-event-id="0" data-tooltip="To show more details of this event" data-position="left center">Show</a>
+                                            <a class="showReplayEventRow" data-replay-id="0" data-replay-event-id="0" data-log-messages="[]" data-error-messages="[]" data-tooltip="To show more details of this event" data-position="left center">Show</a>
                                         </div>    
                                     </div>
                                     <div class="item">

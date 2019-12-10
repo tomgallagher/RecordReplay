@@ -282,7 +282,7 @@ function addNewReplayEventToTable(replay, replayEvent, table) {
     //<td data-label="replay_timestamp_created">Some time</td>
     let replayEventTimeCreatedNode = tempNode.querySelector('td[data-label="replay_timestamp_created"]');
     //same for both
-    replayEventTimeCreatedNode.textContent = replayEvent.recordingTimeSincePrevious == 0 ? new Date(replayEvent.recordingEventCreated).toLocaleString() : `+ ${Math.ceil(replayEvent.recordingTimeSincePrevious / 1000)} sec`
+    replayEventTimeCreatedNode.textContent = replayEvent.recordingTimeSincePrevious == 0 ? new Date(replayEvent.recordingEventCreated).toLocaleString() : `+ ${Math.ceil(replayEvent.recordingTimeSincePrevious / 1000)} sec`;
 
     //<td data-label="replay_timestamp_executed"></td>
     //then we only need to add an executed timestamp if we actually have an execution

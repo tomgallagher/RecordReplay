@@ -164,7 +164,7 @@ function addReplayTableButtonListeners() {
                 //show the section that has the table in one tab and the code in another tab
                 $('.ui.fluid.showReplay.container').css('display', 'block');
                 //hide the information message about being unable to show events that have not been run at least once
-                $('.ui.showReplayReplayEventsTable.table .noReplayInformationMessageRow').hide();
+                $('.ui.showReplayReplayEventsTable.table .informationMessageRow').hide();
                 //add the loading indicator to the table section
                 $('.ui.fluid.showReplay.container .ui.bottom.attached.active.tab.segment ').addClass('loading');
                 //update the checkboxes to have the current replay id                
@@ -195,8 +195,10 @@ function addReplayTableButtonListeners() {
                 //update the buttons to contain the replay id
                 $('.ui.fluid.runReplay.container .ui.positive.button').attr('data-replay-id', replayKey);
                 $('.ui.fluid.runReplay.container .ui.negative.button').attr('data-replay-id', replayKey);
+                //show the start button as enabled
+                $('.ui.runReplay.container .ui.startReplay.positive.button').removeClass('disabled');
                 //hide the information message about being unable to show events that have not been run at least once
-                $('.ui.runReplayReplayEventsTable.table .noReplayInformationMessageRow').hide();
+                $('.ui.runReplayReplayEventsTable.table .informationMessageRow').hide();
                 //empty the table body first
                 $('.ui.runReplayReplayEventsTable.table tbody').empty();
                 //get a reference to the table
@@ -208,8 +210,8 @@ function addReplayTableButtonListeners() {
                 }
                 //add listeners for the clicks in the show replay replay events table
                 addRunReplayReplayEventsTableButtonListeners();
-                //add the listeners for the buttons to start and stop the replay
-                addStartStopReplayButtonListeners();
+                //add the listeners for the button to start the replay
+                addStartReplayHandler();
             })
             //the get single object function will reject if object is not in database
             .catch(error => console.error(error));   
@@ -276,19 +278,11 @@ function addShowReplayReplayEventsTableButtonListeners() {
             .then(replay => {
                 //use either the replay or assertion id to get the replay event
                 const replayEvent = replay.replayEventArray.find(event => event.replayEventId == replayEventKey || event.assertionId == replayEventKey);
-                //then we only display events which have a status otherwise there's no information to show
-                switch(true) {
-                    //first we deal with the case where it is an assertion with a null event status value, indicating it has never been run
-                    case replayEvent.assertionEventStatus == null || replayEvent.replayEventStatus == null:
-                        //show the warning message
-                        $('.ui.showReplayReplayEventsTable.table .noReplayInformationMessageRow').css('display', 'table-row');
-                        break;
-                    //otherwise we show the relevant information by default
-                    default:
+                
+                //TO DO then we show the details of the replay event in a form
 
-                    //TO DO - when we know what kind of event information we want to show in the table footer
-                        
-                }
+
+
             });
 
     });
@@ -345,30 +339,53 @@ function addRunReplayReplayEventsTableButtonListeners() {
 
     $('.ui.runReplayReplayEventsTable.table .showReplayEventRow').on('click', function(){
 
-        //find the replay in the database by id, using data-replay-id from the template
-        const replayKey = $(this).attr("data-replay-id");
-        //do the same with the replay event key
-        const replayEventKey = $(this).attr("data-replay-event-id");
-        //the replay key will be in string format - StorageUtils handles conversion
-        StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
-            //then we have a returned js object with the replay details
-            .then(replay => {
-                //use either the replay or assertion id to get the replay event
-                const replayEvent = replay.replayEventArray.find(event => event.replayEventId == replayEventKey || event.assertionId == replayEventKey);
-                //then we only display events which have a status otherwise there's no information to show
-                switch(true) {
-                    //first we deal with the case where it is an assertion with a null event status value, indicating it has never been run
-                    case replayEvent.assertionEventStatus == null || replayEvent.replayEventStatus == null:
-                        //show the warning message
-                        $('.ui.runReplayReplayEventsTable.table .noReplayInformationMessageRow').css('display', 'table-row');
-                        break;
-                    //otherwise we show the relevant information by default
-                    default:
-
-                    //TO DO - when we know what kind of event information we want to show in the table footer
-                        
+        //here we deal with messages that are appended to the html as the replay is running
+        //we have log messages for all replay events
+        const logMessages = JSON.parse($(this).attr("data-log-messages"));
+        //we will have error messages for some replay events 
+        const errorMessages = JSON.parse($(this).attr("data-error-messages"));
+        //show the information row
+        $('.ui.runReplayReplayEventsTable.table .informationMessageRow').css('display', 'table-row');
+        //then what we show depends on the content of the messages
+        switch(true) {
+            //then if it's empty then we have no messages because the event has been run
+            case logMessages.length == 0 && errorMessages.length == 0:
+                //show the warning message
+                $('.ui.runReplayReplayEventsTable.table .ui.warning.noDetails.message').css('display', 'block');
+                break;
+            case logMessages.length > 0 && errorMessages.length == 0:
+                //empty the lists
+                $('.ui.runReplayReplayEventsTable.table .logging.list').empty();
+                $('.ui.runReplayReplayEventsTable.table .error.list').empty();
+                //hide the error section
+                $('.ui.runReplayReplayEventsTable.table .ui.negative.error.message').css('display', 'none');
+                //loop through the log messages
+                for (let item in logMessages) {
+                    //attach the logging messages to the message list
+                    $('.ui.runReplayReplayEventsTable.table .logging.list').append(`<li>${logMessages[item]}</li>`);
                 }
-            });
+                //show the logging message
+                $('.ui.runReplayReplayEventsTable.table .ui.info.logging.message').css('display', 'block');
+                break;
+            case errorMessages.length > 0:
+                //empty the lists
+                $('.ui.runReplayReplayEventsTable.table .logging.list').empty();
+                $('.ui.runReplayReplayEventsTable.table .error.list').empty();
+                //loop through the log messages
+                for (let item in logMessages) {
+                    //attach the logging messages to the message list
+                    $('.ui.runReplayReplayEventsTable.table .logging.list').append(`<li>${logMessages[item]}</li>`);
+                }
+                //loop through the error messages
+                for (let item in errorMessages) {
+                    //attach the error messages to the message list
+                    $('.ui.runReplayReplayEventsTable.table .error.list').append(`<li>${errorMessages[item]}</li>`);
+                }
+                //show the logging message
+                $('.ui.runReplayReplayEventsTable.table .ui.info.logging.message').css('display', 'block');
+                //show the error message
+                $('.ui.runReplayReplayEventsTable.table .ui.negative.error.message').css('display', 'block');
+        }
 
     });
 
@@ -426,8 +443,180 @@ function addRunReplayReplayEventsTableButtonListeners() {
 
 //MAIN FUNCTION BUTTONS FOR RUNNING THE REPLAY
 
-function addStartStopReplayButtonListeners() {
+function addStartReplayHandler() {
 
+    //REPLAYING EVENTS START HANDLER
+    Rx.Observable.fromEvent(document.querySelector('.ui.runReplay.container .ui.startReplay.positive.button'), 'click')
+        //we only need to take one of these clicks at a time, the listener is refreshed on completion
+        .take(1)
+        //make the changes to the ui to indicate that we have started
+        .do(event => {
+            //show the start replay button as disabled
+            event.target.className += " disabled";
+            //show the replay loader
+            $('.ui.runReplay.container .ui.text.small.replay.loader').addClass('active');  
+        })
+        //get the replay from storage using the data id from the button
+        .switchMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('replays.js', event.target.getAttribute('data-replay-id') , 'replays')))
+        //we want to keep track of how the replay performs without making changes to the replay itself - so we add the mutated replay event array
+        .map(replay => Object.assign({}, replay, { mutatedReplayEventArray: [] }) )
+        //then switch map into an observable of the replays events, adding the replay id
+        .switchMap(replay => 
+            //we want a simple observable from the replay event array, each item has all that we need to instruct the event replayer
+            Rx.Observable.from(replay.replayEventArray)
+                //then we need to make sure that the events happen in the same time frame as the recording
+                .concatMap(replayEvent => Rx.Observable.of(replayEvent).delay(replayEvent.recordingTimeSincePrevious))
+
+                //THIS IS WHERE THE EVENT MUST BE EXECUTED AND MUTATED
+                //WE MUST DO THIS WITH A CHROME MESSAGE sendMessageGetResponse AND A TIMER FOR FAILS
+                
+                //various mutations of the replay event have to occur here
+                //so the message response.replayExecution.replayEventReplayed needs to be mapped to the replayEvent.replayEventReplayed
+                //so the message response.replayExecution.replayEventStatus needs to be mapped to replayEvent.replayEventStatus
+                //so the message response.replayExecution.replayLogMessages needs to be mapped to replayEvent.replayLogMessages
+                //so the message response.replayExecution.replayErrorMessages needs to be mapped to replayEvent.replayErrorMessages
+                
+                //various mutations of the replay assertion event have to occur here
+                //so the message response.replayExecution.replayEventReplayed needs to be mapped to the replayEvent.assertionEventReplayed
+                //so the message response.replayExecution.replayEventStatus needs to be mapped to replayEvent.assertionEventStatus
+                //so the message response.replayExecution.replayLogMessages needs to be mapped to replayEvent.assertionLogMessages
+                //so the message response.replayExecution.replayErrorMessages needs to be mapped to replayEvent.assertionErrorMessages
+
+                //then we need to do slightly more complicated work to calculate the replayTimeSincePrevious
+                //then we need to do slightly more complicated work to calculate the assertionTimeSincePrevious
+
+                //FOR TESTING UI ONLY
+                .map(replayEvent => {
+                    //we need to do different artificual work for the two types of replay events
+                    if (replayEvent.assertionId) {
+
+                        return Object.assign(
+                            {}, 
+                            replayEvent,
+                            {
+                                assertionEventReplayed: Date.now(),
+                                assertionEventStatus: false,
+                                assertionLogMessages: ["Page Activated", "Element Located"],
+                                assertionErrorMessages: ["Element Attribute Not Present", "Element Attribute Content Unmatched"],
+                                assertionTimeSincePrevious: replayEvent.recordingTimeSincePrevious
+                            }
+                        );
+
+                    } else {
+
+                        return Object.assign(
+                            {}, 
+                            replayEvent,
+                            {
+                                replayEventReplayed: Date.now(),
+                                replayEventStatus: true,
+                                replayLogMessages: ["Page Activated", "Element Located", "Event Replayed"],
+                                replayErrorMessages: [],
+                                replayTimeSincePrevious: replayEvent.recordingTimeSincePrevious
+                            }
+                        );
+
+                    }
+                })
+
+                //then we need to update the user interface
+                .do(replayEvent => {
+                    //we need to work out if we are working with replay or assertion id
+                    const targetId = replayEvent.assertionId || replayEvent.replayEventId;
+                    //find the row in the table that corresponds with the replay event id or the assertionid
+                    const $targetTableRow = $(`.ui.runReplayReplayEventsTable.table tr[data-replay-event-id='${targetId}']`);
+                    //we need to work out if we are dealing with replay or assertion success / failure
+                    const status = replayEvent.assertionEventStatus || replayEvent.replayEventStatus;
+                    //then add the class to indicate success or failure
+                    status == true ? $targetTableRow.addClass('positive'): $targetTableRow.addClass('negative');
+                    //then we need to work out if we are working with replay or assertion time since previous
+                    const timeSincePrevious = replayEvent.assertionTimeSincePrevious || replayEvent.replayTimeSincePrevious;
+                    //then we need to work out if we are working with replay or assertion eventReplayed
+                    const timeReplayed = replayEvent.assertionEventReplayed || replayEvent.replayEventReplayed;
+                    //then do some work to create a nice looking time since previous
+                    const timeSincePreviousString = (timeSincePrevious == 0 ? new Date(timeReplayed).toLocaleString() : `+ ${Math.ceil(timeSincePrevious / 1000)} sec`);
+                    //then we need to add this to the relevant table row
+                    $targetTableRow.children('td[data-label="replay_timestamp_executed"]').text(timeSincePreviousString);
+                    //finally we need to work the messages
+                    const logMessages = replayEvent.assertionLogMessages || replayEvent.replayLogMessages;
+                    //add the stringified logmessages array to the show link
+                    $targetTableRow.find('.showReplayEventRow').attr('data-log-messages', JSON.stringify(logMessages)); 
+                    const errorMessages = replayEvent.assertionErrorMessages || replayEvent.replayErrorMessages;
+                    //add the stringified logmessages array to the show link
+                    $targetTableRow.find('.showReplayEventRow').attr('data-error-messages', JSON.stringify(errorMessages)); 
+                }),
+            //then use the projection function to tie the two together
+            (replay, mutatedReplayEvent) => {
+                //then we need to update the array
+                replay.mutatedReplayEventArray.push(mutatedReplayEvent);
+                //then return the replay so it can be updated in the database
+                return replay;
+            }
+        )
+        
+
+        
+        
+        
+
+        
+        //we only want to continue to process replay events until the user interface stop replay button is clicked 
+        .takeUntil(
+            //merge the two sources of potential recording stop commands, either will do
+            Rx.Observable.merge(
+                //obviously the stop button is a source of finalisation
+                Rx.Observable.fromEvent(document.querySelector('.ui.runReplay.container .ui.stopReplay.negative.button'), 'click')
+                    //we need to send the message to the background script here 
+                    .do(event => new RecordReplayMessenger({}).sendMessage({stopReplay: event.target.getAttribute('data-replay-id')})),
+                //less obviously, the user might choose to stop the replay by closing the tab window
+                //background scripts keep an eye on this and will send a message entitled replayTabClosed
+                new RecordReplayMessenger({}).isAsync(false).chromeOnMessageObservable
+                    //we only want to receive replayTabClosed events here
+                    .filter(msgObject => msgObject.request.hasOwnProperty('replayTabClosed'))
+                    //send the response so we don't get the silly errors
+                    .do(msgObject => msgObject.sendResponse({message: `User Interface Received Tab Closed Event`}) )
+            )
+        )
+        .subscribe(
+            mutatedReplay => {
+                //we need to know the progress of the test, which we can assess by seeing how many events have been pushed to the mutated events array
+                const numberMutated = mutatedReplay.mutatedReplayEventArray.length;
+                console.log(`${numberMutated} Replay Events Tested`);
+                //we need to know how many of the replays have failed. which we can do by filtering for false - unperformed replays have a value of null
+                const numberFailed = mutatedReplay.mutatedReplayEventArray.filter(event => event.assertionEventStatus == false || event.replayEventStatus == false).length;
+                console.log(`${numberFailed} Replay Events Failed`);
+                //we need to know how many tests have passed, which we get from the positives
+                const numberPassed = mutatedReplay.mutatedReplayEventArray.filter(event => event.assertionEventStatus == true || event.replayEventStatus == true).length;
+                console.log(`${numberPassed} Replay Events Passed`);
+                //then if the number of events mutated equals the length of the original replayEventsArray we have finished
+                if (numberMutated == mutatedReplay.replayEventArray.length) {
+                    console.log("Replay Complete")
+                    //then we have to update the replay with the time that this replay was performed
+                    mutatedReplay.replayExecuted = Date.now();
+                    //then we add the replay status
+                    mutatedReplay.replayStatus = (numberMutated == numberPassed ? true : false);
+                    //then we add the fail time if required
+                    numberMutated != numberPassed ? mutatedReplay.replayFailTime = Date.now() : null;
+                    //report the final status of the replay
+                    console.log(mutatedReplay);
+                    //then we need to save the updated replay to the database
+                    StorageUtils.updateModelObjectInDatabaseTable('replays.js', mutatedReplay.id, mutatedReplay, 'replays')
+                        .then( () => {
+                            //and update the master replays table at the top to reflect executed time and status
+                            updateReplaysTable();
+                        });
+                }
+            },
+            error => console.error(error),
+            () => {
+                //hide the recording loader
+                $('.ui.text.small.replay.loader').removeClass('active');
+                //show the start button as enabled
+                $('.ui.runReplay.container .ui.startReplay.positive.button').removeClass('disabled');
+                //then we need to add the start recording handler again
+                addStartReplayHandler();
+            }
+        )
 
 
 }
@@ -444,7 +633,7 @@ $(document).ready (function(){
                     break;
                 case 'events':
                     //hide the warning message about events with no information by default
-                    $('.ui.showReplayReplayEventsTable.table .noReplayInformationMessageRow').css('display', 'none');
+                    $('.ui.showReplayReplayEventsTable.table .informationMessageRow').css('display', 'none');
             }
         }
     });

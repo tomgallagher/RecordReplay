@@ -59,4 +59,6 @@ class RecordReplayMessenger {
     //this message is only sent from extension user interface to the background script to open recording tab so we need only one variety
     sendMessage = message => chrome.runtime.sendMessage(message, response => this.logWithContext(`Record/Replay Messenger: Received Response Message: ${response.message}`));
 
+    sendMessageGetResponse = message => new Promise(resolve => chrome.runtime.sendMessage(message, response => resolve(response)));
+
 }
