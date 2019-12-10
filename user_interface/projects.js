@@ -137,6 +137,8 @@ function addProjectTableButtonListeners() {
             .then( () => {
                 //then redraw the table
                 updateProjectsTable();
+                //then run the function that enables the buttons
+                enableVerticalMenuButtonsWhenDataAllows();
             })
             //the delete single object function will reject if object is not in database
             .catch( () => console.error(`Error Deleting Project ${projectKey}`));  

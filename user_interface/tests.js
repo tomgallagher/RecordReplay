@@ -196,6 +196,8 @@ function addTestTableButtonListeners() {
             .then( () => {
                 //then redraw the table
                 updateTestsTable();
+                //then run the function that enables the buttons
+                enableVerticalMenuButtonsWhenDataAllows();
             })
             //the delete single object function will reject if object is not in database
             .catch( () => console.error(`Error Deleting Test ${testKey}`));
