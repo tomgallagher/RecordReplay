@@ -163,6 +163,8 @@ function addReplayTableButtonListeners() {
                 $('.ui.fluid.runReplay.container').css('display', 'none');
                 //show the section that has the table in one tab and the code in another tab
                 $('.ui.fluid.showReplay.container').css('display', 'block');
+                //make sure we always have replay events showing
+                $('.ui.fluid.showReplay.container .ui.top.attached.replay.tabular.menu .item[data-tab="replayEvents"]').click();
                 //hide the form that shows the detail of the replay event
                 $('.viewDetailedTableReplayEventsFooter').css('display', 'none');
                 //add the loading indicator to the table section
@@ -640,18 +642,44 @@ function addStartReplayHandler() {
 $(document).ready (function(){
 
     //activate the tab control
-    $('.ui.top.attached.replay.tabular.menu .item').tab({
+    $('.ui.showReplay.container .ui.top.attached.replay.tabular.menu .item').tab({
         //we need to rehide stuff as tabs are shown
         'onVisible': function(tab) {
             switch (tab) {
-                case 'code':
-                    
+                case 'replayCode':
+                    //init the checkbox, with Javascript checked as default
+                    $('.ui.showReplay.container .ui.radio.checkbox input[value="jest+puppeteer"]').prop('checked', true);
                     break;
-                case 'events':
+                case 'replayEvents':
                     //hide the warning message about events with no information by default
                     $('.ui.showReplayReplayEventsTable.table .informationMessageRow').css('display', 'none');
             }
         }
+    });
+
+    //activate the copy to clipboard button
+    $('.ui.fluid.showReplay.container .ui.copyCodeToClipBoard.icon.button').on('click', function() {
+        //get the text from the text area
+        const textToCopy = $('.ui.showReplay.container .codeOutputTextArea').val();
+        //then paste that into the clipboard
+        navigator.clipboard.writeText(textToCopy);
+    });
+
+    //activate the download code as js file button
+    $('.ui.showReplay.container .ui.downloadCodeToFile.submit.button').on('click', function(event) {
+        //make sure the submit button does not perform its usual reload function
+        event.preventDefault();
+        //get the text from the text area
+        const textToCopy = $('.ui.showReplay.container .codeOutputTextArea').val();
+        //create a blob from the text - maybe set this to "text/plain" when we no longer want to use vscode to check formatting of emitted code
+        var blob = new Blob([textToCopy], {type: "text/javascript"});
+        //create a local temporary url - the object URL can be used as download URL
+        var url = URL.createObjectURL(blob);
+        //then download
+        chrome.downloads.download({
+            url: url,
+            filename: "RecordReplay.js"
+        });
     });
 
 });

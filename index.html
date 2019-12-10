@@ -1212,16 +1212,16 @@
 
                         </table>
 
-                        <div class="ui fluid editRecording container" style="display: none; overflow-x: auto;">
+                        <div class="ui fluid showRecording container" style="display: none; overflow-x: auto;">
 
                             <div class="ui top attached recording tabular menu">
                                 
-                                <div class="active item" data-tab="events">Events</div>
-                                <div class="item" data-tab="code">Code</div>
+                                <div class="active item" data-tab="recordingEvents">Events</div>
+                                <div class="item" data-tab="recordingCode">Code</div>
                               
                             </div>
                               
-                            <div class="ui bottom attached active tab segment" data-tab="events">
+                            <div class="ui bottom attached active tab segment" data-tab="recordingEvents">
                                 
                                 <table class="ui small violet celled single line center aligned compact editRecordingRecordingEventsTable table">
                         
@@ -1376,7 +1376,7 @@
                               
                             </div>
 
-                            <div class="ui bottom attached tab segment" data-tab="code">
+                            <div class="ui bottom attached tab segment" data-tab="recordingCode">
                                 
                                 <div class="ui code form">
 
@@ -1392,7 +1392,7 @@
                                                 
                                             <div class="ui radio checkbox">
                                                 
-                                                <input type="radio" name="outputCodeType" checked="checked" value="javascript" data-recording-id="0">
+                                                <input type="radio" name="outputCodeType" value="javascript" data-recording-id="0">
                                                 
                                                 <label>Javascript</label>
                                                 
@@ -1824,12 +1824,12 @@
 
                             <div class="ui top attached replay tabular menu">
                                 
-                                <div class="active item" data-tab="events">Events</div>
-                                <div class="item" data-tab="code">Code</div>
+                                <div class="active item" data-tab="replayEvents">Events</div>
+                                <div class="item" data-tab="replayCode">Code</div>
                               
                             </div>
                               
-                            <div class="ui bottom attached active tab segment" data-tab="events">
+                            <div class="ui bottom attached active tab segment" data-tab="replayEvents">
                                 
                                 <table class="ui small violet celled single line center aligned compact showReplayReplayEventsTable table">
                         
@@ -1974,7 +1974,7 @@
                               
                             </div>
 
-                            <div class="ui bottom attached tab segment" data-tab="code">
+                            <div class="ui bottom attached tab segment" data-tab="replayCode">
                                 
                                 <div class="ui code form">
 
@@ -1990,7 +1990,7 @@
                                                 
                                             <div class="ui radio checkbox">
                                                 
-                                                <input type="radio" name="outputCodeType" checked="checked" value="javascript" data-recording-id="0">
+                                                <input type="radio" name="outputCodeType" value="jest+puppeteer" data-recording-id="0">
                                                 
                                                 <label>Jest / Puppeteer</label>
                                                 

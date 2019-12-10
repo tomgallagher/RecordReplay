@@ -137,16 +137,18 @@ function addRecordingTableButtonListeners() {
         StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', recordingKey, 'recordings')
             //then we have a returned js object with the recording details
             .then(recording => {
+                //make sure we always have events showing
+                $('.ui.fluid.showRecording.container .ui.top.attached.recording.tabular.menu .item[data-tab="recordingEvents"]').click();
                 //show the section that has the table in one tab and the code in another tab
-                $('.ui.fluid.editRecording.container').css('display', 'block');
+                $('.ui.fluid.showRecording.container').css('display', 'block');
                 //add the loading indicator to the table section
-                $('.ui.fluid.editRecording.container .ui.bottom.attached.active.tab.segment ').addClass('loading');
+                $('.ui.fluid.showRecording.container .ui.bottom.attached.active.tab.segment ').addClass('loading');
                 //update the checkboxes to have the current recording id                
                 $('.ui.code.form .ui.radio.checkbox input[name="outputCodeType"]').attr('data-recording-id', recordingKey);
                 //then update the edit recording events table
                 updateRecordingEventsTableAndCodeText(recording);
                 //then remove the loading indicator
-                $('.ui.fluid.editRecording.container .ui.bottom.attached.active.tab.segment ').removeClass('loading');
+                $('.ui.fluid.showRecording.container .ui.bottom.attached.active.tab.segment ').removeClass('loading');
             })
             //the get single object function will reject if object is not in database
             .catch(error => console.error(error));   
@@ -202,7 +204,7 @@ function addRecordingTableButtonListeners() {
         //close the edit recording form if it's open
         $('.editRecordingFooter').css("display", "none");
         //close the show recording / edit recording recordingEvents table
-        $('.ui.fluid.editRecording.container').css('display', 'none');
+        $('.ui.fluid.showRecording.container').css('display', 'none');
         //delete the recording in the database, using data-recording-id from the template
         const recordingKey = $(this).attr("data-recording-id");
         //the recording key will be in string format - StorageUtils handles conversion
@@ -355,7 +357,7 @@ function updateRecordingEventsTableAndCodeText(recording) {
     }
     //for code, we use Javascript as default
     const toJavascript = new JavascriptTranslator({});
-    $('.ui.fluid.editRecording.container .codeOutputTextArea').val(toJavascript.buildRecordingStringFromEvents(recording.recordingEventArray));
+    $('.ui.fluid.showRecording.container .codeOutputTextArea').val(toJavascript.buildRecordingStringFromEvents(recording.recordingEventArray));
     //add recording events table button listeners
     addRecordingEventTableButtonListeners();
 
@@ -364,34 +366,36 @@ function updateRecordingEventsTableAndCodeText(recording) {
 $(document).ready (function(){
 
     //activate the tab control
-    $('.ui.top.attached.recording.tabular.menu .item').tab({
+    $('.ui.showRecording.container .ui.top.attached.recording.tabular.menu .item').tab({
         //we need to rehide stuff as tabs are shown
         'onVisible': function(tab) {
             switch (tab) {
-                case 'code':
+                case 'recordingCode':
                     //close the event details form if it's open so it's gone when we come back
                     $('.ui.editRecordingRecordingEventsTable .viewDetailedTableEventsFooter').css("display", "none");
+                    //init the checkbox, with Javascript checked as default
+                    $('.ui.showRecording.container .ui.radio.checkbox input[value=javascript]').prop('checked', true);
                     break;
-                case 'events':
+                case 'recordingEvents':
                     //nothing to do here at the moment
             }
         }
     });
 
     //activate the copy to clipboard button
-    $('.ui.copyCodeToClipBoard.icon.button').on('click', function() {
+    $('.ui.showRecording.container .ui.copyCodeToClipBoard.icon.button').on('click', function() {
         //get the text from the text area
-        const textToCopy = $('.codeOutputTextArea').val();
+        const textToCopy = $('.ui.showRecording.container .codeOutputTextArea').val();
         //then paste that into the clipboard
         navigator.clipboard.writeText(textToCopy);
     });
 
     //activate the download code as js file button
-    $('.ui.downloadCodeToFile.submit.button').on('click', function(event) {
+    $('.ui.showRecording.container .ui.downloadCodeToFile.submit.button').on('click', function(event) {
         //make sure the submit button does not perform its usual reload function
         event.preventDefault();
         //get the text from the text area
-        const textToCopy = $('.codeOutputTextArea').val();
+        const textToCopy = $('.ui.showRecording.container .codeOutputTextArea').val();
         //create a blob from the text - maybe set this to "text/plain" when we no longer want to use vscode to check formatting of emitted code
         var blob = new Blob([textToCopy], {type: "text/javascript"});
         //create a local temporary url - the object URL can be used as download URL
@@ -404,7 +408,7 @@ $(document).ready (function(){
     });
 
     //respond to requested code language changes, which requires getting the recording from the server and processing it
-    $('.ui.code.form .ui.radio.checkbox').change(event => {
+    $('.ui.showRecording.container .ui.code.form .ui.radio.checkbox').change(event => {
         //get the recording from the database using the key
         const recordingKey = event.target.getAttribute("data-recording-id");
         //the recording key will be in string format - StorageUtils handles conversion
@@ -414,16 +418,16 @@ $(document).ready (function(){
                 switch(true) {
                     case event.target.value == "javascript":
                         const toJavascript = new JavascriptTranslator({});
-                        $('.codeOutputTextArea').val(toJavascript.buildRecordingStringFromEvents(recording.recordingEventArray));
+                        $('.ui.showRecording.container .codeOutputTextArea').val(toJavascript.buildRecordingStringFromEvents(recording.recordingEventArray));
                         break;
                     case event.target.value == "jquery":
                         const toJquery = new jQueryTranslator({}); 
-                        $('.codeOutputTextArea').val(toJquery.buildRecordingStringFromEvents(recording.recordingEventArray));
+                        $('.ui.showRecording.container .codeOutputTextArea').val(toJquery.buildRecordingStringFromEvents(recording.recordingEventArray));
                         break;
                     case event.target.value == "puppeteer":
                         const toPuppeteer = new PuppeteerTranslator({});
                         //we pass the whole recording to Puppeteer as it needs other values for set up
-                        $('.codeOutputTextArea').val(toPuppeteer.buildRecordingStringFromEvents(recording));
+                        $('.ui.showRecording.container .codeOutputTextArea').val(toPuppeteer.buildRecordingStringFromEvents(recording));
                 }
             });
     });

@@ -126,7 +126,7 @@ $(document).ready (function(){
                 //then hide the form in the footer of the table
                 $('.editRecordingFooter').css("display", "none");
                 //and hide the section with the events and the code
-                $('.ui.fluid.editRecording.container').css('display', 'none');
+                $('.ui.fluid.showRecording.container').css('display', 'none');
                 //and hide the event details form in the table footer
                 $('.viewDetailedTableEventsFooter').css("display", "none");
                 //then we're finished and ready to show the segment
