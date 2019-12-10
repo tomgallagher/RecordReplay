@@ -69,3 +69,23 @@
     border-top: 1px solid transparent !important;
     border-bottom: 1px solid transparent !important;
 }
+/*need an override here for positive replay table row */
+.ui.table td.positive, .ui.table tr.positive {
+    background: #54eb0747!important;
+    color: #2c662d!important;
+}
+/*need an override here for positive inverted replay table row */
+.ui.inverted.table td.positive, .ui.inverted.table tr.positive {
+    background: #54eb0747!important;
+    color: white!important;
+}
+/*need an override here for negative replay table row */
+.ui.table td.negative, .ui.table tr.negative {
+    background: #bc1c1c2b!important;
+    color: #9f3a38!important;
+}
+/*need an override here for negative inverted replay table row */
+.ui.table td.negative, .ui.table tr.negative {
+    background: #bc1c1c2b!important;
+    color: white!important;
+}
