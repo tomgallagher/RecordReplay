@@ -99,7 +99,7 @@ function refreshEditTestProjectDropdown() {
 
 function addTestTablePaginationListener() {
 
-    $('.ui.testsTable .ui.pagination.menu .item').on('mousedown', function(){
+    $('.ui.testsTable .ui.pagination.menu .item').on('click', function(){
 
         //get the current page displayed, set to zero by default
         var currentPage = Number($('.ui.testsTable .ui.pagination.menu').attr('data-current-page'));
@@ -143,7 +143,7 @@ function addTestTablePaginationListener() {
 function addTestTableButtonListeners() {
 
     //edit test button click handler
-    $('.ui.testsTable.table .editTestLink').on('mousedown', function(){
+    $('.ui.testsTable.table .editTestLink').on('click', function(){
         
         //find the test in the database by id, using data-test-id from the template
         const testKey = $(this).attr("data-test-id");
@@ -186,7 +186,7 @@ function addTestTableButtonListeners() {
     });
 
     //delete test button click handler
-    $('.ui.testsTable.table .deleteTestLink').on('mousedown', function(){
+    $('.ui.testsTable.table .deleteTestLink').on('click', function(){
         
         //delete the test in the database, using data-test-id from the template
         const testKey = $(this).attr("data-test-id");

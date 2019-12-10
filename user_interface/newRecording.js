@@ -79,7 +79,7 @@ function updateNewRecordingEventsTable(recording) {
 function addNewRecordingEventButtonListeners() {
 
     //show recording event button click handler
-    $('.ui.newRecordingRecordingEventsTable .showRecordingEventRow').on('mousedown', function(){
+    $('.ui.newRecordingRecordingEventsTable .showRecordingEventRow').on('click', function(){
         //find the recording in the database by id, using data-recording-id from the template
         const recordingKey = $(this).attr("data-recording-id");
         //do the same with the recording event key

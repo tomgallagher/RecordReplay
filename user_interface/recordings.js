@@ -86,7 +86,7 @@ function refreshEditRecordingTestDropdown() {
 
 function addRecordingTablePaginationListener() {
 
-    $('.ui.recordingsTable .ui.pagination.menu .item').on('mousedown', function(){
+    $('.ui.recordingsTable .ui.pagination.menu .item').on('click', function(){
 
         //get the current page displayed, set to zero by default
         var currentPage = Number($('.ui.recordingsTable .ui.pagination.menu').attr('data-current-page'));
@@ -130,7 +130,7 @@ function addRecordingTablePaginationListener() {
 function addRecordingTableButtonListeners() {
 
     //edit recording button click handler
-    $('.showRecordingLink').on('mousedown', function(){
+    $('.showRecordingLink').on('click', function(){
         //find the recording in the database by id, using data-recording-id from the template
         const recordingKey = $(this).attr("data-recording-id");
         //the recording key will be in string format - StorageUtils handles conversion
@@ -154,7 +154,7 @@ function addRecordingTableButtonListeners() {
     });
 
     //edit recording button click handler
-    $('.editRecordingLink').on('mousedown', function(){
+    $('.editRecordingLink').on('click', function(){
         
         //find the recording in the database by id, using data-recording-id from the template
         const recordingKey = $(this).attr("data-recording-id");
@@ -197,7 +197,7 @@ function addRecordingTableButtonListeners() {
     });
 
     //delete recording button click handler
-    $('.deleteRecordingLink').on('mousedown', function(){
+    $('.deleteRecordingLink').on('click', function(){
         
         //close the edit recording form if it's open
         $('.editRecordingFooter').css("display", "none");
@@ -254,7 +254,7 @@ function updateRecordingsTable() {
 function addRecordingEventTableButtonListeners() {
 
     //delete recording event button click handler
-    $('.ui.editRecordingRecordingEventsTable .deleteRecordingEventRow').on('mousedown', function(){
+    $('.ui.editRecordingRecordingEventsTable .deleteRecordingEventRow').on('click', function(){
         //close the event details form if it's open
         $('.ui.editRecordingRecordingEventsTable .viewDetailedTableEventsFooter').css("display", "none");
         //find the recording in the database by id, using data-recording-id from the template
@@ -284,7 +284,7 @@ function addRecordingEventTableButtonListeners() {
     });
 
     //show recording event button click handler
-    $('.ui.editRecordingRecordingEventsTable .showRecordingEventRow').on('mousedown', function(){
+    $('.ui.editRecordingRecordingEventsTable .showRecordingEventRow').on('click', function(){
         //find the recording in the database by id, using data-recording-id from the template
         const recordingKey = $(this).attr("data-recording-id");
         //do the same with the recording event key

@@ -54,7 +54,7 @@ function addProjectTableRowsFragment(projectStorageArray) {
 
 function addProjectTablePaginationListener() {
 
-    $('.ui.projectsTable .ui.pagination.menu .item').on('mousedown', function(){
+    $('.ui.projectsTable .ui.pagination.menu .item').on('click', function(){
 
         //get the current page displayed, set to zero by default
         var currentPage = Number($('.ui.projectsTable .ui.pagination.menu').attr('data-current-page'));
@@ -98,7 +98,7 @@ function addProjectTablePaginationListener() {
 function addProjectTableButtonListeners() {
 
     //edit project button click handler
-    $('.ui.editProject.button:not(submit)').on('mousedown', function(event){
+    $('.ui.editProject.button:not(submit)').on('click', function(event){
         
         //find the project in the database by id, using data-project-id from the template
         const projectKey = $(this).attr("data-project-id");
@@ -127,7 +127,7 @@ function addProjectTableButtonListeners() {
     });
 
     //delete project button click handler
-    $('.ui.deleteProject.button').on('mousedown', function(){
+    $('.ui.deleteProject.button').on('click', function(){
         
         //delete the project in the database, using data-project-id from the template
         const projectKey = $(this).attr("data-project-id");

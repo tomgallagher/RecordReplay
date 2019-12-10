@@ -105,7 +105,7 @@ function addReplayTableRowsFragment(replayStorageArray) {
 
 function addReplayTablePaginationListener() {
 
-    $('.ui.replaysTable .ui.pagination.menu .item').on('mousedown', function(){
+    $('.ui.replaysTable .ui.pagination.menu .item').on('click', function(){
 
         //get the current page displayed, set to zero by default
         var currentPage = Number($('.ui.replaysTable .ui.pagination.menu').attr('data-current-page'));
@@ -151,7 +151,7 @@ function addReplayTablePaginationListener() {
 function addReplayTableButtonListeners() {
 
     //delete replay button click handler
-    $('.ui.replaysTable .showReplayLink').on('mousedown', function(){
+    $('.ui.replaysTable .showReplayLink').on('click', function(){
         
         //find the replay in the database by id, using data-replay-id from the template
         const replayKey = $(this).attr("data-replay-id");
@@ -180,7 +180,7 @@ function addReplayTableButtonListeners() {
     });
 
     //run replay button click handler
-    $('.ui.replaysTable .runReplayLink').on('mousedown', function(){
+    $('.ui.replaysTable .runReplayLink').on('click', function(){
         
         //find the replay in the database by id, using data-replay-id from the template
         const replayKey = $(this).attr("data-replay-id");
@@ -190,8 +190,11 @@ function addReplayTableButtonListeners() {
             .then(replay => {
                 //close the show replay replayEvents table
                 $('.ui.fluid.showReplay.container').css('display', 'none');
-                //show the section that has the table in one tab and the code in another tab
+                //show the run replay section 
                 $('.ui.fluid.runReplay.container').css('display', 'block');
+                //update the buttons to contain the replay id
+                $('.ui.fluid.runReplay.container .ui.positive.button').attr('data-replay-id', replayKey);
+                $('.ui.fluid.runReplay.container .ui.negative.button').attr('data-replay-id', replayKey);
                 //hide the information message about being unable to show events that have not been run at least once
                 $('.ui.runReplayReplayEventsTable.table .noReplayInformationMessageRow').hide();
                 //empty the table body first
@@ -205,6 +208,8 @@ function addReplayTableButtonListeners() {
                 }
                 //add listeners for the clicks in the show replay replay events table
                 addRunReplayReplayEventsTableButtonListeners();
+                //add the listeners for the buttons to start and stop the replay
+                addStartStopReplayButtonListeners();
             })
             //the get single object function will reject if object is not in database
             .catch(error => console.error(error));   
@@ -212,7 +217,7 @@ function addReplayTableButtonListeners() {
     });
 
     //delete replay button click handler
-    $('.ui.replaysTable .deleteReplayLink').on('mousedown', function(){
+    $('.ui.replaysTable .deleteReplayLink').on('click', function(){
         
         //close the show replay replayEvents table
         $('.ui.fluid.showReplay.container').css('display', 'none');
@@ -259,7 +264,7 @@ function updateReplayEventsTableAndCodeText(replay) {
 
 function addShowReplayReplayEventsTableButtonListeners() {
 
-    $('.ui.showReplayReplayEventsTable.table .showReplayEventRow').on('mousedown', function(){
+    $('.ui.showReplayReplayEventsTable.table .showReplayEventRow').on('click', function(){
 
         //find the replay in the database by id, using data-replay-id from the template
         const replayKey = $(this).attr("data-replay-id");
@@ -288,7 +293,7 @@ function addShowReplayReplayEventsTableButtonListeners() {
 
     });
 
-    $('.ui.showReplayReplayEventsTable.table .deleteReplayEventRow').on('mousedown', function(){
+    $('.ui.showReplayReplayEventsTable.table .deleteReplayEventRow').on('click', function(){
 
         //find the replay in the database by id, using data-replay-id from the template
         const replayKey = $(this).attr("data-replay-id");
@@ -338,7 +343,7 @@ function addShowReplayReplayEventsTableButtonListeners() {
 
 function addRunReplayReplayEventsTableButtonListeners() {
 
-    $('.ui.runReplayReplayEventsTable.table .showReplayEventRow').on('mousedown', function(){
+    $('.ui.runReplayReplayEventsTable.table .showReplayEventRow').on('click', function(){
 
         //find the replay in the database by id, using data-replay-id from the template
         const replayKey = $(this).attr("data-replay-id");
@@ -367,7 +372,7 @@ function addRunReplayReplayEventsTableButtonListeners() {
 
     });
 
-    $('.ui.runReplayReplayEventsTable.table .deleteReplayEventRow').on('mousedown', function(){
+    $('.ui.runReplayReplayEventsTable.table .deleteReplayEventRow').on('click', function(){
 
         //find the replay in the database by id, using data-replay-id from the template
         const replayKey = $(this).attr("data-replay-id");
@@ -419,6 +424,13 @@ function addRunReplayReplayEventsTableButtonListeners() {
 
 }
 
+//MAIN FUNCTION BUTTONS FOR RUNNING THE REPLAY
+
+function addStartStopReplayButtonListeners() {
+
+
+
+}
 
 $(document).ready (function(){
 

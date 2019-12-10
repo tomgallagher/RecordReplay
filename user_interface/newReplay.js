@@ -65,7 +65,7 @@ function addAssertableEventsToTable(recording, assertableArray) {
 function addAssertOrDeleteButtonListeners() {
 
     //the assert function needs to open the assertion UI first, then add a processor for assertion checking
-    $('.ui.newReplayAssertionsTable .assertEventLink').on('mousedown', function(){
+    $('.ui.newReplayAssertionsTable .assertEventLink').on('click', function(){
         //first we need to get the recording key
         const recordingKey = $(this).attr("data-recording-id");
         //do the same with the recording event key
@@ -109,7 +109,7 @@ function addAssertOrDeleteButtonListeners() {
 
     //the delete function is essentially the same as in the recordings.js routine
     //we are just deleting an item from the recording
-    $('.ui.newReplayAssertionsTable .deleteEventLink').on('mousedown', function(){
+    $('.ui.newReplayAssertionsTable .deleteEventLink').on('click', function(){
         //find the recording in the database by id, using data-recording-id from the template
         const recordingKey = $(this).attr("data-recording-id");
         //do the same with the recording event key
@@ -151,7 +151,7 @@ function addAssertionCheckboxListener(recording) {
         //then we filter for the event target being checked
         .filter(event => event.target.checked)
         //then we stop subscribing to these events when the end processing observable emits
-        .takeUntil(Rx.Observable.fromEvent(document.querySelector('.ui.newReplayForm .ui.submit.button'), 'mousedown'))
+        .takeUntil(Rx.Observable.fromEvent(document.querySelector('.ui.newReplayForm .ui.submit.button'), 'click'))
         //then we need to map to the event target, we are particularly interested in the data properties of the event target, added by nodebuilder class
         //these properties are available from the dataset object and are:
         //{ assertionAttribute: <str>, assertionType: <str>, assertionAttributeValue: <str>, assertionElementNestedLevel: <int_str>, assertionElementParent: <tag_str>, assertionRecordingEventId: <str> }
@@ -187,7 +187,7 @@ function addAssertionCheckboxListener(recording) {
         //then we filter for the event target being unchecked
         .filter(event => !event.target.checked)
         //then we stop subscribing to these events when the end processing observable emits
-        .takeUntil(Rx.Observable.fromEvent(document.querySelector('.ui.newReplayForm .ui.submit.button'), 'mousedown'))
+        .takeUntil(Rx.Observable.fromEvent(document.querySelector('.ui.newReplayForm .ui.submit.button'), 'click'))
         //then we want to adjust the hidden assertion collection array, to remove the item that has been checked
         .do(event => {
             //get the current value of the assertions we have collected, parsed from the string version
