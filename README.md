@@ -114,13 +114,12 @@ Preparing the production branch, __$ git checkout master__, then make all the ch
 
 Checklist for production ready changes to extension
 
-1) Change manifest.json "name": "__MSG_extTestName__", to "name": "__MSG_extName__"
-2) Change manifest.json content scripts to minified versions
-3) Change manifest.json background scripts to minified versions
-4) Make sure index.html user interface references minified javascript files
-5) Delete all the non-minified Turbo scripts, NOT THIRD PARTY, from scripts folder
-6) Delete all the non-minified Turbo scripts, NOT THIRD PARTY, from background folder
-7) Delete all the non-minified user interface scripts
+1) Change any manifest.json content scripts to minified versions
+2) Change all manifest.json background scripts to minified versions
+3) Make sure index.html user interface references minified javascript files
+4) Delete all the non-minified scripts from models, recordingScripts, replayingScripts, utils folders
+5) Delete all the non-minified scripts from background folder
+6) Delete all the non-minified user interface scripts
 
 The essence here is that the production version should be as lean as possible, so only minified code and no comments
 
