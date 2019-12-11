@@ -100,7 +100,7 @@ var EventRecorder = {
     getCssDomPath: element => { const path = new dompath(element); return path.toCSS(); },
     //then a function that returns the Simmer Css selector
     getCssSimmerPath: element => window.Simmer(element),
-    //then a function that returns xpath of element
+    //then our own basic function that returns xpath of element
     getXPath: element => {
         //get all the nodes in the document by tagname wildcard
         var allNodes = document.getElementsByTagName('*');

@@ -44,8 +44,13 @@ class ReplaySelectorReport {
             return this;
         }
 
+        //then if we pass all the checks, we want to get the xpath of the selected element, so we can check against the listener later
+        this.xpath = this.getXpath(this.selectedItem);
+        //so we have a good selector, lets just get the outerhtml so we can inspect reports
+        this.selectedItem = this.selectedItem.constructor.name;
+
         //then we need to warn on multiple matches, as we can start to have problems with targeting
-        this.selectedItems = [].slice.call(document.querySelectorAll(this.selectorString));
+        this.selectedItems = [].slice.call(document.querySelectorAll(this.selectorString)).map(item => item.constructor.name);
         //we cannot afford to use a selector that generates multiple matches
         if (this.selectedItems.length > 1) {
             //so the CSS selector has found too many elements
@@ -55,51 +60,49 @@ class ReplaySelectorReport {
             //this is an early exit as there's nothing more to do
             return this;
         }
-
-        //then if we pass all the checks, we want to get the xpath of the selected element, so we can check against the listener later
-        this.xpath = this.getXpath();
+        
         //then we report good finish
         this.logMessages.push(`${this.selectorKey} Found in Document`);
 
     }
 
-    //function for defining xpath of element, arrow syntax means no need to bind(this)
-    getXpath = () => {
+    //function for defining xpath of element
+    getXpath = element => {
         //get all the nodes in the document by tagname wildcard
         var allNodes = document.getElementsByTagName('*');
         //create the array to hold the different bits of the xpath, execute the code block if we have an element and the element is an element node, 
         //then jump up to parent when finished with each node   
-        for (var segs = []; this.selectedItem && this.selectedItem.nodeType == 1; this.selectedItem = this.selectedItem.parentNode) {
+        for (var segs = []; element && element.nodeType == 1; element = element.parentNode) {
             //check to see if the element has an id because this is then going to be fast
-            if (this.selectedItem.hasAttribute('id')) {
+            if (element.hasAttribute('id')) {
                 //set the marker for whether the id is unique in the page
                 var uniqueIdCount = 0;
                 //search through all the nodes 
                 for (var n=0; n < allNodes.length; n++) {
                     //if we have a duplicate id, this is not going to work so bump the marker
-                    if (allNodes[n].hasAttribute('id') && allNodes[n].id == this.selectedItem.id) uniqueIdCount++;
+                    if (allNodes[n].hasAttribute('id') && allNodes[n].id == element.id) uniqueIdCount++;
                     //then if we do not have a unique id we break out of the loop
                     if (uniqueIdCount > 1) break;
                 }
                 //the marker holds the value
                 if (uniqueIdCount == 1) {
                     //if we only have one element with that id we can create the xpath now so we push the start path and then id into the array at the beginning
-                    segs.unshift("//*[@id='" + this.selectedItem.getAttribute('id') + "']");
+                    segs.unshift("//*[@id='" + element.getAttribute('id') + "']");
                     //then we're done and we send it back to the caller
                     return segs.join('/');
                 } else {
                     //otherwise we save the tagname and the id and continue on as we are going to need more qualifiers for a unqiue xpath
-                    segs.unshift(element.localName.toLowerCase() + '[@id="' + this.selectedItem.getAttribute('id') + '"]');
+                    segs.unshift(element.localName.toLowerCase() + '[@id="' + element.getAttribute('id') + '"]');
                 }
             } else {
                 //with no id, we need to do something different
                 //we need to identify its place amongst siblings - is it the first list item or the third
-                for (var i = 1, sib = this.selectedItem.previousSibling; sib; sib = sib.previousSibling) {
+                for (var i = 1, sib = element.previousSibling; sib; sib = sib.previousSibling) {
                     //this counts back until we have no previous sibling
-                    if (sib.localName == this.selectedItem.localName)  i++; 
+                    if (sib.localName == element.localName)  i++; 
                 }
                 //just push the local name into the array along with the position
-                segs.unshift(this.selectedItem.localName.toLowerCase() + '[' + i + ']');
+                segs.unshift(element.localName.toLowerCase() + '[' + i + ']');
             }
          }
          //then once we've worked our way up to an element with id or we are at the element with no parentNode - the html - we return all the strings joined with a backslash

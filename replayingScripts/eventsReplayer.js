@@ -1,5 +1,3 @@
-
-
 /*
 
 USER EVENTS
@@ -119,6 +117,7 @@ class AssertionReplay {
 }
 
 var EventReplayer = {
+    messengerService: new RecordReplayMessenger({}).isAsync(true),
     logWithContext: message => {
         if (EventReplayer.contextIsIframe()) {
             console.log(`%cEvent Replayer: ${window.location.origin}: ${message}`, 'color: green');
@@ -211,9 +210,21 @@ EventReplayer.startReplayingEvents = () => {
         })
         //this adds the delay - ONLY FOR TESTING - we must do this in the user interface as it sends messages to many different windows
         .concatMap(replayEvent => Rx.Observable.of(replayEvent).delay(replayEvent.recordingTimeSincePrevious))
-        
-        //WHEN WE ARE MESSAGING WE HAVE TO CREATE A REPLAY EVENT FROM THE INCOMING messageObject.request.replayEvent AND ADD the messageObject.sendResponse TO THE REPLAY EVENT
+        //ONLY FOR TESTING - then we subscribe and send the message to the background script for relaying
+        .subscribe(replayEvent => EventReplayer.messengerService.sendMessage({replayEvent: replayEvent}));
 
+        //WHEN WE ARE MESSAGING WE HAVE TO CREATE A REPLAY EVENT FROM THE INCOMING messageObject.request.replayEvent AND ADD the messageObject.sendResponse TO THE REPLAY EVENT
+    
+    EventReplayer.messengerService.chromeOnMessageObservable
+        //map the message object to the replay event only and attach the sendReponse
+        .map(messageObject => {
+            //we need to extract the replay event coming in from the message object
+            let replayEvent = messageObject.request.replayEvent;
+            //we need to attach the sendResponse callback to the replay event
+            replayEvent.sendResponse = messageObject.sendResponse;
+            //then return the replay event
+            return replayEvent;
+        })
         //then we operate a filter so we only receive origin 'User' mouse or keyboard events and 'Replay' assertion events
         .filter(replayEvent => replayEvent.recordingEventOrigin == 'User' || replayEvent.recordingEventOrigin == 'Replay')
         //then we start operating our replay logic - we start by mapping the event to our individual event type handlers
