@@ -4,7 +4,7 @@ var EventRecorderEvents = {
     //The oninput event occurs when an element gets user input - similar to the onchange event. The difference is that the oninput event 
     //occurs immediately after the value of an element has changed, while onchange occurs when the element loses focus, after the content has been changed. 
     //The oninvalid event occurs when a submittable <input> element is invalid.
-    inputEvents: ["search", "change", "input", "invalid"],
+    inputEvents: ["search", "change", "input", "invalid", "submit"],
     //The onchange event occurs when a user changes the selected option of a <select> element
     selectEvents: ["change"],
     //blur and focus events
@@ -32,8 +32,8 @@ var EventRecorderEvents = {
     mouseActionEvents: [
         "click", "contextmenu", "dblclick", 
         "mousedown", "mouseup", "mousewheel", 
-        "pointerdown", "pointerup", "submit",
-        "toggle", "wheel", "auxclick", "drag", 
+        "pointerdown", "pointerup", "toggle", 
+        "wheel", "auxclick", "drag", 
         "dragend", "dragenter", "dragleave", 
         "dragover", "dragstart", "drop"
     ],
@@ -64,7 +64,7 @@ var EventRecorder = {
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(document, eventName)),
 
-    //SELECT INPUT EVENTS FOR CONVERSION TO OBSERVABLEs
+    //SELECT INPUT EVENTS FOR CONVERSION TO OBSERVABLES
     inputLocationEventObservables: EventRecorderEvents.inputEvents
         //then we are only interests in certain types of input events
         .filter(item => item == "input")
@@ -75,7 +75,7 @@ var EventRecorder = {
         .filter(item => item == "change")
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(window, eventName)),
-    
+
     //SELECT CERTAIN EVENTS FOR CONVERSION TO OBSERVABLEs
     attentionActionEventObservables: EventRecorderEvents.attentionEvents
         //then we are interested in only certain types of attention events
@@ -441,7 +441,6 @@ EventRecorder.startRecordingEvents = () => {
             });
             return newEvent;
         });
-    
     
     //KEYBOARD EVENTS
     EventRecorder.keyboardObservable = Rx.Observable.merge(...EventRecorder.keyBoardActionEventObservables)

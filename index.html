@@ -37,12 +37,17 @@
         <script src="user_interface/replays.js"></script>
         <script src="user_interface/newReplay.js"></script>
 
-        <!-- FOR RECORDING EVENT TESTING ONLY -->
+        <!-- FOR RECORDING AND REPLAYING EVENT TESTING ONLY -->
         <script src="recordingScripts/cssSelectorGenerator.js"></script>
         <script src="recordingScripts/dompath.js"></script>
         <script src="recordingScripts/simmer.js"></script>
         <script src="utils/keyCodeDictionary.js"></script>
         <script src="recordingScripts/eventsRecorder.js"></script>
+
+        <script src="replayingScripts/replaySelectorReport.js"></script>
+        <script src="replayingScripts/mouseReplay.js"></script>
+        <script src="replayingScripts/textSelectReplay.js"></script>
+        <script src="replayingScripts/inputReplay.js"></script>
         <script src="replayingScripts/eventsReplayer.js"></script>
 
     </head>
@@ -2379,17 +2384,31 @@
 
                             <div class="item">
                               
-                                    <div class="content">
-                                        
-                                        <i class="angle right icon"></i>
-    
-                                        When you start your first recording, you may notice that a popup at the top of the recorded page, alerting you that Record/Replay uses 
-                                        the <strong>Chrome Devtools Protocol</strong>. If this bothers you, you can paste 'chrome://flags/#silent-debugger-extension-api' into your
-                                        browser address bar, click enable and then relaunch. The message will not appear again.
-                                  
-                                    </div>
+                                <div class="content">
+                                    
+                                    <i class="angle right icon"></i>
+
+                                    When you start your first recording, you may notice that a popup at the top of the recorded page, alerting you that Record/Replay uses 
+                                    the <strong>Chrome Devtools Protocol</strong>. If this bothers you, you can paste 'chrome://flags/#silent-debugger-extension-api' into your
+                                    browser address bar, click enable and then relaunch. The message will not appear again.
                                 
                                 </div>
+                            
+                            </div>
+
+                            <div class="item">
+                              
+                                <div class="content">
+                                    
+                                    <i class="angle right icon"></i>
+
+                                    Due to sensible Chrome security restrictions on keyboard hijacking, it is hard to replay non-character key presses. Typing text into input 
+                                    boxes is fine but pressing enter to submit a form cannot currently be replayed reliably. <strong>If in doubt, use the mouse</strong> to 
+                                    perform any actions you want to test. 
+                                
+                                </div>
+                            
+                            </div>
 
                             <div class="item">
                               
