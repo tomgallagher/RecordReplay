@@ -1,6 +1,5 @@
 class TextSelectReplay {
 
-    //incoming replayEvent should have message.SendResponse({}) attached
     constructor(replayEvent) {
 
         //so there are generic properties that need to be imported into all specific replay classes from the replay event

@@ -26,12 +26,11 @@ class RecordingEvent {
             //information specific to input events
             recordingEventInputType: 'N/A',
             recordingEventInputValue: 'N/A',
-            //information specific to keyboard events
+            //information specific to keyboard events, including the dispatch key event required for Chrome Devtools Protocol
             recordingEventKey: 'N/A',
             recordingEventCode: 'N/A',
-            recordingEventAltKey: false,
-            recordingEventShiftKey: false,
-            recordingEventCtrlKey: false,
+            recordingEventKeyCode: 0,
+            recordingEventDispatchKeyEvent: {},
             //information specific to text select events
             recordingEventTextSelectTextContent: 'N/A',
             recordingEventTextSelectTargetAsJSON: {},

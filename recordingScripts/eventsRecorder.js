@@ -446,18 +446,15 @@ EventRecorder.startRecordingEvents = () => {
     EventRecorder.keyboardObservable = Rx.Observable.merge(...EventRecorder.keyBoardActionEventObservables)
         //then we only want the keyup event - we have chosen this as we want keyboard enter and tab events after any input events have registered, which happens on keydown
         .filter(event => event.type == "keyup")
-        //then we want to make sure that we do not get the modifier keys - the state of 
+        //then we want to make sure that we do not get the modifier keys - the state of these is collected as part of the keystroke
         .filter(event => event.key != "Shift" && event.key != "Alt" && event.key != "Control")
-        //this ensures that we only get keyboard events that are not typing events - we are assuming here that all typing input events are handled by input collectors
-        .filter(event => EventRecorder.keyCodeDictionary[event.keyCode].value == null)
         //then we want to get the current focus event locator, starting with an empty object so we can test to see if focus event has emitted
         .withLatestFrom(EventRecorder.FocusLocator.startWith({}))
         //then combine the two observables properties to create our RecordingEvent object
         .map( ([actionEvent, focusEvent]) => {
-            //if we are following keyboard events, there is no point in recording such events on INPUT elements
-            //we cannot recreate these events due to browser security restrictions
-            if (actionEvent.target instanceof HTMLInputElement) {
-                console.log(`Not Recording Keyboard ${actionEvent.key} Event on HTMLInputElement`);
+            //there is no point in recording text typing in INPUT elements - we use the input change event for that
+            if (EventRecorder.keyCodeDictionary[actionEvent.keyCode].value != null && actionEvent.target instanceof HTMLInputElement) {
+                console.log(`Keyboard: Not Recording Typed "${actionEvent.key}" on HTMLInputElement`);
                 //just return an empty observable as a placeholder which we can easily filter out
                 return false;
             }
@@ -477,9 +474,8 @@ EventRecorder.startRecordingEvents = () => {
                 //information specific to keyboard events
                 recordingEventKey: actionEvent.key,
                 recordingEventCode: actionEvent.code,
-                recordingEventAltKey: actionEvent.altKey,
-                recordingEventShiftKey: actionEvent.shiftKey,
-                recordingEventCtrlKey: actionEvent.ctrlKey
+                recordingEventKeyCode: actionEvent.keyCode,
+                recordingEventDispatchKeyEvent: EventRecorder.keyCodeDictionary.generateDispatchKeyEvent(actionEvent)
             });
             return newEvent;
         })
