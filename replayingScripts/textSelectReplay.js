@@ -75,6 +75,8 @@ class TextSelectReplay {
             //select the first report that has provided a positive response
             this.chosenSelectorReport = this.replaySelectorReports[0];
         } else {
+            //then we need to push an error message to the logs
+            this.replayErrorMessages.push(`No Valid Target On Page`);
             //otherwise we report the time of the fail
             this.replayEventReplayed = Date.now();
             //and we set the status to false to indicate a failed replay

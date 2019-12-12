@@ -1,4 +1,4 @@
-class MouseReplay {
+class ScrollReplay {
 
     constructor(replayEvent) {
 
@@ -21,6 +21,10 @@ class MouseReplay {
         this.xpath = replayEvent.recordingEventXPath;
         //then we need to keep the messaging send response function attached to the class as the testing process relies on sending responses back to user interface
         this.sendResponse = replayEvent.sendResponse || null;
+
+        //then special properties for scroll checking
+        this.scrollX = replayEvent.recordingEventXPosition;
+        this.scrollY = replayEvent.recordingEventYPosition;
 
         //then there are generic state properties that we need for reporting back to the user interface
         //log messages are displayed to the user in the case of success or failure
@@ -45,6 +49,7 @@ class MouseReplay {
             //set the property
             this.replayEventStatus = false;
             //then just return this early as we have no need to so any further work
+            //we also offer no report via return message from non-matching locations
             return this;
         }
 
@@ -59,11 +64,11 @@ class MouseReplay {
         
         //see if we have any invalid selector reports
         this.failedReplaySelectorReports = this.replaySelectorReports.filter(report => report.invalidSelector);
-        //if we have invalid selectors then we need to know
+        //if we have invalid selectors then we need to know by pushing messages to the error logs
         if (this.failedReplaySelectorReports.length > 0) this.replayErrorMessages.push(this.failedReplaySelectorReports.map(report => report.warningMessages).join(', '));
         //see if we have any valid selector reports, and if we do, we save as the definitive selector reports 
         this.replaySelectorReports = this.replaySelectorReports.filter(report => !report.invalidSelector);
-        //if we have valid selectors then we need to know about which ones remain valid
+        //if we have valid selectors then we need to know about which ones remain valid by pushing to the normal logs
         if (this.replaySelectorReports.length > 0) this.replayLogMessages.push(this.replaySelectorReports.map(report => report.logMessages).join(', '));
 
         //then we need to have an outcome
@@ -90,67 +95,27 @@ class MouseReplay {
         }
 
     }
-    
-    //all of the replayers must have an action function that will instantiate the replay - make it happen on the page
-    actionFunction = () => {
 
+     //all of the replayers must have an action function that will instantiate the replay - make it happen on the page
+     actionFunction = () => {
         //here we need a very slight delay to ensure that our listener is in place before the action function executes
         return new Promise(resolve => {
             //we use setTimeout and resolve to introduce the delay
             setTimeout( () => {
-                //set up our event
-                var event;
-                //for the mouse we have a variety of types that we need to handle when dispatching events
-                switch(this.actionType) {
-                    case 'click':
-                    case 'contextmenu':
-                    case 'dblclick':
-                        //we can handle all the normal click functions with the same bit of code, first creating the event
-                        event = new MouseEvent(this.actionType, {view: window, bubbles: true, cancelable: false}); 
-                        //then dispatching the event
-                        document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( event );
-                        //then report to the log messages array
-                        this.replayLogMessages.push(`${this.actionType.toUpperCase()} Event Dispatched`);
-                        break;
-                    case 'hover':
-                         //we can handle all the normal click functions with the same bit of code, first creating the event
-                         event = new MouseEvent('mouseenter', {view: window, bubbles: true, cancelable: false}); 
-                         //then dispatching the event
-                         document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( event );
-                         //then report to the log messages array
-                         this.replayLogMessages.push(`${this.actionType.toUpperCase()} Event Dispatched`);
-                        break;
-                    case 'recaptcha':
-                         //we can handle all the normal click functions with the same bit of code, first creating the event
-                         event = new MouseEvent('click', {view: window, bubbles: true, cancelable: false}); 
-                         //then dispatching the event
-                         document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( event );
-                         //then report to the log messages array
-                         this.replayLogMessages.push(`${this.actionType.toUpperCase()} Event Dispatched`);
-                        break;
-                }
-                //then we just return true for mouse events - this boolean is only activated as a false marker by assertion events
+
+                //at the moment we are only collecting scrolls on the main document, so there is no need to find the element
+                document.documentElement.scrollTo({left: this.scrollX, top: this.scrollY, behavior: 'smooth'}); 
+                //then report to the log messages array
+                this.replayLogMessages.push(`${this.actionType.toUpperCase()} Event Dispatched`);
+                //then the scroll can be of indeterminate length and time, so there's no point in finessing it
                 resolve(true);
-            //we have the delay at 5 milliseconds but it could be longer
+
             }, 5);
         });
 
     }
-
-    returnPlayBackObservable = () => {
-
-        switch(this.actionType) {
-            case 'click':
-            case 'contextmenu':
-            case 'dblclick':
-                //we can handle all the normal click functions with the same bit of code, 
-                return Rx.Observable.fromEvent(document.querySelector(this.chosenSelectorReport.selectorString), this.actionType)
-            case 'hover':
-                return Rx.Observable.fromEvent(document.querySelector(this.chosenSelectorReport.selectorString), 'mouseenter')
-            case 'recaptcha':
-                return Rx.Observable.fromEvent(document.querySelector(this.chosenSelectorReport.selectorString), 'click')
-        }
-
-    }
+    
+    //at the moment we are only collecting scrolls on the main document, so there is no need to find the element
+    returnPlayBackObservable = () => Rx.Observable.fromEvent(document, "scroll")
 
 }

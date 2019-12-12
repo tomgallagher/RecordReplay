@@ -68,17 +68,6 @@ class MatchingUrlReport {
 
 }
 
-class ScrollReplay {
-
-    //incoming replayEvent should have message.SendResponse({}) attached
-    constructor(replayEvent) {
-
-
-
-    }
-    
-
-}
 
 class AssertionReplay {
 
@@ -253,10 +242,13 @@ EventReplayer.startReplayingEvents = () => {
                     //and then we should return the typeReplayer - it will be filtered out
                     return typeReplayer;
                 }
-                //otherwise we need to get the xpath of the event target
-                const eventTargetXpath = EventReplayer.getXPath(event.target);
+                //to check the event target we need to do things slightly differently for scrolling events that happen on the whole document
+                let eventTarget = (event.target instanceof HTMLDocument ? event.target.scrollingElement : event.target);
+                //then we get the xpath
+                const eventTargetXpath = EventReplayer.getXPath(eventTarget);
                 //then we need to check the equivalence of the xpath
                 if (typeReplayer.chosenSelectorReport.xpath !== eventTargetXpath) {
+
                     // we report the time of the fail
                     typeReplayer.replayEventReplayed = Date.now();
                     //and we set the status to false to indicate a failed replay

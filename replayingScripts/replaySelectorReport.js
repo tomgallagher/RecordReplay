@@ -25,12 +25,12 @@ class ReplaySelectorReport {
             //this is an early exit as there's nothing more to do
             return this;
         }
-        //if the item is not the same html element we need to return
-        if (this.selectedItem.constructor.name != this.targetHtmlElement) {
+        //if the item is not the same html element we need to return, unless we are dealing with the HTML document, as CSS selectors return constructor name as HTMLHtmlElement
+        if (this.targetHtmlElement != "HTMLDocument" && this.selectedItem.constructor.name != this.targetHtmlElement) {
             //so the CSS selector has found an element but it does not match by constrcutor name
             this.invalidSelector = true;
             //then give some feedback
-            this.warningMessages.push(`${this.selectorKey} Unmatched Constructor Name`);
+            this.warningMessages.push(`${this.selectorKey} Unmatched Constructor Name ${this.selectedItem.constructor.name}`);
             //this is an early exit as there's nothing more to do
             return this;
         }
@@ -39,7 +39,7 @@ class ReplaySelectorReport {
             //so the CSS selector has found an element but it does not match by tag name
             this.invalidSelector = true;
             //then give some feedback
-            this.warningMessages.push(`${this.selectorKey} Unmatched Tag Name`);
+            this.warningMessages.push(`${this.selectorKey} Unmatched Tag Name ${this.selectedItem.tagName}`);
             //this is an early exit as there's nothing more to do
             return this;
         }
