@@ -234,7 +234,7 @@ EventReplayer.startReplayingEvents = () => {
         //so we can now action our successful events
         .subscribe(
             typeReplayer => {
-                EventReplayer.logWithContext(typeReplayer)
+                console.log(typeReplayer);
                 //then send the response if we have the facility
                 if (typeReplayer.sendResponse != null) {
                     //first we make a clone of this 
