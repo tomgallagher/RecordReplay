@@ -68,27 +68,6 @@ class MatchingUrlReport {
 
 }
 
-
-class AssertionReplay {
-
-    //incoming replayEvent should have message.SendResponse({}) attached
-    constructor(replayEvent) {
-        //as an assertion event, this has special properties
-
-
-    }
-    
-    /*
-    Then we need to check either
-
-    1) PRESENT: Has attribute
-    2) CONTENT: Has Attribute, Get attribute
-    3) TEXT CONTENT: Has text childnodes, get textContent
-
-    */
-
-}
-
 var EventReplayer = {
     messengerService: new RecordReplayMessenger({}).isAsync(true),
     logWithContext: message => {
@@ -103,7 +82,6 @@ var EventReplayer = {
             case 'TextSelect': return new TextSelectReplay(replayEvent)
             case 'Mouse': return new MouseReplay(replayEvent)
             case 'Input': return new InputReplay(replayEvent)
-            case 'Keyboard': return new KeyboardReplay(replayEvent)
             case 'Scroll': return new ScrollReplay(replayEvent)
             case 'Assertion': return new AssertionReplay(replayEvent)
         }

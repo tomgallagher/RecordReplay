@@ -106,7 +106,7 @@ class TextSelectReplay {
                 const selectEvent = new Event("selectstart", {view: window, bubbles: true, cancelable: false}); 
                 //then dispatching the event
                 document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( selectEvent );
-                //then we depend on a mouseup event at the same location for our event recorder
+                //then we depend on a mouseup event at the same location for our event recorder WHEN TESTING
                 const mouseEvent = new MouseEvent("mouseup", {view: window, bubbles: true, cancelable: false}); 
                 //then dispatching the event
                 document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( mouseEvent );
