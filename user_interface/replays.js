@@ -266,6 +266,10 @@ function updateReplayEventsTableAndCodeText(replay) {
 
     //TO DO - CODE FOR JEST AND PUPPETEER
 
+    //make sure the code text area is the same height as the table, to indicate the number of events
+    $('.ui.fluid.showReplay.container .codeOutputTextArea').css("max-height", "none");
+    $('.ui.fluid.showReplay.container .codeOutputTextArea').height($('.ui.fluid.showReplay.container .showReplayReplayEventsTable ').height());
+
     //TO DO - UPDATE THE REPORTS SECTION USING THE TEMPLATES
 
 }

@@ -357,6 +357,10 @@ function updateRecordingEventsTableAndCodeText(recording) {
         //then borrow the function from newRecording.js
         addNewRecordingEventToTable(recording, recording.recordingEventArray[recordingEvent], table);
     }
+    //make sure the code text area is the same height as the table, to indicate the number of events
+    $('.ui.fluid.showRecording.container .codeOutputTextArea').css("max-height", "none");
+    $('.ui.fluid.showRecording.container .codeOutputTextArea').height($('.ui.fluid.showRecording.container .editRecordingRecordingEventsTable ').height());
+
     //for code, we use Javascript as default
     const toJavascript = new JavascriptTranslator({});
     $('.ui.fluid.showRecording.container .codeOutputTextArea').val(toJavascript.buildRecordingStringFromEvents(recording.recordingEventArray));

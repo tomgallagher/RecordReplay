@@ -85,11 +85,14 @@ class PuppeteerTranslator {
     //Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
     sendSpecialKey = keyDescriptor => `await page.keyboard.press('${keyDescriptor}');` 
 
-    scrollTo = (xPosition, yPosition) => `await page.evaluate( () => { window.scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' }); });`
+    scrollTo = (xPosition, yPosition) => `await page.evaluate( () => { document.documentElement.scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' }); });`
 
     focus = selector => `await page.focus('${selector}');`
 
     hover = selector => `await page.hover('${selector}');` 
+
+    textSelect = (selector, index) => `await page.evaluate( () => { const event${index} = new Event("selectstart", {view: window, bubbles: true, cancelable: false}); document.querySelector('${selector}').dispatchEvent( event${index} ); });`
+
 
     //ASSERTIONS HELPERS, we need to have the index of each item in the Rx.js flow so we can have unique assertions
 
@@ -132,6 +135,8 @@ class PuppeteerTranslator {
                 }
             case "Scroll":
                 return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
+            case "TextSelect":
+                return this.textSelect(this.getMostValidSelector(recordingEvent), index);
             case "Keyboard": 
                 return this.sendSpecialKey(recordingEvent.recordingEventKey);
             case 'Input':
@@ -140,7 +145,7 @@ class PuppeteerTranslator {
                 return `${this.tabIndex(index)}//Page navigate to ${recordingEvent.recordingEventLocationHref}`; 
             default:
                 console.log(`No Mapping for Action Type ${recordingEvent.recordingEventAction}`);
-                return `${this.tabIndex(index)}//No Mapping Type for Action ${recordingEvent.recordingEventAction}`; 
+                return `${this.tabIndex(index)}//No Mapping Type in Puppeteer for Action ${recordingEvent.recordingEventAction}`; 
         }
     }
 

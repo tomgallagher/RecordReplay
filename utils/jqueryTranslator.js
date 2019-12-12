@@ -61,6 +61,7 @@ class jQueryTranslator {
 
     hover = selector => `$('${selector}').mouseenter();`
 
+    textSelect = selector => `$('${selector}').select();`
 
     //ASSERTIONS HELPERS
     getTitle = (selector='document', index) => selector == 'document' ? `const title${index} = $(document).attr('title');` : `const title${index} = $('${selector}').attr('title');`
@@ -106,6 +107,8 @@ class jQueryTranslator {
                 }
             case "Scroll":
                 return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
+            case "TextSelect":
+                return this.textSelect(this.getMostValidSelector(recordingEvent));
             case "Keyboard": 
                 return sendSpecialKey(recordingEvent, index);
             case 'Input':
@@ -114,7 +117,7 @@ class jQueryTranslator {
                 return `${this.tabIndex(index)}//Page navigate to ${recordingEvent.recordingEventLocationHref}`; 
             default:
                 console.log(`No Mapping for Action Type ${recordingEvent.recordingEventAction}`);
-                return `${this.tabIndex(index)}//No Mapping Type for Action ${recordingEvent.recordingEventAction}`; 
+                return `${this.tabIndex(index)}//No Mapping Type in jQuery for Action ${recordingEvent.recordingEventAction}`; 
         }
     }
 

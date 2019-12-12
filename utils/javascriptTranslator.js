@@ -48,11 +48,13 @@ class JavascriptTranslator {
     
     sendSpecialKey = (recordingEvent, index) => `const event${index} = new KeyboardEvent("keypress", { key : '${recordingEvent.recordingEventKey}', code : '${recordingEvent.recordingEventKey}', ctrlKey: ${recordingEvent.recordingEventCtrlKey}, shiftKey: ${recordingEvent.recordingEventShiftKey}, altKey: ${recordingEvent.recordingEventAltKey} }); document.dispatchEvent( event${index} );`
 
-    scrollTo = (xPosition, yPosition) => `window.scrollTo({left: ${xPosition}, top: ${yPosition}, behavior: 'smooth'}); `
+    scrollTo = (xPosition, yPosition) => `document.documentElement.scrollTo({left: ${xPosition}, top: ${yPosition}, behavior: 'smooth'}); `
 
     focus = (selector) => `document.querySelector('${selector}').focus({ preventScroll: false });`
 
     hover = (selector, index) => `const event${index} = new MouseEvent('mouseover', {view: window, bubbles: true, cancelable: false}); document.querySelector('${selector}').dispatchEvent( event${index} );`
+
+    textSelect = (selector, index) => `const event${index} = new Event("selectstart", {view: window, bubbles: true, cancelable: false}); document.querySelector('${selector}').dispatchEvent( event${index} );`
 
     //ASSERTIONS HELPERS
 
@@ -97,6 +99,8 @@ class JavascriptTranslator {
                 }
             case "Scroll":
                 return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
+            case "TextSelect":
+                return this.textSelect(this.getMostValidSelector(recordingEvent), index);
             case "Keyboard": 
                 return this.sendSpecialKey(recordingEvent, index);
             case 'Input':
@@ -105,7 +109,7 @@ class JavascriptTranslator {
                 return `${this.tabIndex(index)}//Page navigate to ${recordingEvent.recordingEventLocationHref}`; 
             default:
                 console.log(`No Mapping for Action Type ${recordingEvent.recordingEventAction}`);
-                return `${this.tabIndex(index)}//No Mapping Type for Action ${recordingEvent.recordingEventAction}`; 
+                return `${this.tabIndex(index)}//No Mapping Type in Javascript for Action ${recordingEvent.recordingEventAction}`; 
         }
     }
 
