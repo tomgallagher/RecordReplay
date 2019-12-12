@@ -5,7 +5,7 @@ class ScrollReplay {
         //so there are generic properties that need to be imported into all specific replay classes from the replay event
         //we need to have the replay id so the content scripts and user interface can be sure they are communicating about the same event
         this.replayId = replayEvent.replayEventId;
-        //the replay event action is required for reporting to the console
+        //the replay event action is required for reporting to the user
         this.action = replayEvent.recordingEventAction;
         //the action type is saved as different action types can require different handling in the action and playback functions
         this.actionType = replayEvent.recordingEventActionType;

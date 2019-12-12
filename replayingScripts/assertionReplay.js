@@ -143,7 +143,7 @@ class AssertionReplay {
                             }
                             break;
                         default:
-                            console.error(`Unrecognised Assertion Type: ${this.assertionType}`);
+                            EventReplayer.logWithContext(`Unrecognised Assertion Type: ${this.assertionType}`);
                     }
                 } else {
                     //OPERATING ON NESTED ELEMENT - what we do depends on the kind of assertion we are performing
@@ -185,7 +185,7 @@ class AssertionReplay {
                             }
                             break;
                         default:
-                            console.error(`Unrecognised Assertion Type: ${this.assertionType}`);
+                            EventReplayer.logWithContext(`Unrecognised Assertion Type: ${this.assertionType}`);
                     }
                 }
                 //then report accordingly
