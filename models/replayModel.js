@@ -22,7 +22,13 @@ class Replay extends Recording {
             //we need to have a replay status, null to start then boolean for success or failure
             replayStatus: null,
             //the replay needs to have an array for events that are replayed
-            replayEventArray: [] 
+            replayEventArray: [],
+            //the replay may save performance timings
+            replayPerformanceTimings: {},
+            //the replay may save resource loads,
+            replayResourceLoads: {},
+            //the replay may save screenshot as data uri
+            replayScreenShot: ''  
         };
         // create a new object with the defaults over-ridden by the options passed in
         let opts = Object.assign({}, defaults, options);

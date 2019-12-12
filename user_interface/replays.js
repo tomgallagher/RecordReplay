@@ -648,13 +648,16 @@ $(document).ready (function(){
         //we need to rehide stuff as tabs are shown
         'onVisible': function(tab) {
             switch (tab) {
+                case 'replayEvents':
+                    //hide the warning message about events with no information by default
+                    $('.ui.showReplayReplayEventsTable.table .informationMessageRow').css('display', 'none');
+                    break;
                 case 'replayCode':
                     //init the checkbox, with Javascript checked as default
                     $('.ui.showReplay.container .ui.radio.checkbox input[value="jest+puppeteer"]').prop('checked', true);
                     break;
-                case 'replayEvents':
-                    //hide the warning message about events with no information by default
-                    $('.ui.showReplayReplayEventsTable.table .informationMessageRow').css('display', 'none');
+                case 'replayReports':
+                
             }
         }
     });
