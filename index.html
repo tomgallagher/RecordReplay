@@ -2405,9 +2405,9 @@
                                     
                                     <i class="angle right icon"></i>
 
-                                    When <strong>recording</strong> is in progress, the mouse <strong>Hover</strong> action is fired after hovering over an element for <strong>more 
-                                    than three seconds</strong>. This may be longer than you'd expect, so try counting slowly to three. Or quickly to five. Or something. Don't worry 
-                                    if you collect too many <strong>Hover</strong> actions, you can delete them from your recording and it will become second nature.  
+                                    As <strong>recording</strong> proceeds, the <em>'Scroll'</em> action fires whenever scrolling has stopped. This may generate <strong>more 
+                                    scrolling events than are strictly necessary</strong>. If the <em>'Scroll'</em> action has a final destination, you can reduce the number 
+                                    of events in your recording by deleting any scroll events leading up to the final destination.
                               
                                 </div>
                             
@@ -2419,9 +2419,23 @@
                                     
                                     <i class="angle right icon"></i>
 
-                                    <strong>Hover</strong> and <strong>Text Selection</strong> actions are the <strong>only</strong> recorded actions that allow you to add assertions
+                                    The mouse <em>'Hover'</em> action is fired during <strong>recording</strong> after hovering over an element for <strong>more 
+                                    than three seconds</strong>. This may be longer than you'd expect, so try counting slowly to three. Or quickly to five. Or something. Don't worry 
+                                    if you collect too many <em>'Hover'</em> actions, you can delete them from your recording and it will become second nature.  
+                              
+                                </div>
+                            
+                            </div>
+
+                            <div class="item">
+                              
+                                <div class="content">
+                                    
+                                    <i class="angle right icon"></i>
+
+                                    <em>'Hover'</em> and <em>'Text Selection'</em> actions are the <strong>only recording actions that allow you to add assertions</strong>
                                     that can be checked on replay. Text selection operates as you would expect - if you select text on the page during a <strong>recording</strong>, 
-                                    the element selected is made available for qualified assertions. All other actions are subject to their own verification checks.
+                                    the element selected is made available for adding assertions. All other actions are subject to their own verification checks.
                                 
                                 </div>
                             

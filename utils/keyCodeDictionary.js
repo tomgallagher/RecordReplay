@@ -5,9 +5,7 @@ class KeyCodeDictionary {
     //pass in an options object which can take new languages
     constructor(options) {
         
-        // set default values for the keycodes class
-        // WE LISTEN TO KEYBOARD EVENTS AND SAVE NUMBER OF KEY
-        // PUPPETEER REQUIRES DESCRIPTOR 
+        // set default values for the keycodes class - UK keyboard
         const defaults = {
 
             8: {value: null, descriptor: "Backspace"},
