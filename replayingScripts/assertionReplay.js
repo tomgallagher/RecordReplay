@@ -1,4 +1,3 @@
-
 class AssertionReplay {
 
     constructor(replayEvent) {
