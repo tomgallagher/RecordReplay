@@ -7,8 +7,13 @@ class RecordReplayMessenger {
         const defaults = {
             //we say whether we want the ability to return async responses
             asyncMessageListening: false,
+            //we need to be able to show where the messenger has been instantiated
+            contextIsIframe: () => { 
+                try { return window.self !== window.top; } 
+                catch (e) { return true; } 
+            },
             //then we need a function that logs accordint to context
-            logWithContext: message => console.log(`%c${message} [extension]`, 'color: blue'),
+            logWithContext: message => this.contextIsIframe() ? console.log(`%c${message} [iframe]`, 'color: green') : console.log(`%c${message} [extension]`, 'color: blue'),
             //then we may need to listen to iframe messages from the windows postMessage function
             windowOnMessageObservable: Rx.Observable.fromEventPattern(
                 handler => {

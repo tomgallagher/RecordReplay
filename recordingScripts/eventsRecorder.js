@@ -552,7 +552,7 @@ EventRecorder.startRecordingEvents = () => {
 switch(true) {
     //if we are an iframe we need to report and start
     case EventRecorder.contextIsIframe():
-        console.log(`%cEvent Recorder activated in iframe with origin ${window.location.origin}`, 'color: green');
+        console.log(`%cEvent Recorder activated via Content Script in iframe with origin ${window.location.origin}`, 'color: green');
         EventRecorder.startRecordingEvents();
         break;
     case EventRecorder.contextIsContentScript():

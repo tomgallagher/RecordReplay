@@ -229,7 +229,7 @@ EventReplayer.startReplayingEvents = () => {
 switch(true) {
     //if we are an iframe we need to report and start
     case EventReplayer.contextIsIframe():
-        console.log(`%cEvent Replayer activated in iframe with origin ${window.location.origin}`, 'color: green');
+        console.log(`%cEvent Replayer activated via Content Script in iframe with origin ${window.location.origin}`, 'color: green');
         EventReplayer.startReplayingEvents();
         break;
     case EventReplayer.contextIsContentScript():
