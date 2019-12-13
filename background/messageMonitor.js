@@ -6,6 +6,8 @@ class MessageMonitor {
         this.baseMessagingObservable = new RecordReplayMessenger({}).isAsync(true).chromeOnMessageObservable.share();
         //new recordings require a response in background scripts to open a tab and establish the test parameters
         this.newRecordingObservable = this.baseMessagingObservable.filter(messagingObject => messagingObject.request.hasOwnProperty('newRecording'));
+        //new recordings require a response in background scripts to open a tab and establish the test parameters
+        this.newReplayObservable = this.baseMessagingObservable.filter(messagingObject => messagingObject.request.hasOwnProperty('newReplay'));
 
         //ADD NEW LISTENERS HERE
 
@@ -25,7 +27,7 @@ class MessageMonitor {
             //CREATE ACTIVE RECORDING
             //pass in existing recording, then initialise to scrunch injected scripts to string available at recordingScriptsString
             //constructor creates web navigator that can supply all navigation events in the browser as an observable at recordingBrowserWebNavigator.navigationEventsObservable
-            //constructor creates record/replay messenger that can send and also supply messages as an observable at recordingBrowserMessenger.chromeOnMessageObservable
+            //constructor creates record/replay messenger that can send and also supply SYNC messages as an observable at recordingBrowserMessenger.chromeOnMessageObservable
             .flatMap(msgObject => Rx.Observable.fromPromise(new ActiveRecording(msgObject.request.newRecording, {recordingID: msgObject.request.newRecording.id}).initialise()))
             //then we need to initialise the tab runner asynchronously and add that to the active recording
             .switchMap(activeRecording => 
@@ -98,11 +100,24 @@ class MessageMonitor {
                 (updatedActiveRecording) => updatedActiveRecording 
             );
             
-        
+        this.newReplayActionObservable = this.newReplayObservable
+            //then we can report what we are doing
+            .do(msgObject => console.log(`Initialising New Replay Processes for Replay ${msgObject.request.newReplay.id}`))
+            //and respond to the caller to let them know the process has started
+            .do(msgObject => msgObject.sendResponse({message: `BackgroundJS: Initialising New Replay Processes for Replay ${msgObject.request.newReplay.id}`}))
+            //CREATE ACTIVE REPLAY
+            //pass in existing replay then initialise to scrunch injected scripts to string available at replayScriptsString
+            //constructor creates web navigator that can supply all navigation events in the browser as an observable at replayBrowserWebNavigator.navigationEventsObservable
+            //constructor creates record/replay messenger that can send and also supply ASYNC messages as an observable at replayBrowserMessenger.chromeOnMessageObservable
+            .flatMap(msgObject => Rx.Observable.fromPromise(new ActiveReplay(msgObject.request.newReplay, {replayID: msgObject.request.newReplay.id}).initialise()))
+
+
         //then we have all the subscriptions handled in a package
         this.collectedMessagingObservable = Rx.Observable.merge(
             //the new recording observable needs to be added
-            this.newRecordingActionObservable
+            this.newRecordingActionObservable,
+            //the new recording observable needs to be added
+            this.newReplayActionObservable
 
             //ADD NEW LISTENERS HERE
 

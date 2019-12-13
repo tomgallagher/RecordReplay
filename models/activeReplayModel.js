@@ -2,8 +2,8 @@ class ActiveReplay extends Replay {
 
     //pass in a existing replay object with the values we are looking for
     constructor(replay, options) {
-        // call the super class constructor and pass in the existing replay
-        super(replay)
+        // call the super class constructor and pass in the existing replay twice, once for instantiate of the recording and once for the replay
+        super(replay, replay)
         // set extra default values for the active replay class
         const defaults = {
             //just so we can keep track of the replay id as indicated in the database
@@ -28,7 +28,7 @@ class ActiveReplay extends Replay {
             //every active replay should have its own web navigator so it can send navigation messages back to the user interface
             replayBrowserWebNavigator: new WebNavigator,
             //every active replay should have its own messenger so it can send async messages
-            recordingBrowserMessenger: new RecordReplayMessenger({}).isAsync(true)
+            replayBrowserMessenger: new RecordReplayMessenger({}).isAsync(true)
         };
         // create a new object with the defaults over-ridden by the options passed in
         let opts = Object.assign({}, defaults, options);
@@ -50,7 +50,7 @@ class ActiveReplay extends Replay {
                 //then we map the responses into the strings
                 .map(data => data.response.toString())
                 //then we add all the text together - use reduce rather than scan as we only need the final emission from a finite observable
-                .reduce((previousScriptText, currentScriptText) => previousScriptText + "\n\n" + currentScriptText)
+                .reduce((previousScriptText, currentScriptText) => previousScriptText + "\r\n\n" + currentScriptText)
                 //then when we have finished, we will get an emission with reduce
                 .subscribe(
                     //save the collected script string to the model property so we can inject all scripts as a single string into Remote Devtools Protocol controlled tab instance

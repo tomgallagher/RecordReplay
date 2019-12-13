@@ -487,6 +487,8 @@ function addStartReplayHandler() {
         })
         //get the replay from storage using the data id from the button
         .switchMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('replays.js', event.target.getAttribute('data-replay-id') , 'replays')))
+        //send the message to the background script to start the replay processes
+        .do(replay => new RecordReplayMessenger({}).sendMessage({newReplay: replay}))
         //we want to keep track of how the replay performs without making changes to the replay itself - so we add the mutated replay event array
         .map(replay => Object.assign({}, replay, { mutatedReplayEventArray: [] }) )
         //then switch map into an observable of the replays events, adding the replay id

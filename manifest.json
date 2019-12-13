@@ -19,7 +19,7 @@
         "19": "images/robot_violet_19.png",
         "38": "images/robot_violet_38.png"
       },
-      "default_title": "Click to open Record/Replay testing software"
+      "default_title": "Click to open Record/Replay user interface"
   },
   
   "options_page": "options.html",
