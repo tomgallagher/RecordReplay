@@ -272,6 +272,28 @@ function updateReplayEventsTableAndCodeText(replay) {
 
     //TO DO - UPDATE THE REPORTS SECTION USING THE TEMPLATES
 
+    //report performance timings
+    if (replay.replayPerformanceTimings && Object.keys(replay.replayPerformanceTimings).length > 0) {
+
+        let targetNode = document.querySelector('.performanceTimingsTemplate');
+        //we need to do more work as we have to save the template in a table, which we don't need, we just want the row
+        let targetSteps = targetNode.querySelector('.ui.three.steps');
+        //make the clone
+        let tempNode = targetSteps.cloneNode(true);
+        //adjust the clone
+        tempNode.querySelector('.onCommittedTime.description').text(new Date(replay.replayPerformanceTimings.onCommitted).toLocaleString());
+        //TO DO then relative times for the other two
+        tempNode.querySelector('.onDomLoadedTime.description').text(new Date(replay.replayPerformanceTimings.onDOMContentLoaded).toLocaleString());
+        tempNode.querySelector('.onCompleteTime.description').text(new Date(replay.replayPerformanceTimings.onCompleted).toLocaleString());
+        //then replace
+        document.querySelector('.ui.performance.placeholder.segment').replaceWith(tempNode);
+
+    }
+    
+    //report resource loads using replay.replayResourceLoads object
+
+    //report screenshot with replay.replayScreenShot string of Base64-encoded image data
+
 }
 
 //SLAVE SHOW REPLAY EVENTS TABLE OPERATION - THIS ADDS BUTTON LISTENERS FOR SUBORDINATE SHOW REPLAY, REPLAY EVENTS TABLE
