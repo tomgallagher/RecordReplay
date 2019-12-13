@@ -111,36 +111,30 @@ class MessageMonitor {
             //constructor creates record/replay messenger that can send and also supply ASYNC messages as an observable at replayBrowserMessenger.chromeOnMessageObservable
             .flatMap(msgObject => Rx.Observable.fromPromise(new ActiveReplay(msgObject.request.newReplay, {replayID: msgObject.request.newReplay.id}).initialise()))
             //then we need to initialise the tab runner asynchronously and add that to the active recording
-            .switchMap(activeRecording => 
+            .switchMap(activeReplay => 
                 //when we create the tab runner, the new tab page is opened and the current tab id will be available via tabRunner.browserTabId
                 //if we want logging from the tab runner we pass true as the second parameter
-                Rx.Observable.fromPromise(new ReplayTabRunner(activeRecording, true)),
+                Rx.Observable.fromPromise(new ReplayTabRunner(activeReplay, true)),
                 //then user the projection function to add the tabRunner to the activeRecording
-                (updatedActiveRecording, tabRunner) => {
+                (updatedActiveReplay, tabRunner) => {
                     //then we just want to allocate the tab runner to the active recording using the default placeholder
-                    updatedActiveRecording.recordingBrowserTabRunner = tabRunner;
+                    //this replay tab runner has the ability to takeScreenshot() - make sure this is done before the debugger is detached
+                    updatedActiveReplay.replayBrowserTabRunner = tabRunner;
                     //and we only want the active recording back
-                    return updatedActiveRecording;
+                    return updatedActiveReplay;
             })
             //then we start the tabrunner
-            .switchMap(activeRecording => 
+            .switchMap(activeReplay => 
                 //then we want to start the tab runner so all the observables are activated and the Chrome Devtools Protocol commands are issued
-                Rx.Observable.fromPromise(activeRecording.recordingBrowserTabRunner.run()),
+                Rx.Observable.fromPromise(activeReplay.replayBrowserTabRunner.run()),
                 //then just return the active recording
-                (updatedActiveRecording) => updatedActiveRecording 
+                (updatedActiveReplay) => updatedActiveReplay 
             )
-
-            //the set up of the tab runner is much the same as recordings except the tab runner needs to have additional functionality
-            //yes it needs to create the tab, execute the scripts and then start debugger with params
-            //BUT it also need to collect load times, collect resource stats, take screenshots and then also be able to execute keyboard commands
-
-            //after the tab runner is set up, the work is more complicated than the recordings as there is 2-way information flow going on, we cannot just switchMap from original event
-
-            //we need to confirm page load replay events to the user interface
-            //so we need to receive event messages from the user interface, filtered for Page, and pair with emissions from the webnavigator
             
-            //we need to action keyboard events sent from the user interface
-            //so we need to translate messages from the user interface into tab runner executions
+
+            
+            
+            
 
         //then we have all the subscriptions handled in a package
         this.collectedMessagingObservable = Rx.Observable.merge(

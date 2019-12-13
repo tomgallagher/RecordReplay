@@ -13,15 +13,29 @@ class ReplayTabRunner {
             //then we need to have tab state
             this.openState = false;
             //then we need to save the params for the debugger commands from the active replay
-            this.recordingTestLatencyValue = activeItem.recordingTestLatencyValue; 
-            this.recordingTestBandwidthValue = activeItem.recordingTestBandwidthValue; 
+            //we need to know the desired latency value
+            this.recordingTestLatencyValue = activeItem.recordingTestLatencyValue;
+            //we need to know the desired bandwidth value 
+            this.recordingTestBandwidthValue = activeItem.recordingTestBandwidthValue;
+            //we need to know if the replay is for mobile 
             this.recordingIsMobile = activeItem.recordingIsMobile;
+            //if so, we need to know mobile orientation
             this.recordingMobileOrientation = activeItem.recordingMobileOrientation;
+            //we need the scripts string for injection
             this.injectedScriptString = activeItem.replayScriptsString;
+            //we need to know if the user is saving resource loads
+            this.saveResourceLoads = activeItem.recordingTestResourceLoads;
             //then we see if we're logging or not
             this.withLogging = withLogging;
             //then we need an instance of the webNavigator class
             this.webNavigator = new WebNavigator();
+            //then the replay tab runner collects lots of important information for the replay
+            //we need to collect performance timings for the tab, should show important events from the web navigator
+            this.performanceTimings = {};
+            //we need to collect resource loads for the tab
+            this.resourceLoads = {};
+            //we need to collect the screenshot for the tab as a data uri
+            this.screenShot = "";
             //THIS IS THE MOST IMPORTANT PIECE OF CODE AND THE REASON FOR THE ASYNC CONSTRUCTOR
             //we need to have the browser tab id in the constructor
             this.browserTabId = await new Promise(resolve => chrome.tabs.create({ url: activeItem.recordingTestStartUrl }, tab => { this.openState = true; resolve(tab.id); } ));
@@ -50,6 +64,12 @@ class ReplayTabRunner {
             6: "TabRunner: Curated Page Closed",
             7: `TabRunner: Script Package Injected into main_frame ${message}`,
             8: `TabRunner: Script Package Injected into sub_frame ${message}`,
+            9: "TabRunner: Cleared Browser Cache",
+            10: "TabRunner: Saved Screenshot",
+            11: "TabRunner: DOM Domain Enabled",
+            12: "TabRunner:: Returned Root DOM node",
+            13: `TabRunner:: Executed QuerySelector: ${message}`,
+            14: "TabRunner:: Focused Given Element",
         };
         //gives the opportunity to switch off tab runner logging
         if (this.withLogging) { console.log(logStatements[index]); }
@@ -98,14 +118,88 @@ class ReplayTabRunner {
                     )
                 )
             ));
+        
+        //PERFORMANCE TIMINGS OBSERVABLE
+        const performanceTimingsObservable = this.webNavigator.navigationEventsObservable
+            //then we only care about events happening in our curated tab
+            .filter(navObject => navObject.tabId == this.browserTabId)
+            //then we only care about the main frame
+            .filter(navObject => navObject.frameId == 0)
+            //then on each emission we add to our performance timings object
+            .do(navObject => {
+                //oddly the navigator returns fractions of a millisecond which we don't care about
+                this.performanceTimings[navObject.recordReplayWebNavigationEvent] = Math.round(navObject.timeStamp) || Date.now();
+            });
+        
+        //RESOURCE LOADS OBSERVABLE CONSTRUCTION
+
+        //LISTEN TO ALL DEBUGGER EVENTS
+        const networkEventObservable = Rx.Observable.fromEventPattern(
+            //add the handler to listen for debugger events
+            handler => chrome.debugger.onEvent.addListener(handler),
+            //remove the handler
+            handler => chrome.debugger.onEvent.removeListener(handler),
+            //send the object with the message and infoobject attached
+            (_, message, obj) => ({ message: message, infoObject: obj })
+        );
+        
+        //LISTEN TO Network.responseReceived EVENTS AS THESE PROVIDE THE RESOURCE TYPE
+        const resourceTypeObservable = networkEventObservable
+            //to get at the data we use loading finished event
+            .filter(networkObject =>  networkObject.message == "Network.responseReceived")
+            //then down stream we only need the following params
+            .map(networkObject => ({ requestId: networkObject.infoObject.requestId, resourceType: networkObject.infoObject.type.toLowerCase() }) )
+            //then we just need this observable to produce a lookup object so we can match the request id to a type
+            .scan((lookupObject, value) => { 
+                //the key is the request ID as well so we can link data sizes with resource categories
+                lookupObject[value.requestId] = value.resourceType; 
+                //return the object for the next scan
+                return lookupObject; 
+            //seed with the initial object 
+            }, {});
+        
+        //LISTEN TO Network.loadingFinished EVENTS AS THESE PROVIDE THE RESOURCE LOADS
+        const dataUsageObservable = networkEventObservable
+            //to get at the data we use loading finished event
+            .filter(networkObject =>  networkObject.message == "Network.loadingFinished")
+            //then down stream we only need the following params
+            .map(networkObject => ({requestId: networkObject.infoObject.requestId, encodedDataLength: networkObject.infoObject.encodedDataLength}) )
+            //then we need the latest from the resource type observable
+            .withLatestFrom(
+                resourceTypeObservable,
+                (dataUsage, lookupObject) => {
+                    //get the type from the lookup object
+                    const type = lookupObject[dataUsage.requestId];
+                    //then just add the new resource load to the existing object resource load, or create the load if new
+                    this.resourceLoads.hasOwnProperty(type) ? this.resourceLoads[type] += dataUsage.encodedDataLength : this.resourceLoads[type] = dataUsage.encodedDataLength;
+                }
+            );     
+        
+        
+
+        //TO DO - SUBSCRIBE TO EVENTS MESSAGES AND TRANSLATE KEYBOARD COMMANDS INTO ACTIONS
+        //FOCUS, KEYDOWN THEN KEYUP
+        //we need to return the following properties to stay uniform with the main replayer
+        //replayExecution.replayEventReplayed, replayExecution.replayEventStatus, replayExecution.replayLogMessages, replayExecution.replayErrorMessages
+        
+        //TO DO - HANDLE THE REQUESTS FROM THE USER INTERFACE TO CONFIRM PAGE LOAD
+        //WE CAN PAIR THE PAGE REPLAY EVENT MESSAGE WITH THE NAVIGATOR OBSERVABLE
+        //needs to be repeatable, we can zip but what about fails to reach complete?  
+        //we need to return the following properties to stay uniform with the main replayer
+        //replayExecution.replayEventReplayed, replayExecution.replayEventStatus, replayExecution.replayLogMessages, replayExecution.replayErrorMessages
 
         //CHROME REMOTE DEVTOOLS PROTOCOL COMMANDS
         //then we need to attach the debugger so we can send commands
         await new Promise(resolve => chrome.debugger.attach({ tabId: this.browserTabId }, "1.3", () => { this.log(0); resolve(); } ));
         //then we need to listen to network events, passing in an empty object as we have no need to fine-tune
         await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Network.enable", {}, () => { this.log(1); resolve(); } ));
-        //then we need to listen to page events
+        //then we need to clear the cache if we are looking for resource loads
+        //this can take quite a long time on the first time it's cleared, so we don't wait for it
+        if (this.saveResourceLoads) { chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Network.clearBrowserCache", {}, () => { this.log(9); }); }
+        //then we need to have the ability to send page commands
         await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Page.enable", {}, () => { this.log(2); resolve(); } ));
+        //then we need to have the ability to send DOM commands
+        await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "DOM.enable", {}, () => { this.log(11); resolve(); } ));
         //then we need to set any throttling / latency that may be needed
         await new Promise(resolve => chrome.debugger.sendCommand(
             { tabId: this.browserTabId }, 
@@ -137,8 +231,69 @@ class ReplayTabRunner {
             //we need to start the main frame script injection observable
             mainFrameScriptInjectionObservable,
             //then we need to start the sub frame script injection observable
-            subFrameScriptInjectionObservable
+            subFrameScriptInjectionObservable,
+            //then we need to start the performance timings observable
+            performanceTimingsObservable,
+            //then we start the reource loads observable
+            dataUsageObservable
         ).subscribe();
+        //return so the synthetic promise is resolved
+        return;
+
+    }
+
+    focus = async (replayEvent) => {
+
+        //so we have an incoming replay event, and we want to focus on the element identified in the selector
+        //first thing to do is get hold of the DOM node - we want the nodeId
+        //lots of properties on a node see https://chromedevtools.github.io/devtools-protocol/1-3/DOM#type-Node
+        const domNode = await new Promise(resolve => chrome.debugger.sendCommand(
+            //send to our tab
+            { tabId: this.browserTabId }, 
+            //Returns the root DOM node (and optionally the subtree) to the caller.
+            "DOM.getDocument",
+            //Use -1 depth for the entire subtree and pierce to determine Whether or not iframes and shadow roots should be traversed when returning the subtree 
+            { depth: -1, pierce: true }, 
+            node => { this.log(12); resolve(node); } ));
+        //then we need to search for our replay event's css selector
+        const targetNode = await new Promise(resolve => chrome.debugger.sendCommand(
+            //send to our tab
+            { tabId: this.browserTabId },
+            //Executes querySelector on a given node.
+            "DOM.querySelector", 
+            //we need to use the most favoured selector here, just using this one for now
+            { nodeId: domNode.nodeId, selector: replayEvent.recordingEventCssSelectorPath}, 
+            node => { this.log(13, selector); resolve(node); } ));
+        //then we need to focus on the element which will allow us to start sending key commands
+        await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "DOM.focus", { nodeId: targetNode.nodeId }, () => { this.log(14); resolve(); } ));
+        //then return the target node, although we don't need it for the keyboard command 
+        return targetNode;
+
+    }
+
+    takeScreenshot = async () => {
+
+        //we instruct the debugger to take the screenshot with a wrapped promise
+        await new Promise(resolve => 
+            //send the command to the debugger
+            chrome.debugger.sendCommand(
+                //always use our tab ID
+                { tabId: this.browserTabId },
+                //send the screenshot command 
+                "Page.captureScreenshot", 
+                //then the image params
+                { format: "jpeg", quality: 70 },
+                //this returns string of Base64-encoded image data
+                data => { 
+                    //save the string to our class property
+                    this.screenShot = data;
+                    //log that the screenshot has been taken
+                    this.log(10); 
+                    //then resolve
+                    resolve(); 
+                } 
+            )
+        );
         //return so the synthetic promise is resolved
         return;
 
@@ -156,4 +311,5 @@ class ReplayTabRunner {
         return;
 
     }
+    
 }
