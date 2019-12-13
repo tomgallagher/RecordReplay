@@ -26,7 +26,7 @@ class jQueryTranslator {
 
     //FORMATTING FUNCTIONS
 
-    openAnonAsyncFunction = () => `(async ($) => { \n`
+    openAnonAsyncFunction = () => `(async ($) => {\n`
 
     closeAnonAsyncFunction = () => `\n})(jQuery);` 
 
@@ -36,7 +36,18 @@ class jQueryTranslator {
 
     closeTimedFunction = (delay) => `\n\t\tresolve(); \n\t}, ${delay}));\n`
 
-    tabIndex = index =>  index == 0 ? '\n\t' : '\n\t\t';
+    tabIndex = index => {
+        switch(index) {
+            //for the first element in any recording event array, we do not need the timing so we don't need the indentation
+            case 0: return '\n\t';
+            //for one extra tab, we use -1
+            case -1: return '\n\t\t\t';
+            //for two extra tabs we use -2
+            case -2: return '\n\t\t\t\t';
+            //for any element above zero, we use normal tabbing
+            default: return '\n\t\t';
+        }
+    }
 
     //ACTIONS
 
@@ -114,10 +125,10 @@ class jQueryTranslator {
             case 'Input':
                 return this.inputText(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue);
             case 'Page':
-                return `${this.tabIndex(index)}//Page navigate to ${recordingEvent.recordingEventLocationHref}`; 
+                return `// Page navigated to ${recordingEvent.recordingEventLocationHref}`; 
             default:
                 console.log(`No Mapping for Action Type ${recordingEvent.recordingEventAction}`);
-                return `${this.tabIndex(index)}//No Mapping Type in jQuery for Action ${recordingEvent.recordingEventAction}`; 
+                return `// No Mapping Type in jQuery for Action ${recordingEvent.recordingEventAction}`; 
         }
     }
 
@@ -135,7 +146,7 @@ class jQueryTranslator {
             var eachEvent = new RecordingEvent(eventsArray[recordingEventIndex]);
             //if we are on the first event, just push according to event
             if (recordingEventIndex == 0) {
-                outputString += `${this.tabIndex(recordingEventIndex)}${this.mapActionTypeToFunction(eachEvent, recordingEventIndex)}\n`;
+                outputString += `${this.tabIndex(0)}${this.mapActionTypeToFunction(eachEvent, recordingEventIndex)}\n`;
             //otherwise we need to wrap in the setTimeout
             } else {
                 //open the async timeout function

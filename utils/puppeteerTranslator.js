@@ -42,11 +42,22 @@ class PuppeteerTranslator {
 
     openTimedFunction = () => `\n\tawait new Promise(resolve => window.setTimeout(() => {`
 
-    warnOnIframe = (href) => `\n\t\t//THIS ACTION MUST BE EXECUTED IN CONTEXT OF IFRAME WITH ORIGIN: ${new URL(href).origin}`
+    warnOnIframe = (href) => `\n\t\t//THIS ACTION IS EXECUTED IN CONTEXT OF IFRAME WITH ORIGIN: ${new URL(href).origin}`
 
     closeTimedFunction = (delay) => `\n\t\tresolve(); \n\t}, ${delay}));\n`
 
-    tabIndex = index =>  index == 0 ? '\n\t' : '\n\t\t';
+    tabIndex = index => {
+        switch(index) {
+            //for the first element in any recording event array, we do not need the timing so we don't need the indentation
+            case 0: return '\n\t';
+            //for one extra tab, we use -1
+            case -1: return '\n\t\t\t';
+            //for two extra tabs we use -2
+            case -2: return '\n\t\t\t\t';
+            //for any element above zero, we use normal tabbing
+            default: return '\n\t\t';
+        }
+    }
 
     //BROWSER CONTROL ACTIONS
 
@@ -68,30 +79,30 @@ class PuppeteerTranslator {
 
     //ACTION FUNCTIONS
 
-    mouseClick = (selector, clicktype, index) => {
+    mouseClick = (selector, clicktype, index, target) => {
         switch(clicktype) {
-            case 'click': return `await page.click('${selector}', { button: 'left', clickCount: 1 } );`
-            case 'dblclick': return `await page.click('${selector}', { button: 'left', clickCount: 2 } );`
-            case 'contextmenu': return `await page.click('${selector}', { button: 'right', clickCount: 1 } );`
+            case 'click': return `await ${target}.click('${selector}', { button: 'left', clickCount: 1 } );`
+            case 'dblclick': return `await ${target}.click('${selector}', { button: 'left', clickCount: 2 } );`
+            case 'contextmenu': return `await ${target}.click('${selector}', { button: 'right', clickCount: 1 } );`
             default: return `${this.tabIndex(index)}//No Click Action Available For Action ${clicktype}`
         }
     }
 
-    recaptcha = (selector) => `await page.click('${selector}', { button: 'left', clickCount: 1 } );`
+    recaptcha = (selector, target) => `await ${target}.click('${selector}', { button: 'left', clickCount: 1 } );`
 
     //Note you should always focus before you type
-    typeText = text => `await page.keyboard.type('${text}');`
+    typeText = (text, target) => `await ${target}.keyboard.type('${text}');`
 
     //Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
-    sendSpecialKey = keyDescriptor => `await page.keyboard.press('${keyDescriptor}');` 
+    sendSpecialKey = (keyDescriptor, target) => `await ${target}.keyboard.press('${keyDescriptor}');` 
 
-    scrollTo = (xPosition, yPosition) => `await page.evaluate( () => { document.documentElement.scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' }); });`
+    scrollTo = (xPosition, yPosition, index, target) => `await ${target}.evaluate( () => { ${this.tabIndex(-1)} document.documentElement.scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' }); ${this.tabIndex(index)} });`
 
-    focus = selector => `await page.focus('${selector}');`
+    focus = (selector, target) => `await ${target}.focus('${selector}');`
 
-    hover = selector => `await page.hover('${selector}');` 
+    hover = (selector, target) => `await ${target}.hover('${selector}');` 
 
-    textSelect = (selector, index) => `await page.evaluate( () => { const event${index} = new Event("selectstart", {view: window, bubbles: true, cancelable: false}); document.querySelector('${selector}').dispatchEvent( event${index} ); });`
+    textSelect = (selector, index, target) => `await ${target}.evaluate( () => { ${this.tabIndex(-1)} const event${index} = new Event("selectstart", {view: window, bubbles: true, cancelable: false}); ${this.tabIndex(-1)} document.querySelector('${selector}').dispatchEvent( event${index} ); ${this.tabIndex(index)} });`
 
 
     //ASSERTIONS HELPERS, we need to have the index of each item in the Rx.js flow so we can have unique assertions
@@ -123,30 +134,78 @@ class PuppeteerTranslator {
     }
 
     mapActionTypeToFunction = (recordingEvent, index) => {
+
+        //we have to work out if the recording event has taken place in an iframe because the syntax is different in Puppeteer
+        //first we need to create the variable for our target
+        let target;
+        //then we need to create an array that we can push our strings into then join them at the end
+        let outputStringArray = [];
+        //then we need to find out if the event has taken place in an iframe
+        if (recordingEvent.recordingEventIsIframe) {
+            //first we need to get the details of the iframe we are going to be looking for
+            const recordingFrameUrl = new URL(recordingEvent.recordingEventLocationHref)
+            //then we need to get the origin and the path
+            const recordingFrameOrigin = recordingFrameUrl.origin;
+            const recordingFramePath = recordingFrameUrl.pathname;
+            //then we need to find the frame using the origin and path and allocate it to our indexed frame
+            var getFrameString = `const frame${index} = page.frames().find(frame => frame.url().includes('${recordingFrameOrigin}') && frame.url().includes('${recordingFramePath}'));`;
+            //then push the frame string to the array
+            outputStringArray.push(getFrameString);
+            //then we set the target to be the indexed frame
+            target = `frame${index}`;
+        } else {
+            //this is the easy case, the target is just the page
+            target = 'page';
+        }
+        
+        //then we need to determine the type of recording event action so we can deliver the right piece of code to the text area
         switch(recordingEvent.recordingEventAction) {
+            //mouse actions can have many variants so we need a subswitch
             case "Mouse":
+                //here we switch on type of action
                 switch(recordingEvent.recordingEventActionType) {
                     case "hover":
-                        return this.hover(this.getMostValidSelector(recordingEvent));
+                        //in the case of hover, we get the most valid selector and then push the string result of the hover selctor into the array 
+                        outputStringArray.push(this.hover(this.getMostValidSelector(recordingEvent), target));
+                        break;
                     case "recaptcha":
-                        return this.recaptcha(this.getMostValidSelector(recordingEvent));
+                        //recaptcha is different in recording terms as the event we listen to is not the event we replay - click to replay 
+                        outputStringArray.push(this.recaptcha(this.getMostValidSelector(recordingEvent), target));
+                        break;
                     default:
-                        return this.mouseClick(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventActionType, index);
+                        //then we have the default, which handles all the standard clicks, including 'click', 'dblclick' and 'contextmenu'
+                        outputStringArray.push(this.mouseClick(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventActionType, index, target));
                 }
+                break;
+            //scroll has no particular solution in Puppeteer
             case "Scroll":
-                return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
+                outputStringArray.push(this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition, index, target));
+                break;
+            //neither does text select
             case "TextSelect":
-                return this.textSelect(this.getMostValidSelector(recordingEvent), index);
+                outputStringArray.push(this.textSelect(this.getMostValidSelector(recordingEvent), index, target));
+                break;
+            //TO DO - the keyboard functions are hopeless at the moment
             case "Keyboard": 
-                return this.sendSpecialKey(recordingEvent.recordingEventKey);
+                outputStringArray.push(this.sendSpecialKey(recordingEvent.recordingEventKey, target));
+                break;
             case 'Input':
-                return this.focus(this.getMostValidSelector(recordingEvent)) += this.tabIndex(index) + this.typeText(recordingEvent.recordingEventInputValue);
+                outputStringArray.push(this.focus(this.getMostValidSelector(recordingEvent), target) += this.tabIndex(index) + this.typeText(recordingEvent.recordingEventInputValue, target));
+                break;
             case 'Page':
-                return `${this.tabIndex(index)}//Page navigate to ${recordingEvent.recordingEventLocationHref}`; 
+                //here we just do a simple return with the standard tabbing
+                return `${this.tabIndex(0)}// Page navigated to ${recordingEvent.recordingEventLocationHref}`;
             default:
                 console.log(`No Mapping for Action Type ${recordingEvent.recordingEventAction}`);
+                //here we do a simple return with the indented tabbing so it falls in the same place as the action
                 return `${this.tabIndex(index)}//No Mapping Type in Puppeteer for Action ${recordingEvent.recordingEventAction}`; 
         }
+
+        //then if we reach this point we need to mao the string array, with a tabbing element for formatting
+        outputStringArray = outputStringArray.map(string => `${this.tabIndex(index)}${string}`);
+        //then we need to return the string
+        return outputStringArray.join('');
+
     }
 
     buildRecordingStringFromEvents = recording => {
@@ -173,7 +232,7 @@ class PuppeteerTranslator {
             var eachEvent = new RecordingEvent(recording.recordingEventArray[recordingEventIndex]);
             //if we are on the first event, just push according to event
             if (recordingEventIndex == 0) {
-                outputString += `${this.tabIndex(recordingEventIndex)}${this.mapActionTypeToFunction(eachEvent, recordingEventIndex)}\n`;
+                outputString += `${this.mapActionTypeToFunction(eachEvent, recordingEventIndex)}\n`;
             //otherwise we need to wrap in the setTimeout
             } else {
                 //open the async timeout function
@@ -181,7 +240,7 @@ class PuppeteerTranslator {
                 //then add the iframe warning if required
                 eachEvent.recordingEventIsIframe ? outputString += this.warnOnIframe(eachEvent.recordingEventLocationHref) : null;
                 //map the action to the function and return string
-                outputString += `${this.tabIndex(recordingEventIndex)}${this.mapActionTypeToFunction(eachEvent, recordingEventIndex)}`;
+                outputString += `${this.mapActionTypeToFunction(eachEvent, recordingEventIndex)}`;
                 //close the async timeout function
                 outputString += this.closeTimedFunction(eachEvent.recordingTimeSincePrevious);
             }

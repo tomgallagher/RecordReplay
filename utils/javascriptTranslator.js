@@ -26,7 +26,7 @@ class JavascriptTranslator {
 
     //FORMATTING FUNCTIONS
 
-    openAnonAsyncFunction = () => `(async () => { \n`
+    openAnonAsyncFunction = () => `(async () => {\n`
 
     closeAnonAsyncFunction = () => `\n})();`
     
@@ -36,25 +36,36 @@ class JavascriptTranslator {
 
     closeTimedFunction = (delay) => `\n\t\tresolve(); \n\t}, ${delay}));\n`
 
-    tabIndex = index =>  index == 0 ? '\n\t' : '\n\t\t';
+    tabIndex = index => {
+        switch(index) {
+            //for the first element in any recording event array, we do not need the timing so we don't need the indentation
+            case 0: return '\n\t';
+            //for one extra tab, we use -1
+            case -1: return '\n\t\t\t';
+            //for two extra tabs we use -2
+            case -2: return '\n\t\t\t\t';
+            //for any element above zero, we use normal tabbing
+            default: return '\n\t\t';
+        }
+    }
 
     //ACTION FUNCTIONS
 
-    mouseClick = (selector, clicktype, index) => `const event${index} = new MouseEvent('${clicktype}', {view: window, bubbles: true, cancelable: false}); document.querySelector('${selector}').dispatchEvent( event${index} );`
+    mouseClick = (selector, clicktype, index) => `const event${index} = new MouseEvent('${clicktype}', {view: window, bubbles: true, cancelable: false}); ${this.tabIndex(index)}document.querySelector('${selector}').dispatchEvent( event${index} );`
 
-    recaptcha = (selector, index) => `const event${index} = new MouseEvent('click', {view: window, bubbles: true, cancelable: false}); document.querySelector('${selector}').dispatchEvent( event${index} );`
+    recaptcha = (selector, index) => `const event${index} = new MouseEvent('click', {view: window, bubbles: true, cancelable: false}); ${this.tabIndex(index)}document.querySelector('${selector}').dispatchEvent( event${index} );`
 
     inputText = (selector, text) => `document.querySelector('${selector}').value = '${text}';` 
     
-    sendSpecialKey = (recordingEvent, index) => `const event${index} = new KeyboardEvent("keypress", { key : '${recordingEvent.recordingEventKey}', code : '${recordingEvent.recordingEventKey}', ctrlKey: ${recordingEvent.recordingEventCtrlKey}, shiftKey: ${recordingEvent.recordingEventShiftKey}, altKey: ${recordingEvent.recordingEventAltKey} }); document.dispatchEvent( event${index} );`
+    sendSpecialKey = (recordingEvent, index) => `const event${index} = new KeyboardEvent("keypress", { key : '${recordingEvent.recordingEventKey}', code : '${recordingEvent.recordingEventKey}', ctrlKey: ${recordingEvent.recordingEventCtrlKey}, shiftKey: ${recordingEvent.recordingEventShiftKey}, altKey: ${recordingEvent.recordingEventAltKey} }); ${this.tabIndex(index)}document.dispatchEvent( event${index} );`
 
     scrollTo = (xPosition, yPosition) => `document.documentElement.scrollTo({left: ${xPosition}, top: ${yPosition}, behavior: 'smooth'}); `
 
     focus = (selector) => `document.querySelector('${selector}').focus({ preventScroll: false });`
 
-    hover = (selector, index) => `const event${index} = new MouseEvent('mouseover', {view: window, bubbles: true, cancelable: false}); document.querySelector('${selector}').dispatchEvent( event${index} );`
+    hover = (selector, index) => `const event${index} = new MouseEvent('mouseover', {view: window, bubbles: true, cancelable: false}); ${this.tabIndex(index)}document.querySelector('${selector}').dispatchEvent( event${index} );`
 
-    textSelect = (selector, index) => `const event${index} = new Event("selectstart", {view: window, bubbles: true, cancelable: false}); document.querySelector('${selector}').dispatchEvent( event${index} );`
+    textSelect = (selector, index) => `const event${index} = new Event("selectstart", {view: window, bubbles: true, cancelable: false}); ${this.tabIndex(index)}document.querySelector('${selector}').dispatchEvent( event${index} );`
 
     //ASSERTIONS HELPERS
 
@@ -106,10 +117,10 @@ class JavascriptTranslator {
             case 'Input':
                 return this.inputText(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue);
             case 'Page':
-                return `${this.tabIndex(index)}//Page navigate to ${recordingEvent.recordingEventLocationHref}`; 
+                return `// Page navigated to ${recordingEvent.recordingEventLocationHref}`; 
             default:
                 console.log(`No Mapping for Action Type ${recordingEvent.recordingEventAction}`);
-                return `${this.tabIndex(index)}//No Mapping Type in Javascript for Action ${recordingEvent.recordingEventAction}`; 
+                return `// No Mapping Type in Javascript for Action ${recordingEvent.recordingEventAction}`; 
         }
     }
 
@@ -127,7 +138,7 @@ class JavascriptTranslator {
             var eachEvent = new RecordingEvent(eventsArray[recordingEventIndex]);
             //if we are on the first event, just push according to event
             if (recordingEventIndex == 0) {
-                outputString += `${this.tabIndex(recordingEventIndex)}${this.mapActionTypeToFunction(eachEvent, recordingEventIndex)}\n`;
+                outputString += `${this.tabIndex(0)}${this.mapActionTypeToFunction(eachEvent, recordingEventIndex)}\n`;
             //otherwise we need to wrap in the setTimeout
             } else {
                 //open the async timeout function
