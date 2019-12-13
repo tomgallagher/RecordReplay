@@ -621,8 +621,8 @@ function addStartReplayHandler() {
                     mutatedReplay.replayExecuted = Date.now();
                     //then we add the replay status
                     mutatedReplay.replayStatus = (numberMutated == numberPassed ? true : false);
-                    //then we add the fail time if required
-                    numberMutated != numberPassed ? mutatedReplay.replayFailTime = Date.now() : null;
+                    //then we add the fail time if required, otherwise set it to zero
+                    numberMutated != numberPassed ? mutatedReplay.replayFailTime = Date.now() : mutatedReplay.replayFailTime = 0;
                     //report the final status of the replay
                     console.log(mutatedReplay);
                     //then we need to save the updated replay to the database

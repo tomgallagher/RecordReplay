@@ -43,7 +43,8 @@
           "models/activeReplayModel.js",
           "models/replayEventModel.js",
           "background/messageMonitor.js",
-          "background/tabRunner.js",
+          "background/recordingTabRunner.js",
+          "background/replayTabRunner.js",
           "background/webNavigator.js",
           "background/background.js"
           

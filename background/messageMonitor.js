@@ -33,7 +33,7 @@ class MessageMonitor {
             .switchMap(activeRecording => 
                 //when we create the tab runner, the new tab page is opened and the current tab id will be available via tabRunner.browserTabId
                 //if we want logging from the tab runner we pass true as the second parameter
-                Rx.Observable.fromPromise(new TabRunner(activeRecording, true)),
+                Rx.Observable.fromPromise(new RecordingTabRunner(activeRecording, true)),
                 //then user the projection function to add the tabRunner to the activeRecording
                 (updatedActiveRecording, tabRunner) => {
                     //then we just want to allocate the tab runner to the active recording using the default placeholder
@@ -110,7 +110,18 @@ class MessageMonitor {
             //constructor creates web navigator that can supply all navigation events in the browser as an observable at replayBrowserWebNavigator.navigationEventsObservable
             //constructor creates record/replay messenger that can send and also supply ASYNC messages as an observable at replayBrowserMessenger.chromeOnMessageObservable
             .flatMap(msgObject => Rx.Observable.fromPromise(new ActiveReplay(msgObject.request.newReplay, {replayID: msgObject.request.newReplay.id}).initialise()))
+            
+            //the set up of the tab runner is much the same as recordings except the tab runner needs to have additional functionality
+            //yes it needs to create the tab, execute the scripts and then start debugger with params
+            //BUT it also need to collect load times, collect resource stats, take screenshots and then also be able to execute keyboard commands
 
+            //after the tab runner is set up, the work is more complicated than the recordings as there is 2-way information flow going on, we cannot just switchMap from original event
+
+            //we need to confirm page load replay events to the user interface
+            //so we need to receive event messages from the user interface, filtered for Page, and pair with emissions from the webnavigator
+            
+            //we need to action keyboard events sent from the user interface
+            //so we need to translate messages from the user interface into tab runner executions
 
         //then we have all the subscriptions handled in a package
         this.collectedMessagingObservable = Rx.Observable.merge(

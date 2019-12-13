@@ -1,6 +1,6 @@
-class TabRunner {
+class RecordingTabRunner {
 
-    //so we can have incoming active recordings or replays, named here as activeItems
+    //so we can have incoming active recordings, named here as activeItem
     constructor(activeItem, withLogging) {
 
         //the use of the anonymous async function in constructor enables us to set up the tab runner with any callback functions and receive responses
