@@ -252,7 +252,8 @@ class ReplayTabRunner {
             { tabId: this.browserTabId }, 
             //Returns the root DOM node (and optionally the subtree) to the caller.
             "DOM.getDocument",
-            //Use -1 depth for the entire subtree and pierce to determine Whether or not iframes and shadow roots should be traversed when returning the subtree 
+            //Use -1 depth for the entire subtree and pierce to determine whether or not iframes and shadow roots should be traversed when returning the subtree
+            //this is very helpful and unknown in the traditional browser environment
             { depth: -1, pierce: true }, 
             node => { this.log(12); resolve(node); } ));
         //then we need to search for our replay event's css selector
