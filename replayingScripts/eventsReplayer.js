@@ -88,34 +88,6 @@ var EventReplayer = {
 }
 
 EventReplayer.startReplayingEvents = () => {
-
-    //ONLY FOR TESTING
-    //so here we would work with incoming messages, using the Record/Replay messenger
-    //but for testing we work with array
-    Rx.Observable.from(EventRecorder.testingEventsArray)
-
-        //first we create a replay event from each recording event - ONLY FOR TESTING
-        .map(event => new ReplayEvent(event, {}) )
-        //then we have to manufacture the delay from the array - ONLY FOR TESTING
-        //and we need to start with a dummy marker so we can operate with only one emission, this must come before pairwise() to create the first pair
-        .startWith(new RecordingEvent({recordingEventOrigin: 'PairwiseStart'}))
-        //then we need to get the time between each emission so we take two emissions at a time  - ONLY FOR TESTING
-        .pairwise()
-        //this then delivers an array with the previous and the current, we only need the current, with adjusted recordingTimeSincePrevious  - ONLY FOR TESTING
-        .map(([previousRecording, currentRecording]) => {
-            //if the previous was not the dummy 'PairwiseStart', then we need to add the relative time of the recording event so we can exactly reproduce timing steps with delays
-            //if it is then the time will be 0, with zero delay, which is what we want
-            //this can be actioned in the replay mode via .concatMap(event => Rx.Observable.of(event).delay(event.recordingTimeSincePrevious))
-            previousRecording.recordingEventOrigin != 'PairwiseStart' ? currentRecording.recordingTimeSincePrevious = currentRecording.recordingEventCreated - previousRecording.recordingEventCreated : null;
-            //then we just need to return the current recording as we don't care about the dummy or the previous
-            return currentRecording;
-        })
-        //this adds the delay - ONLY FOR TESTING - we must do this in the user interface as it sends messages to many different windows
-        .concatMap(replayEvent => Rx.Observable.of(replayEvent).delay(replayEvent.recordingTimeSincePrevious))
-        //ONLY FOR TESTING - then we subscribe and send the message to the background script for relaying
-        .subscribe(replayEvent => EventReplayer.messengerService.sendMessage({replayEvent: replayEvent}));
-
-    
     
     EventReplayer.messengerService.chromeOnMessageObservable
         //firstly we only care about messages that contain a replay event
@@ -249,4 +221,21 @@ EventReplayer.startReplayingEvents = () => {
             () => EventReplayer.logWithContext("EventReplayer.startReplayingEvents: COMPLETE")
         );
 
+}
+
+//START FUNCTION
+//WE ONLY WANT TO START IN IFRAME OR CONTENT SCRIPT CONTEXT
+//IF THIS IS INJECTED INTO MAIN FRAME BY DEBUGGER, WE WILL HAVE DOUBLE REPORTING
+switch(true) {
+    //if we are an iframe we need to report and start
+    case EventReplayer.contextIsIframe():
+        console.log(`%cEvent Replayer activated in iframe with origin ${window.location.origin}`, 'color: green');
+        EventReplayer.startReplayingEvents();
+        break;
+    case EventReplayer.contextIsContentScript():
+        console.log(`%cEvent Replayer activated via Content Script in main frame with origin ${window.location.origin}`, 'color: blue');
+        EventReplayer.startReplayingEvents();
+        break;
+    default:
+        console.log(`%cEvent Replayer NOT activated in main frame with origin ${window.location.origin}`, 'color: dimgrey');
 }

@@ -16,23 +16,3 @@ chrome.browserAction.onClicked.addListener(function() {
         });
     }); 
 });
-
-//ONLY FOR TESTING REPLAYER
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-
-    //we only want to listen to replay events 
-    if (request.hasOwnProperty('replayEvent')) {
-        //send a basic response
-        sendResponse({message: "Background Relay Received Replay Event"});
-        //then get the index page to make sure we send it back to the right place
-        chrome.tabs.query({active: true}, (tabs) => {
-            //once we have found our testing page send the incoming replay event back to the page
-            chrome.tabs.sendMessage(tabs[0].id, {replayEvent: request.replayEvent}, response => {
-                //then we need to check here that the response process is working as expected 
-                console.log(response.replayExecution);
-            });
-        });
-
-    }
-      
-});
