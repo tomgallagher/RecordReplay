@@ -186,7 +186,7 @@ function addTestTableButtonListeners() {
     });
 
     //delete test button click handler
-    $('.ui.testsTable.table .deleteTestLink').on('click', function(){
+    $('.ui.testsTable.table .deleteTestLink').on('dblclick', function(){
         
         //delete the test in the database, using data-test-id from the template
         const testKey = $(this).attr("data-test-id");

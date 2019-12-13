@@ -199,7 +199,7 @@ function addRecordingTableButtonListeners() {
     });
 
     //delete recording button click handler
-    $('.deleteRecordingLink').on('click', function(){
+    $('.deleteRecordingLink').on('dblclick', function(){
         
         //close the edit recording form if it's open
         $('.editRecordingFooter').css("display", "none");

@@ -221,7 +221,7 @@ function addReplayTableButtonListeners() {
     });
 
     //delete replay button click handler
-    $('.ui.replaysTable .deleteReplayLink').on('click', function(){
+    $('.ui.replaysTable .deleteReplayLink').on('dblclick', function(){
         
         //close the show replay replayEvents table
         $('.ui.fluid.showReplay.container').css('display', 'none');
