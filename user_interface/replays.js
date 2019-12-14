@@ -335,9 +335,9 @@ function uodateReplayEventsTableCodeReports(replay) {
                 let messagesNode = tempCard.querySelector('.recordingOrAssertionEventType');
                 let messagesArray = failedReplayEventArray[errorEvent].replayErrorMessages || failedReplayEventArray[errorEvent].assertionErrorMessages;
                 messagesNode.textContent = messagesArray.join(', ');
-                //<div class="chosenSelector description"></div>
-                let selectorNode = tempCard.querySelector('.chosenSelector');
-                selectorNode.textContent = failedReplayEventArray[errorEvent].assertionChosenSelectorString || failedReplayEventArray[errorEvent].replayChosenSelectorString;
+                //<div class="targetElement description"></div>
+                let elementNode = tempCard.querySelector('.targetElement');
+                elementNode.textContent = failedReplayEventArray[errorEvent].recordingEventHTMLTag;
                 //then append the card to the document fragment
                 docFrag.appendChild(tempCard);
 
@@ -677,14 +677,12 @@ function addStartReplayHandler() {
                 //so the message response.replayExecution.replayEventStatus needs to be mapped to replayEvent.replayEventStatus
                 //so the message response.replayExecution.replayLogMessages needs to be mapped to replayEvent.replayLogMessages
                 //so the message response.replayExecution.replayErrorMessages needs to be mapped to replayEvent.replayErrorMessages
-                //so the message response.replayExecution.chosenSelectorReport.selectorString needs to be mapped to replayEvent.chosenSelectorString
                 
                 //various mutations of the replay assertion event have to occur here
                 //so the message response.replayExecution.replayEventReplayed needs to be mapped to the assertionEvent.assertionEventReplayed
                 //so the message response.replayExecution.replayEventStatus needs to be mapped to assertionEvent.assertionEventStatus
                 //so the message response.replayExecution.replayLogMessages needs to be mapped to assertionEvent.assertionLogMessages
                 //so the message response.replayExecution.replayErrorMessages needs to be mapped to assertionEvent.assertionErrorMessages
-                //so the message response.replayExecution.chosenSelectorReport.selectorString needs to be mapped to assertionEvent.chosenSelectorString
 
                 //then we need to do slightly more complicated work to calculate the replayTimeSincePrevious
                 //then we need to do slightly more complicated work to calculate the assertionTimeSincePrevious
