@@ -18,7 +18,9 @@ class ReplayEvent extends RecordingEvent {
             //then we are going to want to have log messages so we can report to the user
             replayLogMessages: [],
             //then we are going to want to know why the replay event has failed
-            replayErrorMessages: []
+            replayErrorMessages: [],
+            //then we are goint to want to know which selector was used in the replay
+            replayChosenSelectorString: ""
         };
         // create a new object with the defaults over-ridden by the options passed in
         let opts = Object.assign({}, defaults, options);

@@ -150,9 +150,11 @@ function addReplayTablePaginationListener() {
 
 function addReplayTableButtonListeners() {
 
+    console.log("adding replay table button listeners");
     //delete replay button click handler
     $('.ui.replaysTable .showReplayLink').on('click', function(){
         
+        console.log("Firing Show Replay Link");
         //find the replay in the database by id, using data-replay-id from the template
         const replayKey = $(this).attr("data-replay-id");
         //the replay key will be in string format - StorageUtils handles conversion
@@ -172,7 +174,7 @@ function addReplayTableButtonListeners() {
                 //update the checkboxes to have the current replay id                
                 $('.ui.fluid.showReplay.container .ui.code.form .ui.radio.checkbox input[name="outputCodeType"]').attr('data-replay-id', replayKey);
                 //then update the edit replay events table
-                updateReplayEventsTableAndCodeText(replay);
+                uodateReplayEventsTableCodeReports(replay);
                 //then remove the loading indicator
                 $('.ui.fluid.showReplay.container .ui.bottom.attached.active.tab.segment ').removeClass('loading');
             })
@@ -184,6 +186,7 @@ function addReplayTableButtonListeners() {
     //run replay button click handler
     $('.ui.replaysTable .runReplayLink').on('click', function(){
         
+        console.log("Firing Run Replay Link");
         //find the replay in the database by id, using data-replay-id from the template
         const replayKey = $(this).attr("data-replay-id");
         //the replay key will be in string format - StorageUtils handles conversion
@@ -212,8 +215,6 @@ function addReplayTableButtonListeners() {
                 }
                 //add listeners for the clicks in the show replay replay events table
                 addRunReplayReplayEventsTableButtonListeners();
-                //add the listeners for the button to start the replay
-                addStartReplayHandler();
             })
             //the get single object function will reject if object is not in database
             .catch(error => console.error(error));   
@@ -223,6 +224,7 @@ function addReplayTableButtonListeners() {
     //delete replay button click handler
     $('.ui.replaysTable .deleteReplayLink').on('dblclick', function(){
         
+        console.log("Firing Delete Replay Link");
         //close the show replay replayEvents table
         $('.ui.fluid.showReplay.container').css('display', 'none');
         //close the run replay replayEvents table
@@ -248,10 +250,16 @@ function addReplayTableButtonListeners() {
 //SLAVE SHOW REPLAY EVENTS TABLE OPERATION - THIS POPULATES THE SHOW EVENTS TABLE WITH ALL THE REPLAY EVENTS FROM THE SELECTED REPLAY
 //THIS HAS A SEPARATE FUNCTION DUE TO THE COMPEXITIES OF THE CODE GENERATION - THE SLAVE RUN REPLAY POPULATION IS DONE INLINE IN THE BUTTON LISTENER
 
-function updateReplayEventsTableAndCodeText(replay) {
+function uodateReplayEventsTableCodeReports(replay) {
 
+    console.log(replay);
     //empty the table body first
     $('.ui.showReplayReplayEventsTable.table tbody').empty();
+    //hide the error cards 
+    $('.ui.four.errorEvent.stackable.cards').hide();
+    //and the positive placeholder 
+    $('.ui.execution.positive.placeholder.segment').hide();
+    
     //get a reference to the table
     const table = document.querySelector('.ui.showReplayReplayEventsTable.table tbody')
     //then for each replayEvent we need to add it to the table and the textarea
@@ -266,11 +274,94 @@ function updateReplayEventsTableAndCodeText(replay) {
 
     //TO DO - CODE FOR JEST AND PUPPETEER
 
+
+
     //make sure the code text area is the same height as the table, to indicate the number of events
     $('.ui.fluid.showReplay.container .codeOutputTextArea').css("max-height", "none");
     $('.ui.fluid.showReplay.container .codeOutputTextArea').height($('.ui.fluid.showReplay.container .showReplayReplayEventsTable ').height());
 
-    //TO DO - UPDATE THE REPORTS SECTION USING THE TEMPLATES
+    //report execution history
+    if (replay.mutatedReplayEventArray && replay.mutatedReplayEventArray.length > 0) {
+
+        //first we need to see if we have any failures in the most recent replay history
+        const failedReplayEventArray = replay.mutatedReplayEventArray.filter(item => item.replayEventStatus == false || item.assertionEventStatus == false);
+        //then, if we do, we need to deliver some fail cards
+        if (failedReplayEventArray.length > 0) {
+
+            //we need a map to give a visual representation of the actions
+            const actionToIconMap = {
+                Page : "fab fa-chrome fa-5x",
+                Mouse : "fas fa-mouse fa-5x",
+                Assertion : "fas fa-equals fa-5x",
+                Scroll : "fas fa-arrows-alt-v fa-5x",
+                Keyboard : "far fa-keyboard fa-5x",
+                Input : "far fa-user fa-5x",
+                TextSelect : "fas fa-highlighter fa-5x",
+            };
+            //hide the placeholder
+            $('.ui.history.placeholder.segment').hide();
+            //hide the positive placeholder
+            $('.ui.execution.positive.placeholder.segment').hide();
+            //on multiple iterations, empty the error card so we can add the updated information
+            $('.ui.four.errorEvent.stackable.cards').empty();
+            //target our error event card template first, we only need to find the template once
+            let targetNode = document.querySelector('.failedEventCardTemplate');
+            //we need to do more work as we have to save the template in a table, which we don't need, we just want the row
+            let targetCard = targetNode.querySelector('.ui.red.raised.card');
+            //then create a document fragment that we will use as a container for each looped template
+            let docFrag = document.createDocumentFragment();
+
+            //then we loop through the error events and add in the information
+            for (let errorEvent in failedReplayEventArray) { 
+                
+                //then we make a clone of the card, that will serve the purpose
+                let tempCard = targetCard.cloneNode(true);
+                //<div class="right floated meta timeFailed">14h</div>
+                let failTimeNode = tempCard.querySelector('.timeFailed');
+                let failTime = failedReplayEventArray[errorEvent].assertionEventReplayed || failedReplayEventArray[errorEvent].assertionEventReplayed;
+                failTimeNode.textContent = new Date(failTime).toLocaleString();
+                //<i class="recordingOrAssertionEventActionIcon" style="color:#6435c9"></i> 
+                let iconNode = tempCard.querySelector('.recordingOrAssertionEventActionIcon');
+                let iconAction = failedReplayEventArray[errorEvent].assertionEventAction || failedReplayEventArray[errorEvent].recordingEventAction;
+                //then split the font awesome class by space as we can't add multiple classes
+                actionToIconMap[iconAction].split(' ').forEach(item => iconNode.classList.add(item));
+                //<div class="recordingOrAssertionEventAction header"></div>
+                let actionNode = tempCard.querySelector('.recordingOrAssertionEventAction');
+                actionNode.textContent = failedReplayEventArray[errorEvent].assertionEventAction || failedReplayEventArray[errorEvent].recordingEventAction;
+                //<span class="recordingOrAssertionEventType"></span>
+                let typeNode = tempCard.querySelector('.recordingOrAssertionEventType');
+                typeNode.textContent = failedReplayEventArray[errorEvent].assertionType || failedReplayEventArray[errorEvent].recordingEventActionType;
+                //<span class="joinedReplayOrAssertionErrorMessages"></span>
+                let messagesNode = tempCard.querySelector('.recordingOrAssertionEventType');
+                let messagesArray = failedReplayEventArray[errorEvent].replayErrorMessages || failedReplayEventArray[errorEvent].assertionErrorMessages;
+                messagesNode.textContent = messagesArray.join(', ');
+                //<div class="chosenSelector description"></div>
+                let selectorNode = tempCard.querySelector('.chosenSelector');
+                selectorNode.textContent = failedReplayEventArray[errorEvent].assertionChosenSelectorString || failedReplayEventArray[errorEvent].replayChosenSelectorString;
+                //then append the card to the document fragment
+                docFrag.appendChild(tempCard);
+
+            }
+
+            //once we have finished 
+            let failureCards = document.querySelector('.ui.four.errorEvent.stackable.cards');
+            //then we append the fragment to the table
+            failureCards.appendChild(docFrag);
+            //then show the cards
+            $('.ui.four.errorEvent.stackable.cards').show();
+           
+        } else {
+
+            //hide the placeholder
+            $('.ui.history.placeholder.segment').hide();
+            //hide the error cards 
+            $('.ui.four.errorEvent.stackable.cards').hide();
+            //show the positive placeholder 
+            $('.ui.execution.positive.placeholder.segment').show();
+            
+        }
+
+    }
 
     //report performance timings
     if (replay.replayPerformanceTimings && Object.keys(replay.replayPerformanceTimings).length > 0) {
@@ -285,13 +376,67 @@ function updateReplayEventsTableAndCodeText(replay) {
         //TO DO then relative times for the other two
         tempNode.querySelector('.onDomLoadedTime.description').text(new Date(replay.replayPerformanceTimings.onDOMContentLoaded).toLocaleString());
         tempNode.querySelector('.onCompleteTime.description').text(new Date(replay.replayPerformanceTimings.onCompleted).toLocaleString());
-        //then replace
-        document.querySelector('.ui.performance.placeholder.segment').replaceWith(tempNode);
+        //hide the placeholder
+        $('.ui.performance.placeholder.segment').hide();
+        //remove any existing steps from earlier iterations
+        $('.ui.basic.performance.segment').remove('.ui.three.steps');
+        //then add the performance steps
+        $('.ui.basic.performance.segment').append(tempNode);
+        
+    } else {
+
+        //show the placeholder
+        $('.ui.performance.placeholder.segment').show();
+        //then remove any performance steps
+        $('.ui.basic.performance.segment').remove('.ui.three.steps');
 
     }
     
     //report resource loads using replay.replayResourceLoads object
+    if (replay.replayResourceLoads && Object.keys(replay.replayResourceLoads).length > 0) {
 
+        //then we need to create the data for the chart from the replay resource loads object
+        //labels from the object keys
+        const chartLabels = Object.keys(replay.replayResourceLoads);
+        //data from the object values
+        const chartData = Object.values(replay.replayResourceLoads);
+        //then the colour variables
+        let chartColours = ["red", "orange", "purple", "yellow", "green", "blue", "grey"].slice(chartLabels.length - 1); 
+        let chartBackgroundColour = 'white';
+        //then get theme setting
+        const inverted = localStorage.getItem("ThemeInverted");
+        //if inverted we need to change the chart background colour to black
+        inverted == "true" ? chartBackgroundColour = 'black' : null;
+        //set up the chart config
+        var chartConfig = { 
+            //doughnut chart
+            type: 'doughnut',
+            //one dataset for the chart, with matched length arrays of chart data, chart colours and labels, as well as a label for the one data set  
+            data: { datasets: [ { data: chartData, backgroundColor: chartColours, label: 'Resource Loads'} ], labels: chartLabels }, 
+            //and chart options
+			options: { responsive: true }
+        };
+        //hide the placeholder
+        $('.ui.performance.placeholder.segment').hide();
+        //remove any existing charts from earlier iterations
+        $('.ui.basic.performance.segment').remove('.resourceLoadsChart');
+        //add the canvas 
+        $('.ui.basic.performance.segment').append(`<canvas class="resourceLoadsChart" style="display: block; background-color: ${chartBackgroundColour}"></canvas>`);
+        //get the canvas context
+        var ctx = document.querySelector('.resourceLoadsChart').getContext('2d');
+        //draw the chart
+        new Chart(ctx, chartConfig);
+
+    } else {
+
+        //show the placeholder
+        $('.ui.performance.placeholder.segment').show();
+        //then remove any charts
+        $('.ui.basic.performance.segment').remove('.resourceLoadsChart');
+
+    }
+
+    //TO DO - UPDATE THE REPORTS SECTION USING THE TEMPLATES
     //report screenshot with replay.replayScreenShot string of Base64-encoded image data
 
 }
@@ -364,7 +509,7 @@ function addShowReplayReplayEventsTableButtonListeners() {
             //then we need to do the update to the table 
             .then(savedReplay => {
                 //this is specific to the showReplayReplayEventsTable, also used on initial display
-                updateReplayEventsTableAndCodeText(savedReplay);
+                uodateReplayEventsTableCodeReports(savedReplay);
             })  
             //the get single object function will reject if object is not in database
             .catch(error => console.error(error));      
@@ -380,6 +525,7 @@ function addRunReplayReplayEventsTableButtonListeners() {
 
     $('.ui.runReplayReplayEventsTable.table .showReplayEventRow').on('click', function(){
 
+        console.log("Firing Run Replay Table Row Show Link");
         //here we deal with messages that are appended to the html as the replay is running
         //we have log messages for all replay events
         const logMessages = JSON.parse($(this).attr("data-log-messages"));
@@ -432,6 +578,7 @@ function addRunReplayReplayEventsTableButtonListeners() {
 
     $('.ui.runReplayReplayEventsTable.table .deleteReplayEventRow').on('click', function(){
 
+        console.log("Firing Run Replay Table Row Delete Link");
         //find the replay in the database by id, using data-replay-id from the template
         const replayKey = $(this).attr("data-replay-id");
         //do the same with the replay event key
@@ -520,22 +667,24 @@ function addStartReplayHandler() {
                 //then we need to make sure that the events happen in the same time frame as the recording
                 .concatMap(replayEvent => Rx.Observable.of(replayEvent).delay(replayEvent.recordingTimeSincePrevious))
 
-                //THIS IS WHERE THE EVENT MUST BE EXECUTED AND MUTATED
+                //THIS IS WHERE THE EVENT MUST BE EXECUTED, CONFIRMED AND MUTATED
                 //WE MUST DO THIS WITH A CHROME MESSAGE sendMessageGetResponse AND A TIMER FOR FAILS
-                //WE ALSO NEED A METHOD OF HANDLING INCOMING NAVIGATION MESSAGES THAT DO NOT HAPPEN ON A sendMessageGetResponse basis
-                //THE NAVIGATION MESSAGE MUST BE SENT AS A REPLAY EVENT
+                //THE MESSAGES GO OUT TO ALL FRAMES IN THE PAGE, AS WELL AS THE BACKGROUND TAB RUNNER (FOR KEYBOARD AND NAVIGATION)
+                //NAVIGATION EVENTS WILL REQUIRE A DIFFERENT FAIL TIMER - OTHERWISE RESPONSE, IF ANY, SHOULD BE VIRTUALLY INSTANTANEOUS
                 
                 //various mutations of the replay event have to occur here
                 //so the message response.replayExecution.replayEventReplayed needs to be mapped to the replayEvent.replayEventReplayed
                 //so the message response.replayExecution.replayEventStatus needs to be mapped to replayEvent.replayEventStatus
                 //so the message response.replayExecution.replayLogMessages needs to be mapped to replayEvent.replayLogMessages
                 //so the message response.replayExecution.replayErrorMessages needs to be mapped to replayEvent.replayErrorMessages
+                //so the message response.replayExecution.chosenSelectorReport.selectorString needs to be mapped to replayEvent.chosenSelectorString
                 
                 //various mutations of the replay assertion event have to occur here
-                //so the message response.replayExecution.replayEventReplayed needs to be mapped to the replayEvent.assertionEventReplayed
-                //so the message response.replayExecution.replayEventStatus needs to be mapped to replayEvent.assertionEventStatus
-                //so the message response.replayExecution.replayLogMessages needs to be mapped to replayEvent.assertionLogMessages
-                //so the message response.replayExecution.replayErrorMessages needs to be mapped to replayEvent.assertionErrorMessages
+                //so the message response.replayExecution.replayEventReplayed needs to be mapped to the assertionEvent.assertionEventReplayed
+                //so the message response.replayExecution.replayEventStatus needs to be mapped to assertionEvent.assertionEventStatus
+                //so the message response.replayExecution.replayLogMessages needs to be mapped to assertionEvent.assertionLogMessages
+                //so the message response.replayExecution.replayErrorMessages needs to be mapped to assertionEvent.assertionErrorMessages
+                //so the message response.replayExecution.chosenSelectorReport.selectorString needs to be mapped to assertionEvent.chosenSelectorString
 
                 //then we need to do slightly more complicated work to calculate the replayTimeSincePrevious
                 //then we need to do slightly more complicated work to calculate the assertionTimeSincePrevious
@@ -553,7 +702,8 @@ function addStartReplayHandler() {
                                 assertionEventStatus: false,
                                 assertionLogMessages: ["Page Activated", "Element Located"],
                                 assertionErrorMessages: ["Element Attribute Not Present", "Element Attribute Content Unmatched"],
-                                assertionTimeSincePrevious: replayEvent.recordingTimeSincePrevious
+                                assertionTimeSincePrevious: replayEvent.recordingTimeSincePrevious,
+                                assertionChosenSelectorString: "SomeChosenSelector"
                             }
                         );
 
@@ -567,7 +717,8 @@ function addStartReplayHandler() {
                                 replayEventStatus: true,
                                 replayLogMessages: ["Page Activated", "Element Located", "Event Replayed"],
                                 replayErrorMessages: [],
-                                replayTimeSincePrevious: replayEvent.recordingTimeSincePrevious
+                                replayTimeSincePrevious: replayEvent.recordingTimeSincePrevious,
+                                replayChosenSelectorString: "SomeChosenSelector"
                             }
                         );
 
@@ -673,6 +824,8 @@ function addStartReplayHandler() {
 
 $(document).ready (function(){
 
+    //add the listener for the run replay button
+    addStartReplayHandler();
     //activate the tab control
     $('.ui.showReplay.container .ui.top.attached.replay.tabular.menu .item').tab({
         //we need to rehide stuff as tabs are shown
