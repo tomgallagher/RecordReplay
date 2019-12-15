@@ -316,10 +316,6 @@ class ReplayTabRunner {
 
     }
 
-    //TO DO - WE NEED THE CHROME DEVTOOLS PROTOCOL EQUIVALENT OF THE REPLAY SELECTOR REPORT
-
-
-
     takeScreenshot = async () => {
 
         //we instruct the debugger to take the screenshot with a wrapped promise
