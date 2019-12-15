@@ -191,9 +191,9 @@ EventReplayer.startReplayingEvents = () => {
                     typeReplayer.replayLogMessages.push(`${typeReplayer.actionType.toUpperCase()} Assertion Passed`);
                 }
                 //otherwise we have a successful event replay and we need to update the event player to indicate that
-                // we report the time of the fail
+                // we report the time of the pass
                 typeReplayer.replayEventReplayed = Date.now();
-                //and we set the status to false to indicate a failed replay
+                //and we set the status to true to indicate a successful replay
                 typeReplayer.replayEventStatus = true;
                 //then report to the log messages array
                 typeReplayer.replayLogMessages.push(`${typeReplayer.actionType.toUpperCase()} Event Playback Confirmed`);

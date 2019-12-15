@@ -253,13 +253,21 @@ function addReplayTableButtonListeners() {
 function uodateReplayEventsTableCodeReports(replay) {
 
     console.log(replay);
+
+
+    //RESET VIEW
     //empty the table body first
     $('.ui.showReplayReplayEventsTable.table tbody').empty();
     //hide the error cards 
     $('.ui.four.errorEvent.stackable.cards').hide();
     //and the positive placeholder 
     $('.ui.execution.positive.placeholder.segment').hide();
+    //then remove any charts
+    $('.ui.basic.performance.segment').remove('.resourceLoadsChart');
     
+
+    //UPDATE TABLE
+
     //get a reference to the table
     const table = document.querySelector('.ui.showReplayReplayEventsTable.table tbody')
     //then for each replayEvent we need to add it to the table and the textarea
@@ -272,7 +280,9 @@ function uodateReplayEventsTableCodeReports(replay) {
     //add listeners for the clicks in the show replay replay events table
     addShowReplayReplayEventsTableButtonListeners();
 
+
     //TO DO - CODE FOR JEST AND PUPPETEER
+    //UPDATE CODE
 
 
 
@@ -280,7 +290,9 @@ function uodateReplayEventsTableCodeReports(replay) {
     $('.ui.fluid.showReplay.container .codeOutputTextArea').css("max-height", "none");
     $('.ui.fluid.showReplay.container .codeOutputTextArea').height($('.ui.fluid.showReplay.container .showReplayReplayEventsTable ').height());
 
-    //report execution history
+
+    //UPDATE EXECUTION HISTORY
+
     if (replay.mutatedReplayEventArray && replay.mutatedReplayEventArray.length > 0) {
 
         //first we need to see if we have any failures in the most recent replay history
@@ -363,7 +375,8 @@ function uodateReplayEventsTableCodeReports(replay) {
 
     }
 
-    //report performance timings
+    //UPDATE PERFORMANCE TIMINGS
+
     if (replay.replayPerformanceTimings && Object.keys(replay.replayPerformanceTimings).length > 0) {
 
         let targetNode = document.querySelector('.performanceTimingsTemplate');
@@ -392,7 +405,9 @@ function uodateReplayEventsTableCodeReports(replay) {
 
     }
     
-    //report resource loads using replay.replayResourceLoads object
+    
+    //UPDATE RESOURCE LOADS
+
     if (replay.replayResourceLoads && Object.keys(replay.replayResourceLoads).length > 0) {
 
         //then we need to create the data for the chart from the replay resource loads object
@@ -700,8 +715,7 @@ function addStartReplayHandler() {
                                 assertionEventStatus: false,
                                 assertionLogMessages: ["Page Activated", "Element Located"],
                                 assertionErrorMessages: ["Element Attribute Not Present", "Element Attribute Content Unmatched"],
-                                assertionTimeSincePrevious: replayEvent.recordingTimeSincePrevious,
-                                assertionChosenSelectorString: "SomeChosenSelector"
+                                assertionTimeSincePrevious: replayEvent.recordingTimeSincePrevious
                             }
                         );
 
@@ -716,7 +730,6 @@ function addStartReplayHandler() {
                                 replayLogMessages: ["Page Activated", "Element Located", "Event Replayed"],
                                 replayErrorMessages: [],
                                 replayTimeSincePrevious: replayEvent.recordingTimeSincePrevious,
-                                replayChosenSelectorString: "SomeChosenSelector"
                             }
                         );
 

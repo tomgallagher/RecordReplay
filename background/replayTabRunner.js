@@ -29,6 +29,8 @@ class ReplayTabRunner {
             this.withLogging = withLogging;
             //then we need an instance of the webNavigator class
             this.webNavigator = new WebNavigator();
+            //then we need an instance of the messenger class as we will be handling keyboard and navigation messages and sending responses
+            this.messengerService = new RecordReplayMessenger({}).isAsync(true);
             //then the replay tab runner collects lots of important information for the replay
             //we need to collect performance timings for the tab, should show important events from the web navigator
             this.performanceTimings = {};
@@ -182,11 +184,52 @@ class ReplayTabRunner {
         //we need to return the following properties to stay uniform with the main replayer
         //replayExecution.replayEventReplayed, replayExecution.replayEventStatus, replayExecution.replayLogMessages, replayExecution.replayErrorMessages
         
-        //TO DO - HANDLE THE REQUESTS FROM THE USER INTERFACE TO CONFIRM PAGE LOAD
-        //WE CAN PAIR THE PAGE REPLAY EVENT MESSAGE WITH THE NAVIGATOR OBSERVABLE
-        //needs to be repeatable, we can zip but what about fails to reach complete?  
-        //we need to return the following properties to stay uniform with the main replayer
-        //replayExecution.replayEventReplayed, replayExecution.replayEventStatus, replayExecution.replayLogMessages, replayExecution.replayErrorMessages
+        //HANDLE THE REQUESTS FROM THE USER INTERFACE TO CONFIRM PAGE LOAD
+        //WE PAIR THE PAGE REPLAY EVENT MESSAGE WITH THE NAVIGATOR OBSERVABLE
+        const navigationConfirmationObservable = Rx.Observable.combineLatest(
+                //first we want to listen for all navigation event onComplete events
+                this.webNavigator.navigationEventsObservable
+                    //then we only care about the onComplete Event
+                    .filter(navObject => navObject.recordReplayWebNavigationEvent == 'onCompleted')
+                    //then we only care about events happening in our curated tab
+                    .filter(navObject => navObject.tabId == this.browserTabId)
+                    //then we only care about the main frame
+                    .filter(navObject => navObject.frameId == 0),
+                //then we want to listen for all Page events sent from the user interface
+                this.messengerService.chromeOnMessageObservable
+                    //firstly we only care about messages that contain a replay event
+                    .filter(messageObject => messageObject.request.hasOwnProperty('replayEvent'))
+                    //if we have a replay event, then map the message object to the replay event only and attach the sendResponse so we can return feedback as soon as we get it
+                    .map(messageObject => {
+                        //we need to extract the replay event coming in from the message object
+                        let replayEvent = messageObject.request.replayEvent;
+                        //we need to attach the sendResponse callback to the replay event
+                        replayEvent.sendResponse = messageObject.sendResponse;
+                        //then return the replay event
+                        return replayEvent;
+                    })
+                    //then we operate a filter so we only receive origin 'Page' events
+                    .filter(replayEvent => replayEvent.recordingEventOrigin == 'Page' && replayEvent.recordingEventActionType == 'onCompleted')
+            )
+            //then we just need to send the response if we have matching events
+            .do(([navigationEvent, replayEvent]) => {
+                //if we have a match, we need to return the following properties to stay uniform with the main replayer
+                //replayExecution.replayEventReplayed, replayExecution.replayEventStatus, replayExecution.replayLogMessages, replayExecution.replayErrorMessages
+                if (navigationEvent.url == replayEvent.recordingEventLocationHref) {
+                    // we report the time of the pass
+                    replayEvent.replayEventReplayed = Date.now();
+                    //and we set the status to true to indicate a successful replay
+                    replayEvent.replayEventStatus = true;
+                    //then report to the log messages array
+                    replayEvent.replayLogMessages.push(`Page Navigation Confirmed`);
+                    //first we make a clone of the replay event 
+                    var replayExecution = Object.assign({}, replayEvent);
+                    //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
+                    delete replayExecution.sendResponse;
+                    //then we send the clean clone
+                    replayEvent.sendResponse({replayExecution: replayExecution});
+                }
+            });
 
         //CHROME REMOTE DEVTOOLS PROTOCOL COMMANDS
         //then we need to attach the debugger so we can send commands
@@ -235,7 +278,9 @@ class ReplayTabRunner {
             //then we need to start the performance timings observable
             performanceTimingsObservable,
             //then we start the reource loads observable
-            dataUsageObservable
+            dataUsageObservable,
+            //then we start the navigation confirmation observable
+            navigationConfirmationObservable
         ).subscribe();
         //return so the synthetic promise is resolved
         return;
@@ -275,26 +320,30 @@ class ReplayTabRunner {
     takeScreenshot = async () => {
 
         //we instruct the debugger to take the screenshot with a wrapped promise
-        await new Promise(resolve => 
-            //send the command to the debugger
-            chrome.debugger.sendCommand(
-                //always use our tab ID
-                { tabId: this.browserTabId },
-                //send the screenshot command 
-                "Page.captureScreenshot", 
-                //then the image params
-                { format: "jpeg", quality: 70 },
-                //this returns string of Base64-encoded image data
-                data => { 
-                    //save the string to our class property
-                    this.screenShot = data;
-                    //log that the screenshot has been taken
-                    this.log(10); 
-                    //then resolve
-                    resolve(); 
-                } 
-            )
-        );
+        await new Promise(resolve => {
+            //we will get an error if we try to take screenshot after tab closed
+            if (this.openState) {
+                //send the command to the debugger
+                chrome.debugger.sendCommand(
+                    //always use our tab ID
+                    { tabId: this.browserTabId },
+                    //send the screenshot command 
+                    "Page.captureScreenshot", 
+                    //then the image params
+                    { format: "jpeg", quality: 70 },
+                    //this returns string of Base64-encoded image data
+                    data => { 
+                        //save the string to our class property
+                        this.screenShot = data;
+                        //log that the screenshot has been taken
+                        this.log(10); 
+                        //then resolve
+                        resolve(); 
+                    } 
+                );
+            //if the tab is closed we just resolve and do not update the screenshot property
+            } else { resolve(); }
+        });
         //return so the synthetic promise is resolved
         return;
 
