@@ -47,7 +47,7 @@ class ReplayTabRunner {
                 handler => chrome.tabs.onRemoved.removeListener(handler)
             //this is crucial to keep the independence of our curated tab and also to track our tab state
             ).filter(tabId => tabId == this.browserTabId).do(() => this.openState = false);  
-                                    
+
             //and we're done - always remember to return this to the constructor in an async function or the whole thing is pointless
             return this; 
 
@@ -301,16 +301,16 @@ class ReplayTabRunner {
             { depth: -1, pierce: true }, 
             node => { this.log(12); resolve(node); } ));
         //then we need to search for our replay event's css selector
-        const targetNode = await new Promise(resolve => chrome.debugger.sendCommand(
+        const targetNodeId = await new Promise(resolve => chrome.debugger.sendCommand(
             //send to our tab
             { tabId: this.browserTabId },
             //Executes querySelector on a given node.
             "DOM.querySelector", 
             //we need to use the most favoured selector here, just using this one for now
             { nodeId: domNode.nodeId, selector: replayEvent.recordingEventCssSelectorPath}, 
-            node => { this.log(13, selector); resolve(node); } ));
+            nodeId => { this.log(13, selector); resolve(nodeId); } ));
         //then we need to focus on the element which will allow us to start sending key commands
-        await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "DOM.focus", { nodeId: targetNode.nodeId }, () => { this.log(14); resolve(); } ));
+        await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "DOM.focus", { nodeId: targetNodeId }, () => { this.log(14); resolve(); } ));
         //then return the target node, although we don't need it for the keyboard command 
         return targetNode;
 

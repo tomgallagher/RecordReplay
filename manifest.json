@@ -45,6 +45,7 @@
           "background/messageMonitor.js",
           "background/recordingTabRunner.js",
           "background/replayTabRunner.js",
+          "background/domSelectorReport.js",
           "background/webNavigator.js",
           "background/background.js"
           
