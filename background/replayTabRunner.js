@@ -46,7 +46,8 @@ class ReplayTabRunner {
                 handler => chrome.tabs.onRemoved.addListener(handler),
                 handler => chrome.tabs.onRemoved.removeListener(handler)
             //this is crucial to keep the independence of our curated tab and also to track our tab state
-            ).filter(tabId => tabId == this.browserTabId).do(() => this.openState = false);                          
+            ).filter(tabId => tabId == this.browserTabId).do(() => this.openState = false);  
+                                    
             //and we're done - always remember to return this to the constructor in an async function or the whole thing is pointless
             return this; 
 
@@ -176,14 +177,7 @@ class ReplayTabRunner {
                     this.resourceLoads.hasOwnProperty(type) ? this.resourceLoads[type] += dataUsage.encodedDataLength : this.resourceLoads[type] = dataUsage.encodedDataLength;
                 }
             );     
-        
-        
-
-        //TO DO - SUBSCRIBE TO EVENTS MESSAGES AND TRANSLATE KEYBOARD COMMANDS INTO ACTIONS
-        //FOCUS, KEYDOWN THEN KEYUP
-        //we need to return the following properties to stay uniform with the main replayer
-        //replayExecution.replayEventReplayed, replayExecution.replayEventStatus, replayExecution.replayLogMessages, replayExecution.replayErrorMessages
-        
+                
         //HANDLE THE REQUESTS FROM THE USER INTERFACE TO CONFIRM PAGE LOAD
         //WE PAIR THE PAGE REPLAY EVENT MESSAGE WITH THE NAVIGATOR OBSERVABLE
         const navigationConfirmationObservable = Rx.Observable.combineLatest(
@@ -230,7 +224,12 @@ class ReplayTabRunner {
                     replayEvent.sendResponse({replayExecution: replayExecution});
                 }
             });
-
+        
+        //TO DO - SUBSCRIBE TO EVENTS MESSAGES AND TRANSLATE KEYBOARD COMMANDS INTO ACTIONS
+        //FOCUS, KEYDOWN THEN KEYUP
+        //we need to return the following properties to stay uniform with the main replayer
+        //replayExecution.replayEventReplayed, replayExecution.replayEventStatus, replayExecution.replayLogMessages, replayExecution.replayErrorMessages
+        
         //CHROME REMOTE DEVTOOLS PROTOCOL COMMANDS
         //then we need to attach the debugger so we can send commands
         await new Promise(resolve => chrome.debugger.attach({ tabId: this.browserTabId }, "1.3", () => { this.log(0); resolve(); } ));
@@ -316,6 +315,10 @@ class ReplayTabRunner {
         return targetNode;
 
     }
+
+    //TO DO - WE NEED THE CHROME DEVTOOLS PROTOCOL EQUIVALENT OF THE REPLAY SELECTOR REPORT
+
+
 
     takeScreenshot = async () => {
 
