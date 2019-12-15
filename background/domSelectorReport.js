@@ -10,7 +10,6 @@ class DomSelectorReport {
             //we need to create a uniform class with the given selector, using inputs that we get from the EventRecorder
             this.selectorKey = options.key;
             this.selectorString = options.selectorString;
-            this.targetHtmlElement = options.targetHtmlName;
             this.targetHtmlTag = options.targetHtmlTag;
             this.browserTabId = options.browserTabId;
             
@@ -67,5 +66,5 @@ class DomSelectorReport {
         })();
 
     }
-    
+
 }

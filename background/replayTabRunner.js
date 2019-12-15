@@ -225,11 +225,78 @@ class ReplayTabRunner {
                 }
             });
         
-        //TO DO - SUBSCRIBE TO EVENTS MESSAGES AND TRANSLATE KEYBOARD COMMANDS INTO ACTIONS
-        //FOCUS, KEYDOWN THEN KEYUP
-        //we need to return the following properties to stay uniform with the main replayer
-        //replayExecution.replayEventReplayed, replayExecution.replayEventStatus, replayExecution.replayLogMessages, replayExecution.replayErrorMessages
-        
+        //HANDLE THE REQUESTS FROM THE USER INTERFACE TO EXECUTE KEYBOARD ACTIONS
+        const keyboardObservable = this.messengerService.chromeOnMessageObservable
+            //firstly we only care about messages that contain a replay event
+            .filter(messageObject => messageObject.request.hasOwnProperty('replayEvent'))
+            //if we have a replay event, then map the message object to the replay event only and attach the sendResponse so we can return feedback as soon as we get it
+            .map(messageObject => {
+                //we need to extract the replay event coming in from the message object
+                let replayEvent = messageObject.request.replayEvent;
+                //we need to attach the sendResponse callback to the replay event
+                replayEvent.sendResponse = messageObject.sendResponse;
+                //then return the replay event
+                return replayEvent;
+            })
+            //then we operate a filter so we only receive origin 'User' and action type 'Keyboard' events
+            .filter(replayEvent => replayEvent.recordingEventOrigin == 'User' && replayEvent.recordingEventActionType == 'Keyboard')
+            //then we want to run the DomSelectorReports
+            .flatMap(replayEvent =>
+                Promise.all([
+                    DomSelectorReport({key: "CssSelector", selectorString: replayEvent.recordingEventCssSelectorPath, targetHtmlTag: replayEvent.recordingEventHTMLTag, browserTabId: this.browserTabId}),
+                    DomSelectorReport({key: "DomPathSelector", selectorString: replayEvent.recordingEventCssDomPath, targetHtmlTag: replayEvent.recordingEventHTMLTag, browserTabId: this.browserTabId}),
+                    DomSelectorReport({key: "SimmerSelector", selectorString: replayEvent.recordingEventCssSimmerPath, targetHtmlTag: replayEvent.recordingEventHTMLTag, browserTabId: this.browserTabId})
+                ]),
+                (replayEvent, selectorResultsArray) => {
+
+                    //see if we have any invalid selector reports
+                    replayEvent.failedReplaySelectorReports = selectorResultsArray.filter(report => report.invalidSelector);
+                    //if we have invalid selectors then we need to know
+                    if (replayEvent.failedReplaySelectorReports.length > 0) {
+                        replayEvent.replayErrorMessages.push(replayEvent.failedReplaySelectorReports.map(report => report.warningMessages).join(', '));
+                    }
+                    //see if we have any valid selector reports, and if we do, we save as the definitive selector reports 
+                    replayEvent.replaySelectorReports = selectorResultsArray.filter(report => !report.invalidSelector);
+                    //if we have valid selectors then we need to know about which ones remain valid
+                    if (replayEvent.replaySelectorReports.length > 0) {
+                        replayEvent.replayLogMessages.push(replayEvent.replaySelectorReports.map(report => report.logMessages).join(', '));
+                    }
+
+                    //then we need to have an outcome
+                    if (replayEvent.replaySelectorReports.length > 0) {
+                        //select the first report that has provided a positive response
+                        replayEvent.chosenSelectorReport = replayEvent.replaySelectorReports[0];
+                    } else {
+                        //then we need to push an error message to the logs
+                        replayEvent.replayErrorMessages.push(`No Valid Target On Page`);
+                        //otherwise we report the time of the fail
+                        replayEvent.replayEventReplayed = Date.now();
+                        //and we set the status to false to indicate a failed replay
+                        replayEvent.replayEventStatus = false;
+                        //then send the response if we have the facility
+                        if (replayEvent.sendResponse != null) {
+                            //first we make a clone of this 
+                            var replayExecution = Object.assign({}, replayEvent);
+                            //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
+                            delete replayExecution.sendResponse;
+                            //then we send the clean clone
+                            replayEvent.sendResponse({replayExecution: replayExecution});
+                        }            
+                    }
+                    //then return the replay event
+                    return replayEvent;
+
+                }
+            )
+            //then we can filter all those event handlers that return with a state of false
+            .filter(typeReplayer => typeReplayer.replayEventStatus != false)
+
+            //TO DO - FOCUS, KEYDOWN THEN KEYUP
+            //we need to return the following properties to stay uniform with the main replayer
+            //replayExecution.replayEventReplayed, replayExecution.replayEventStatus, replayExecution.replayLogMessages, replayExecution.replayErrorMessages
+
+
+
         //CHROME REMOTE DEVTOOLS PROTOCOL COMMANDS
         //then we need to attach the debugger so we can send commands
         await new Promise(resolve => chrome.debugger.attach({ tabId: this.browserTabId }, "1.3", () => { this.log(0); resolve(); } ));
@@ -307,12 +374,12 @@ class ReplayTabRunner {
             //Executes querySelector on a given node.
             "DOM.querySelector", 
             //we need to use the most favoured selector here, just using this one for now
-            { nodeId: domNode.nodeId, selector: replayEvent.recordingEventCssSelectorPath}, 
+            { nodeId: domNode.nodeId, selector: replayEvent.chosenSelectorReport.selectorString}, 
             nodeId => { this.log(13, selector); resolve(nodeId); } ));
         //then we need to focus on the element which will allow us to start sending key commands
         await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "DOM.focus", { nodeId: targetNodeId }, () => { this.log(14); resolve(); } ));
-        //then return the target node, although we don't need it for the keyboard command 
-        return targetNode;
+        //then return the replay event for further processing 
+        return replayEvent;
 
     }
 
