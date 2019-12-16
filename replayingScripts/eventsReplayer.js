@@ -90,7 +90,6 @@ var EventReplayer = {
 EventReplayer.startReplayingEvents = () => {
     
     EventReplayer.messengerService.chromeOnMessageObservable
-        .do(messageObject => console.log(messageObject))
         //firstly we only care about messages that contain a replay event
         .filter(messageObject => messageObject.request.hasOwnProperty('replayEvent')) 
         //if we have a replay event, then map the message object to the replay event only and attach the sendResponse so we can return feedback as soon as we get it
