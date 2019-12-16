@@ -203,7 +203,23 @@ class ReplayTabRunner {
                     updatedMessageObject.sendResponse({replayExecution: response.replayExecution});
                 }
             );
-              
+        
+        //WE NEED A REPORTS OBSERVABLE TO RETURN THE REPORT DATA TO THE USER INTERFACE WHEN IT ASKS FOR IT
+        const reportObjectObservable = this.messengerService.chromeOnMessageObservable
+            //firstly we only care about messages that are asking for the report object
+            .filter(messageObject => messageObject.request.hasOwnProperty('getReportObject'))
+            //then we take the screenshot in case we need it
+            .switchMap(() =>
+                //this is a promise that sends the message and resolves with a response
+                Rx.Observable.fromPromise( this.takeScreenshot()),
+                //then just return the active recording
+                (messageObject) => messageObject 
+            )
+            //then we just send the current report state
+            .do(messageObject => {
+                const reportObject = { performanceTimings: this.performanceTimings, resourceLoads: this.resourceLoads, screenShot: this.screenShot };
+                messageObject.sendResponse({reportObject: reportObject})
+            });
 
         //HANDLE THE SPECIFIC REQUESTS FROM THE USER INTERFACE TO CONFIRM PAGE LOAD
         //WE PAIR THE PAGE REPLAY EVENT MESSAGE WITH THE NAVIGATOR OBSERVABLE
@@ -242,8 +258,8 @@ class ReplayTabRunner {
                     replayEvent.replayEventReplayed = Date.now();
                     //and we set the status to true to indicate a successful replay
                     replayEvent.replayEventStatus = true;
-                    //then report to the log messages array
-                    replayEvent.replayLogMessages.push(`Page Navigation Confirmed`);
+                    //then create the replay execution log messages array - we don't need to port the exising messages as this is an execution that stands alone
+                    replayEvent.replayLogMessages = [`Page Navigation Confirmed`];
                     //first we make a clone of the replay event 
                     var replayExecution = Object.assign({}, replayEvent);
                     //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
@@ -263,6 +279,9 @@ class ReplayTabRunner {
             .map(messageObject => {
                 //we need to extract the replay event coming in from the message object
                 let replayEvent = messageObject.request.replayEvent;
+                //we need to create new log message and error message arrays as this is an execution and existing messages so not need to be carries forward
+                replayEvent.replayLogMessages = [];
+                replayEvent.replayErrorMessages = [];
                 //we need to attach the sendResponse callback to the replay event
                 replayEvent.sendResponse = messageObject.sendResponse;
                 //then return the replay event
@@ -394,6 +413,8 @@ class ReplayTabRunner {
             dataUsageObservable,
             //then the general message relay 
             messageRelayObservable,
+            //then the general report object
+            reportObjectObservable,
             //then we start the navigation confirmation observable
             navigationConfirmationObservable,
             //then we start the keyboard observable
@@ -476,11 +497,6 @@ class ReplayTabRunner {
         if (this.openState) await new Promise(resolve => chrome.debugger.detach({ tabId: this.browserTabId }, () => { this.log(5); resolve(); } ));
         //then we need to close our curated tab
         if (this.openState) await new Promise(resolve => chrome.tabs.remove(this.browserTabId, () => { this.log(6); resolve(); } ));
-        //then we have some information from the tab runner that we want to save to the replay
-        //const reportObject = { performanceTimings: this.performanceTimings, resourceLoads: this.resourceLoads, screenShot: this.screenShot };
-        //then we need to send that message so the user interface can collect as part of the replay process
-        //this.messengerService.sendMessage({reportObject: reportObject});
-        //we need to stop the observables to prevent memory leaks
         this.startSubscription.unsubscribe();
         //return so the synthetic promise is resolved
         return;

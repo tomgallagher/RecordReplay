@@ -837,10 +837,24 @@ function addStartReplayHandler() {
                     mutatedReplay.replayStatus = (numberMutated == numberPassed ? true : false);
                     //then we add the fail time if required, otherwise set it to zero
                     numberMutated != numberPassed ? mutatedReplay.replayFailTime = Date.now() : mutatedReplay.replayFailTime = 0;
-                    //report the final status of the replay
+                    //report the final status of the replay events
                     console.log(mutatedReplay);
-                    //then we need to save the updated replay to the database
-                    StorageUtils.updateModelObjectInDatabaseTable('replays.js', mutatedReplay.id, mutatedReplay, 'replays')
+                    //then we need to save all the relevant data to the database
+                    new RecordReplayMessenger({}).sendMessageGetResponse({getReportObject: "Make Request for Report Object"})
+                        //then update the replay status accordingly
+                        .then(response => {
+                            console.log(response.reportObject);
+                            //update the performance timings if required
+                            mutatedReplay.recordingTestPerformanceTimings ? mutatedReplay.replayPerformanceTimings = response.reportObject.performanceTimings : null;
+                            //update the resource loads if required
+                            mutatedReplay.recordingTestResourceLoads ? mutatedReplay.replayResourceLoads = response.reportObject.resourceLoads : null;
+                            //update the screenshot if required
+                            mutatedReplay.recordingTestScreenshot ? mutatedReplay.replayScreenShot = response.reportObject.screenShot : null;
+                            //return mutated replay with reports
+                            return mutatedReplay;                
+                        })
+                        //then we need to save the updated replay events and any reports to the database
+                        .then( mutatedReplayWithReports => StorageUtils.updateModelObjectInDatabaseTable('replays.js', mutatedReplayWithReports.id, mutatedReplayWithReports, 'replays') )
                         .then( () => {
                             //and update the master replays table at the top to reflect executed time and status
                             updateReplaysTable();
@@ -850,8 +864,6 @@ function addStartReplayHandler() {
             error => console.error(error),
             () => {
                 console.log("Replay Complete by Observable Complete")
-                //send stop event to background.js
-
                 //hide the recording loader
                 $('.ui.text.small.replay.loader').removeClass('active');
                 //show the start button as enabled
