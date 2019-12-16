@@ -90,6 +90,7 @@ var EventReplayer = {
 EventReplayer.startReplayingEvents = () => {
     
     EventReplayer.messengerService.chromeOnMessageObservable
+        .do(messageObject => console.log(messageObject))
         //firstly we only care about messages that contain a replay event
         .filter(messageObject => messageObject.request.hasOwnProperty('replayEvent')) 
         //if we have a replay event, then map the message object to the replay event only and attach the sendResponse so we can return feedback as soon as we get it
@@ -121,7 +122,7 @@ EventReplayer.startReplayingEvents = () => {
             //then we take either the first emission from the action / playback observable or the timer 
             ).take(1), 
             //we need the original event replayer and the array that is returned by the zip function
-            (typeReplayer, [event, actionFunctionResult]) =>{
+            (typeReplayer, [event, actionFunctionResult]) => {
                 //then at this point we need to do multiple checks, starting with the check that the function has executed within the time frame
                 if (event == "Execution Playback Timeout") {
                     // we report the time of the fail

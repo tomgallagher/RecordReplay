@@ -386,9 +386,10 @@ function uodateReplayEventsTableCodeReports(replay) {
         let tempNode = targetSteps.cloneNode(true);
         //adjust the clone
         tempNode.querySelector('.onCommittedTime.description').text(new Date(replay.replayPerformanceTimings.onCommitted).toLocaleString());
-        //TO DO then relative times for the other two
-        tempNode.querySelector('.onDomLoadedTime.description').text(new Date(replay.replayPerformanceTimings.onDOMContentLoaded).toLocaleString());
-        tempNode.querySelector('.onCompleteTime.description').text(new Date(replay.replayPerformanceTimings.onCompleted).toLocaleString());
+        const dcl = ((replay.replayPerformanceTimings.onDOMContentLoaded - replay.replayPerformanceTimings.onCommitted) / 1000).toFixed(2); 
+        tempNode.querySelector('.onDomLoadedTime.description').text(`${dcl} seconds`);
+        const loaded = ((replay.replayPerformanceTimings.onCompleted - replay.replayPerformanceTimings.onCommitted) / 1000).toFixed(2); 
+        tempNode.querySelector('.onCompleteTime.description').text(`${loaded} seconds`);
         //hide the placeholder
         $('.ui.performance.placeholder.segment').hide();
         //remove any existing steps from earlier iterations
@@ -672,7 +673,17 @@ function addStartReplayHandler() {
         //get the replay from storage using the data id from the button
         .switchMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('replays.js', event.target.getAttribute('data-replay-id') , 'replays')))
         //send the message to the background script to start the replay processes
-        .do(replay => new RecordReplayMessenger({}).sendMessage({newReplay: replay}))
+        .switchMap(replay => 
+            //in the background scripts, there is some time required to set up the active replay and the tab runner
+            //we do not want to start processing events until this happens so we send the message and wait for the response
+            Rx.Observable.fromPromise(new RecordReplayMessenger({}).sendMessageGetResponse({newReplay: replay})),
+            (readyStateReplay, response) => { 
+                //just log the message
+                console.log(response.message);
+                //then return the replay
+                return readyStateReplay;
+            }
+        )
         //we want to keep track of how the replay performs without making changes to the replay itself - so we add the mutated replay event array
         .map(replay => Object.assign({}, replay, { mutatedReplayEventArray: [] }) )
         //then switch map into an observable of the replays events, adding the replay id
@@ -681,61 +692,72 @@ function addStartReplayHandler() {
             Rx.Observable.from(replay.replayEventArray)
                 //then we need to make sure that the events happen in the same time frame as the recording
                 .concatMap(replayEvent => Rx.Observable.of(replayEvent).delay(replayEvent.recordingTimeSincePrevious))
-
-                //THIS IS WHERE THE EVENT MUST BE EXECUTED, CONFIRMED AND MUTATED
-                //WE MUST DO THIS WITH A CHROME MESSAGE sendMessageGetResponse AND A TIMER FOR FAILS
-                //THE MESSAGES GO OUT TO ALL FRAMES IN THE PAGE, AS WELL AS THE BACKGROUND TAB RUNNER (FOR KEYBOARD AND NAVIGATION)
-                //NAVIGATION EVENTS WILL REQUIRE A DIFFERENT FAIL TIMER - OTHERWISE RESPONSE, IF ANY, SHOULD BE VIRTUALLY INSTANTANEOUS
-                
-                //various mutations of the replay event have to occur here
-                //so the message response.replayExecution.replayEventReplayed needs to be mapped to the replayEvent.replayEventReplayed
-                //so the message response.replayExecution.replayEventStatus needs to be mapped to replayEvent.replayEventStatus
-                //so the message response.replayExecution.replayLogMessages needs to be mapped to replayEvent.replayLogMessages
-                //so the message response.replayExecution.replayErrorMessages needs to be mapped to replayEvent.replayErrorMessages
-                
-                //various mutations of the replay assertion event have to occur here
-                //so the message response.replayExecution.replayEventReplayed needs to be mapped to the assertionEvent.assertionEventReplayed
-                //so the message response.replayExecution.replayEventStatus needs to be mapped to assertionEvent.assertionEventStatus
-                //so the message response.replayExecution.replayLogMessages needs to be mapped to assertionEvent.assertionLogMessages
-                //so the message response.replayExecution.replayErrorMessages needs to be mapped to assertionEvent.assertionErrorMessages
-
-                //then we need to do slightly more complicated work to calculate the replayTimeSincePrevious
-                //then we need to do slightly more complicated work to calculate the assertionTimeSincePrevious
-
-                //FOR TESTING UI ONLY
-                .map(replayEvent => {
-                    //we need to do different artificual work for the two types of replay events
-                    if (replayEvent.assertionId) {
-
-                        return Object.assign(
-                            {}, 
-                            replayEvent,
-                            {
-                                assertionEventReplayed: Date.now(),
-                                assertionEventStatus: false,
-                                assertionLogMessages: ["Page Activated", "Element Located"],
-                                assertionErrorMessages: ["Element Attribute Not Present", "Element Attribute Content Unmatched"],
-                                assertionTimeSincePrevious: replayEvent.recordingTimeSincePrevious
-                            }
-                        );
-
-                    } else {
-
-                        return Object.assign(
-                            {}, 
-                            replayEvent,
-                            {
-                                replayEventReplayed: Date.now(),
-                                replayEventStatus: true,
-                                replayLogMessages: ["Page Activated", "Element Located", "Event Replayed"],
-                                replayErrorMessages: [],
-                                replayTimeSincePrevious: replayEvent.recordingTimeSincePrevious,
-                            }
-                        );
-
+                //then we have to map each event in the replay event array to the response from listeners
+                //listeners include ALL FRAMES IN THE PAGE, AS WELL AS THE BACKGROUND TAB RUNNER (FOR KEYBOARD AND NAVIGATION)
+                .switchMap(replayEvent =>
+                    //it is vital to the functioning of the replaying that each event has a timeout 
+                    //we will receive no response if we have a non-matching url from all frames - so if all frames' urls are non-matching = timeout
+                    //we will receive no response if we get no page navigation onCompleted event = timeout
+                    //otherwise we should, on error, get a response.replayExecution with replay status of false and some error messages 
+                    Rx.Observable.merge(
+                        //for every replay event we need to send a message out, with the promise returning the execution response
+                        Rx.Observable.fromPromise(new RecordReplayMessenger({}).sendMessageGetResponse({replayEvent: replayEvent}))
+                            //check what's going on
+                            .do(response => console.log(response))
+                            //then we will have a response object returned from the message service and we only care about the replay execution
+                            .map(response => response.replayExecution),
+                        //we have a have a timer to set a limit on how long we are willing to wait for an execution
+                        //most executions should be quick but page is potentially very slow
+                        Rx.Observable.timer(replayEvent.recordingEventAction == 'Page' ? 60000: 200)
+                            //when the timer emits, it need to return a synthetic stripped down version of the replay execution object
+                            .map( () => ({ replayEventReplayed: Date.now(), replayErrorMessages: ["Unmatched URL Timeout"], replayEventStatus: false }) )
+                    //then we take either the first execution emission or the first synthetic timer execution emission
+                    ).take(1), 
+                    //we need to take the original replay event and the replay execution
+                    (replayEvent, replayExecution) => {
+                        //then what we do here depends upon whether the replay event is standard or assertion
+                        if (replayEvent.assertionId) {
+                            replayEvent.assertionEventReplayed = replayExecution.replayEventReplayed;
+                            replayEvent.assertionEventStatus = replayExecution.replayEventStatus;
+                            replayEvent.assertionLogMessages = replayExecution.replayLogMessages;
+                            replayEvent.assertionErrorMessages = replayExecution.replayErrorMessages;
+                        } else {
+                            replayEvent.replayEventReplayed = replayExecution.replayEventReplayed;
+                            replayEvent.replayEventStatus = replayExecution.replayEventStatus;
+                            replayEvent.replayLogMessages = replayExecution.replayLogMessages;
+                            replayEvent.replayErrorMessages = replayExecution.replayErrorMessages;
+                        }
+                        //then return the event
+                        return replayEvent;
                     }
-                })
+                )
+                //and we need to start with a dummy marker so we can operate with only one emission, this must come before pairwise() to create the first pair
+                //as replay event is an extension of recording event, we need to pass in recording object and blank replay options object
+                .startWith(new ReplayEvent({recordingEventOrigin: 'PairwiseStart'}, {}))
+                //then we need to get the time between each emission so we take two emissions at a time
+                .pairwise()
+                //this then delivers an array with the previous and the current, we only need the current, with adjusted recordingTimeSincePrevious
+                .map(([previousReplayEvent, currentReplayEvent]) => {
+                    //if the previous was not the dummy 'PairwiseStart', then we need to add the relative time of the replay event execution
+                    //if it is then the time since previous will be 0, with zero delay, which is what we want
+                    if (previousReplayEvent.recordingEventOrigin != 'PairwiseStart') {
 
+                        //then we are going to want to know when the previous event was replayed, which is different for assertions and normal replay events
+                        const previousEventReplayed = previousReplayEvent.assertionEventReplayed || previousReplayEvent.replayEventReplayed;
+                        //then we are going to need to know when the current event was replayed, which is again different
+                        const currentEventReplayed = currentReplayEvent.assertionEventReplayed || currentReplayEvent.replayEventReplayed;
+                        //then we need to add the difference to the right property, according to whether it is an assertion or not
+                        if (currentReplayEvent.assertionId) {
+                            //the assertion time since previous needs to be updated
+                            currentReplayEvent.assertionTimeSincePrevious = currentEventReplayed - previousEventReplayed;
+                        } else {
+                            //the replay time since previous  needs to be updated
+                            currentReplayEvent.replayTimeSincePrevious = currentEventReplayed - previousEventReplayed;
+                        }
+                    }
+                    //in both cases we only need to return the current replay event, which will return all apart from the dummy pairwise start
+                    return currentReplayEvent;
+                })
                 //then we need to update the user interface
                 .do(replayEvent => {
                     //we need to work out if we are working with replay or assertion id
@@ -770,7 +792,8 @@ function addStartReplayHandler() {
                 return replay;
             }
         )
-        //we only want to continue to process replay events until the user interface stop replay button is clicked 
+        //we only want to continue to process replay events until the user interface stop replay button is clicked
+        //if neither of these events happen, then we will just process to the end of the array and then reach an end that way
         .takeUntil(
             //merge the two sources of potential recording stop commands, either will do
             Rx.Observable.merge(
@@ -799,8 +822,9 @@ function addStartReplayHandler() {
                 const numberPassed = mutatedReplay.mutatedReplayEventArray.filter(event => event.assertionEventStatus == true || event.replayEventStatus == true).length;
                 console.log(`${numberPassed} Replay Events Passed`);
                 //then if the number of events mutated equals the length of the original replayEventsArray we have finished
+                //we only save mutations to the replay if we reach the end of the array naturally, otherwise it was interrupted
                 if (numberMutated == mutatedReplay.replayEventArray.length) {
-                    console.log("Replay Complete")
+                    console.log("Replay Complete by Events")
                     //then we have to update the replay with the time that this replay was performed
                     mutatedReplay.replayExecuted = Date.now();
                     //then we add the replay status
@@ -819,6 +843,9 @@ function addStartReplayHandler() {
             },
             error => console.error(error),
             () => {
+                console.log("Replay Complete by Observable Complete")
+                //send stop event to background.js
+
                 //hide the recording loader
                 $('.ui.text.small.replay.loader').removeClass('active');
                 //show the start button as enabled

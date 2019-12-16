@@ -8,6 +8,8 @@ class ActiveReplay extends Replay {
         const defaults = {
             //just so we can keep track of the replay id as indicated in the database
             replayID: 0,
+            //then we need to carry the original start message sendResponse function along with us
+            replayStartResponse: null,
             //we need these scripts to be injected into every main_frame and sub_frame in the curated page
             replayScriptsArray: [
                 "third_party/Rx.min.js",
@@ -25,8 +27,6 @@ class ActiveReplay extends Replay {
             replayScriptsString: "N/A",
             //every active replay should have its own tab runner that it can control, so when the replay becomes inactive it stops
             replayBrowserTabRunner: null,
-            //every active replay should have its own web navigator so it can send navigation messages back to the user interface
-            replayBrowserWebNavigator: new WebNavigator,
             //every active replay should have its own messenger so it can send async messages
             replayBrowserMessenger: new RecordReplayMessenger({}).isAsync(true)
         };

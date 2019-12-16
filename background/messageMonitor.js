@@ -103,13 +103,18 @@ class MessageMonitor {
         this.newReplayActionObservable = this.newReplayObservable
             //then we can report what we are doing
             .do(msgObject => console.log(`Initialising New Replay Processes for Replay ${msgObject.request.newReplay.id}`))
-            //and respond to the caller to let them know the process has started
-            .do(msgObject => msgObject.sendResponse({message: `BackgroundJS: Initialising New Replay Processes for Replay ${msgObject.request.newReplay.id}`}))
-            //CREATE ACTIVE REPLAY
-            //pass in existing replay then initialise to scrunch injected scripts to string available at replayScriptsString
-            //constructor creates web navigator that can supply all navigation events in the browser as an observable at replayBrowserWebNavigator.navigationEventsObservable
-            //constructor creates record/replay messenger that can send and also supply ASYNC messages as an observable at replayBrowserMessenger.chromeOnMessageObservable
-            .flatMap(msgObject => Rx.Observable.fromPromise(new ActiveReplay(msgObject.request.newReplay, {replayID: msgObject.request.newReplay.id}).initialise()))
+            //the message object need to be transformed into an active replay object with all the items we need for processing the replay in background scripts
+            .flatMap(msgObject => 
+                //actveReplay constructor creates record/replay messenger that can send messages
+                Rx.Observable.fromPromise(
+                    //CREATE ACTIVE REPLAY
+                    //first we pass in existing replay from the message object request property
+                    //then we add specific id so we can fetch from, and update replay in, storage if required
+                    //then we pass in the message sendResponse object so we can respond to the user interface once the tab is set up
+                    //then we initialise to scrunch injected scripts to string available at replayScriptsString 
+                    new ActiveReplay(msgObject.request.newReplay, {replayID: msgObject.request.newReplay.id, replayStartResponse: msgObject.sendResponse}).initialise()
+                ) 
+            )
             //then we need to initialise the tab runner asynchronously and add that to the active recording
             .switchMap(activeReplay => 
                 //when we create the tab runner, the new tab page is opened and the current tab id will be available via tabRunner.browserTabId
@@ -127,14 +132,39 @@ class MessageMonitor {
             .switchMap(activeReplay => 
                 //then we want to start the tab runner so all the observables are activated and the Chrome Devtools Protocol commands are issued
                 Rx.Observable.fromPromise(activeReplay.replayBrowserTabRunner.run()),
-                //then just return the active recording
+                //then once we know the tab runner is up and running, we can respond to the user interface and say we are ready to start
+                (updatedActiveReplay) => { 
+                    updatedActiveReplay.replayStartResponse({message: "Active Replay Ready for Replay Event Processing"});
+                    return updatedActiveReplay;
+                } 
+            )
+            //then we need to know when the replay has finished, so we can finalise the report data
+            //this either happens when we get a message from the user interface or the browser tab is closed
+            .switchMap(activeReplay => 
+                //merge the two sources of potential recording stop commands, either will do
+                Rx.Observable.merge(
+                    //we want an observable that listens for commands from the user interface to stop recording - maybe this should filter by recording id too
+                    this.baseMessagingObservable
+                        //we are filtering here for messages that instruct us to stop the recording
+                        .filter(msgObject => msgObject.request.hasOwnProperty('stopNewReplay'))
+                        //and then we need to send the response as base messaging is async and demands a sent response
+                        .do(msgObject => msgObject.sendResponse({message: `BackgroundJS: Stopping Replay Processes for ${activeReplay.replayRecordingId}`})),
+                    //we also want an observable that will listen for the active tab being closed
+                    activeReplay.replayBrowserTabRunner.tabClosedObservable
+                        //but this also need to send a message to the user interface so it knows replay has stopped
+                        .do(tabID => activeReplay.replayBrowserMessenger.sendMessage({replayTabClosed: tabID}))
+                //when we have a finalising event - we only need one - we need to report this
+                ).take(1).do(() => console.log("BackgroundJS: User Interface Stop or Tab Close Event Fired: Active Replay Finalising")),
                 (updatedActiveReplay) => updatedActiveReplay 
             )
-            
+            //then we need to tidy up our various objects
+            .switchMap(activeReplay => 
+                //then we want to start the tab runner so all the observables are activated and the Chrome Devtools Protocol commands are issued
+                Rx.Observable.fromPromise(activeReplay.replayBrowserTabRunner.stop()),
+                //then just return the active recording
+                (updatedActiveReplay) => updatedActiveReplay 
+            );
 
-            
-            
-            
 
         //then we have all the subscriptions handled in a package
         this.collectedMessagingObservable = Rx.Observable.merge(
