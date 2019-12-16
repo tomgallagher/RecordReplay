@@ -92,6 +92,10 @@ EventReplayer.startReplayingEvents = () => {
     EventReplayer.messengerService.chromeOnMessageObservable
         //firstly we only care about messages that contain a replay event
         .filter(messageObject => messageObject.request.hasOwnProperty('replayEvent')) 
+        //the messages that need to go to all content script are all the user events and the assertions, marked as replay events
+        .filter(messageObject => messageObject.request.replayEvent.recordingEventOrigin == 'User' || messageObject.request.replayEvent.recordingEventOrigin == 'Replay')
+        //but we don't want to send the keyboard events, as they are handled in background script
+        .filter(messageObject => messageObject.request.replayEvent.recordingEventAction != 'Keyboard')
         //if we have a replay event, then map the message object to the replay event only and attach the sendResponse so we can return feedback as soon as we get it
         .map(messageObject => {
             //we need to extract the replay event coming in from the message object
@@ -101,11 +105,6 @@ EventReplayer.startReplayingEvents = () => {
             //then return the replay event
             return replayEvent;
         })
-        //then we operate a filter so we only receive origin 'User' events and 'Replay' assertion events
-        .filter(replayEvent => replayEvent.recordingEventOrigin == 'User' || replayEvent.recordingEventOrigin == 'Replay')
-        //then we operate a filter so we do not process any keyboard events in the events replayer 
-        //due to browser security restrictions, keyboard events have to be handled in the background script debugger using Input.dispatchKeyEvent
-        .filter(replayEvent => replayEvent.recordingEventAction != 'Keyboard')
         //then we start operating our replay logic - we start by mapping the event to our individual event type handlers
         .map(replayEvent => EventReplayer.mapEventToReplayer(replayEvent) )
         //then we can filter all those event handlers that return with a state of false
@@ -116,8 +115,9 @@ EventReplayer.startReplayingEvents = () => {
             Rx.Observable.merge(
                 //we always need to have matching events - the event execution and the playback
                 Rx.Observable.zip( typeReplayer.returnPlayBackObservable(), Rx.Observable.from(typeReplayer.actionFunction()) ),
-                //then we need to assume that the playback listener and the action function happen in very quick time, otherwise the timer will emit first
-                Rx.Observable.timer(50).map(timer => ["Execution Playback Timeout", timer])
+                //then we need to assume that the playback listener and the action function happen in quite quickly, 
+                //however, we need some leeway for the scrolling otherwise the timer can emit before the scroll has finished and the playback event has fired
+                Rx.Observable.timer(typeReplayer.action == "Scroll" ? 5000 : 100).map(timer => ["Execution Playback Timeout", timer])
             //then we take either the first emission from the action / playback observable or the timer 
             ).take(1), 
             //we need the original event replayer and the array that is returned by the zip function

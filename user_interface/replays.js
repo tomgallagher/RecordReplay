@@ -678,8 +678,6 @@ function addStartReplayHandler() {
             //we do not want to start processing events until this happens so we send the message and wait for the response
             Rx.Observable.fromPromise(new RecordReplayMessenger({}).sendMessageGetResponse({newReplay: replay})),
             (readyStateReplay, response) => { 
-                //just log the message
-                console.log(response.message);
                 //then return the replay
                 return readyStateReplay;
             }
@@ -692,6 +690,13 @@ function addStartReplayHandler() {
             Rx.Observable.from(replay.replayEventArray)
                 //then we need to make sure that the events happen in the same time frame as the recording
                 .concatMap(replayEvent => Rx.Observable.of(replayEvent).delay(replayEvent.recordingTimeSincePrevious))
+                //then we can see if we can add an initialisation message
+                .map(replayEvent => {
+                    //if we have an assertion id, we should add the initialisation statement to the assertion log messages
+                    if (replayEvent.assertionId) { return Object.assign({}, replayEvent, { assertionLogMessages: ["Assertion Initialised"] }); }
+                    //if we have a normal replay, we can just add to the replay log messages 
+                    else { return Object.assign({}, replayEvent, { replayLogMessages: ["Replay Initialised"] }); } 
+                })
                 //then we have to map each event in the replay event array to the response from listeners
                 //listeners include ALL FRAMES IN THE PAGE, AS WELL AS THE BACKGROUND TAB RUNNER (FOR KEYBOARD AND NAVIGATION)
                 .switchMap(replayEvent =>
@@ -702,29 +707,30 @@ function addStartReplayHandler() {
                     Rx.Observable.merge(
                         //for every replay event we need to send a message out, with the promise returning the execution response
                         Rx.Observable.fromPromise(new RecordReplayMessenger({}).sendMessageGetResponse({replayEvent: replayEvent}))
-                            //check what's going on
-                            .do(response => console.log(response))
                             //then we will have a response object returned from the message service and we only care about the replay execution
                             .map(response => response.replayExecution),
                         //we have a have a timer to set a limit on how long we are willing to wait for an execution
                         //most executions should be quick but page is potentially very slow
                         Rx.Observable.timer(replayEvent.recordingEventAction == 'Page' ? 60000: 200)
-                            //when the timer emits, it need to return a synthetic stripped down version of the replay execution object
-                            .map( () => ({ replayEventReplayed: Date.now(), replayErrorMessages: ["Unmatched URL Timeout"], replayEventStatus: false }) )
-                    //then we take either the first execution emission or the first synthetic timer execution emission
-                    ).take(1), 
+                            //when the timer emits, we need to return the replay event object with updated fields 
+                            .map( () => {
+                                //we return a newly constructed object, with updated fields for when replayed, the error messages and the status
+                                return Object.assign({}, replayEvent, {replayEventReplayed: Date.now(), replayErrorMessages: ["Unmatched URL Timeout"], replayEventStatus: false }); 
+                            })
+                    //then with our merged observable, we only need to take the first emission - it's either executed or it's an error
+                    ).take(1),
                     //we need to take the original replay event and the replay execution
                     (replayEvent, replayExecution) => {
                         //then what we do here depends upon whether the replay event is standard or assertion
                         if (replayEvent.assertionId) {
                             replayEvent.assertionEventReplayed = replayExecution.replayEventReplayed;
                             replayEvent.assertionEventStatus = replayExecution.replayEventStatus;
-                            replayEvent.assertionLogMessages = replayExecution.replayLogMessages;
+                            replayEvent.assertionLogMessages = replayEvent.assertionLogMessages.concat(replayExecution.replayLogMessages);
                             replayEvent.assertionErrorMessages = replayExecution.replayErrorMessages;
                         } else {
                             replayEvent.replayEventReplayed = replayExecution.replayEventReplayed;
                             replayEvent.replayEventStatus = replayExecution.replayEventStatus;
-                            replayEvent.replayLogMessages = replayExecution.replayLogMessages;
+                            replayEvent.replayLogMessages = replayEvent.replayLogMessages.concat(replayExecution.replayLogMessages);
                             replayEvent.replayErrorMessages = replayExecution.replayErrorMessages;
                         }
                         //then return the event

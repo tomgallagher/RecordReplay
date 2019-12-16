@@ -185,18 +185,25 @@ class ReplayTabRunner {
         const messageRelayObservable = this.messengerService.chromeOnMessageObservable
             //firstly we only care about messages that contain a replay event
             .filter(messageObject => messageObject.request.hasOwnProperty('replayEvent'))
-            //then we don't care about forwarding  page events or keyboard events as we handle those here, in the background script
-            .filter(messageObject => messageObject.request.replayEvent.recordingEventAction != 'Page' && messageObject.request.replayEvent.recordingEventAction != 'Keyboard')
+            //then it is vital that we don't get into some sort of horrendous loop by relaying messages meant to end here
+            //the messages that need to go to all content script are all the user events and the assertions, marked as replay events
+            .filter(messageObject => messageObject.request.replayEvent.recordingEventOrigin == 'User' || messageObject.request.replayEvent.recordingEventOrigin == 'Replay')
+            //but we don't want to send the keyboard events, as they are handled here
+            .filter(messageObject => messageObject.request.replayEvent.recordingEventAction != 'Keyboard')
             //all other events need to be sent to the content scripts and the responses returned to the user interface
             .switchMap(messageObject =>
                 //this is a promise that sends the message and resolves with a response
                 Rx.Observable.fromPromise( this.messengerService.sendContentScriptMessageGetResponse(this.browserTabId, {replayEvent: messageObject.request.replayEvent}) ),
                 //then we can work with the incoming user interface message and the response we get from the content script 
                 (updatedMessageObject, response) => {
+                    const origin = updatedMessageObject.request.replayEvent.recordingEventOrigin;
+                    const action = updatedMessageObject.request.replayEvent.recordingEventAction;
+                    console.log(`Tab Runner Forwarded ${origin} ${action} Message to Content Script`);
                     //all we need to do is forward the response in the same format as we receive it
                     updatedMessageObject.sendResponse({replayExecution: response.replayExecution});
                 }
             );
+              
 
         //HANDLE THE SPECIFIC REQUESTS FROM THE USER INTERFACE TO CONFIRM PAGE LOAD
         //WE PAIR THE PAGE REPLAY EVENT MESSAGE WITH THE NAVIGATOR OBSERVABLE
@@ -213,6 +220,8 @@ class ReplayTabRunner {
                 this.messengerService.chromeOnMessageObservable
                     //firstly we only care about messages that contain a replay event
                     .filter(messageObject => messageObject.request.hasOwnProperty('replayEvent'))
+                    //then we only want messages that are specifically navigation messages
+                    .filter(messageObject => messageObject.request.replayEvent.recordingEventOrigin == 'Browser' && messageObject.request.replayEvent.recordingEventAction == 'Page')
                     //if we have a replay event, then map the message object to the replay event only and attach the sendResponse so we can return feedback as soon as we get it
                     .map(messageObject => {
                         //we need to extract the replay event coming in from the message object
@@ -222,8 +231,6 @@ class ReplayTabRunner {
                         //then return the replay event
                         return replayEvent;
                     })
-                    //then we operate a filter so we only receive origin 'Page' events
-                    .filter(replayEvent => replayEvent.recordingEventOrigin == 'Browser' && replayEvent.recordingEventAction == 'Page')
             )
             //then we just need to send the response if we have matching events
             .do(([navigationEvent, replayEvent]) => {
@@ -250,6 +257,8 @@ class ReplayTabRunner {
         const keyboardObservable = this.messengerService.chromeOnMessageObservable
             //firstly we only care about messages that contain a replay event
             .filter(messageObject => messageObject.request.hasOwnProperty('replayEvent'))
+            //then we only want messages that are specifically keyboard messages
+            .filter(messageObject => messageObject.request.replayEvent.recordingEventOrigin == 'User' && messageObject.request.replayEvent.recordingEventAction == 'Keyboard')
             //if we have a replay event, then map the message object to the replay event only and attach the sendResponse so we can return feedback as soon as we get it
             .map(messageObject => {
                 //we need to extract the replay event coming in from the message object
@@ -259,8 +268,6 @@ class ReplayTabRunner {
                 //then return the replay event
                 return replayEvent;
             })
-            //then we operate a filter so we only receive origin 'User' and action type 'Keyboard' events
-            .filter(replayEvent => replayEvent.recordingEventOrigin == 'User' && replayEvent.recordingEventAction == 'Keyboard')
             //then we want to run the DomSelectorReports, which return a CDP nodeId for searching the document
             .flatMap(replayEvent =>
                 Promise.all([
@@ -306,7 +313,6 @@ class ReplayTabRunner {
                     }
                     //then return the replay event
                     return replayEvent;
-
                 }
             )
             //then we can filter all those event handlers that return with a state of false
@@ -471,9 +477,9 @@ class ReplayTabRunner {
         //then we need to close our curated tab
         if (this.openState) await new Promise(resolve => chrome.tabs.remove(this.browserTabId, () => { this.log(6); resolve(); } ));
         //then we have some information from the tab runner that we want to save to the replay
-        const reportObject = { performanceTimings: this.performanceTimings, resourceLoads: this.resourceLoads, screenShot: this.screenShot };
+        //const reportObject = { performanceTimings: this.performanceTimings, resourceLoads: this.resourceLoads, screenShot: this.screenShot };
         //then we need to send that message so the user interface can collect as part of the replay process
-        this.messengerService.sendMessage({reportObject: reportObject});
+        //this.messengerService.sendMessage({reportObject: reportObject});
         //we need to stop the observables to prevent memory leaks
         this.startSubscription.unsubscribe();
         //return so the synthetic promise is resolved

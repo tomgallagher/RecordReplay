@@ -151,8 +151,6 @@ class MessageMonitor {
                         .do(msgObject => msgObject.sendResponse({message: `BackgroundJS: Stopping Replay Processes for ${activeReplay.replayRecordingId}`})),
                     //we also want an observable that will listen for the active tab being closed
                     activeReplay.replayBrowserTabRunner.tabClosedObservable
-                        //but this also need to send a message to the user interface so it knows replay has stopped
-                        .do(tabID => activeReplay.replayBrowserMessenger.sendMessage({replayTabClosed: tabID}))
                 //when we have a finalising event - we only need one - we need to report this
                 ).take(1).do(() => console.log("BackgroundJS: User Interface Stop or Tab Close Event Fired: Active Replay Finalising")),
                 (updatedActiveReplay) => updatedActiveReplay 
