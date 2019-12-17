@@ -384,12 +384,30 @@ function uodateReplayEventsTableCodeReports(replay) {
         let targetSteps = targetNode.querySelector('.ui.three.steps');
         //make the clone
         let tempNode = targetSteps.cloneNode(true);
-        //adjust the clone
-        tempNode.querySelector('.onCommittedTime.description').text(new Date(replay.replayPerformanceTimings.onCommitted).toLocaleString());
-        const dcl = ((replay.replayPerformanceTimings.onDOMContentLoaded - replay.replayPerformanceTimings.onCommitted) / 1000).toFixed(2); 
-        tempNode.querySelector('.onDomLoadedTime.description').text(`${dcl} seconds`);
-        const loaded = ((replay.replayPerformanceTimings.onCompleted - replay.replayPerformanceTimings.onCommitted) / 1000).toFixed(2); 
-        tempNode.querySelector('.onCompleteTime.description').text(`${loaded} seconds`);
+        //define the variables
+        var startTimeNumber, startTimeString, domloadedTimeString, completeTimeString
+        //now we need to work with scenarios where we have an onCommitted time and where we don't
+        if (replay.replayPerformanceTimings.hasOwnProperty('onCommitted')) {
+
+            //save the start time 
+            startTimeNumber = replay.replayPerformanceTimings.onCommitted;
+            startTimeString = new Date(replay.replayPerformanceTimings.onCommitted).toLocaleString();
+            domloadedTimeString = `${((replay.replayPerformanceTimings.onDOMContentLoaded - replay.replayPerformanceTimings.onCommitted) / 1000).toFixed(2)} seconds`;
+            completeTimeString = `${((replay.replayPerformanceTimings.onCompleted - replay.replayPerformanceTimings.onCommitted) / 1000).toFixed(2)} seconds`; 
+
+        } else {
+
+            startTimeString = "No Start Time Available";
+            domloadedTimeString = new Date(replay.replayPerformanceTimings.onDOMContentLoaded).toLocaleString();
+            completeTimeString = new Date(replay.replayPerformanceTimings.onCompleted).toLocaleString();
+
+        }
+        //adjust the clone for start time
+        tempNode.querySelector('.onCommittedTime.description').textContent = startTimeString;
+        //and for dom loaded time
+        tempNode.querySelector('.onDomLoadedTime.description').textContent = domloadedTimeString;
+        //and for complete time
+        tempNode.querySelector('.onCompleteTime.description').textContent = completeTimeString;
         //hide the placeholder
         $('.ui.performance.placeholder.segment').hide();
         //remove any existing steps from earlier iterations
@@ -417,7 +435,7 @@ function uodateReplayEventsTableCodeReports(replay) {
         //data from the object values
         const chartData = Object.values(replay.replayResourceLoads);
         //then the colour variables
-        let chartColours = ["red", "orange", "purple", "yellow", "green", "blue", "grey"].slice(chartLabels.length - 1); 
+        let chartColours = ["red", "gold", "blue", "orange", "green", "violet", "dimgrey", "purple"]; 
         let chartBackgroundColour = 'white';
         //then get theme setting
         const inverted = localStorage.getItem("ThemeInverted");
@@ -432,12 +450,14 @@ function uodateReplayEventsTableCodeReports(replay) {
             //and chart options
 			options: { responsive: true }
         };
-        //hide the placeholder
-        $('.ui.performance.placeholder.segment').hide();
+        //hide the standard placeholder
+        $('.ui.resourceLoads.placeholder.segment').hide();
         //remove any existing charts from earlier iterations
-        $('.ui.basic.performance.segment').remove('.resourceLoadsChart');
+        $('.ui.resourceLoads.positive.placeholder.segment').remove('.resourceLoadsChart');
+        //show the positive placeholder 
+        $('.ui.resourceLoads.positive.placeholder.segment').show();
         //add the canvas 
-        $('.ui.basic.performance.segment').append(`<canvas class="resourceLoadsChart" style="display: block; background-color: ${chartBackgroundColour}"></canvas>`);
+        $('.ui.resourceLoads.positive.placeholder.segment').append(`<canvas class="resourceLoadsChart" style="display: block; max-width: 50%; height: auto; margin: 0 auto; background-color: ${chartBackgroundColour}"></canvas>`);
         //get the canvas context
         var ctx = document.querySelector('.resourceLoadsChart').getContext('2d');
         //draw the chart
@@ -445,10 +465,12 @@ function uodateReplayEventsTableCodeReports(replay) {
 
     } else {
 
-        //show the placeholder
-        $('.ui.performance.placeholder.segment').show();
+        //show the standard placeholder
+        $('.ui.resourceLoads.placeholder.segment').show();
         //then remove any charts
-        $('.ui.basic.performance.segment').remove('.resourceLoadsChart');
+        $('.ui.resourceLoads.positive.placeholder.segment').remove('.resourceLoadsChart');
+        //then hide the positive placeholder segment
+        $('.ui.resourceLoads.positive.placeholder.segment').hide();
 
     }
 
@@ -660,7 +682,7 @@ function addRunReplayReplayEventsTableButtonListeners() {
 
 //MAIN FUNCTION BUTTONS FOR RUNNING THE REPLAY
 
-function addReplaysTableStartReplayHandler() {
+function addReplayEventsTableStartReplayHandler() {
 
     //REPLAYING EVENTS START HANDLER
     Rx.Observable.fromEvent(document.querySelector('.ui.runReplay.container .ui.startReplay.positive.button'), 'click')
@@ -724,24 +746,24 @@ function addReplaysTableStartReplayHandler() {
                 //update the master replays table at the top to reflect executed time and status
                 updateReplaysTable();
                 //hide the replay loader
-                $('.ui.text.small.replay.loader').removeClass('active');
+                $('.ui.runReplay.container .ui.text.small.replay.loader').removeClass('active');
                 //show the start button as enabled
                 $('.ui.runReplay.container .ui.startReplay.positive.button').removeClass('disabled');
                 //show the stop replay button as disabled
                 $('.ui.runReplay.container .ui.stopReplay.negative.button').addClass('disabled');
                 //then we need to add the start recording handler again
-                addReplaysTableStartReplayHandler();
+                addReplayEventsTableStartReplayHandler();
             },
             error => {
                 console.log(`Process Replay Error ${error}`);
                 //hide the replay loader
-                $('.ui.text.small.replay.loader').removeClass('active');
+                $('.ui.runReplay.container .ui.text.small.replay.loader').removeClass('active');
                 //show the start button as enabled
                 $('.ui.runReplay.container .ui.startReplay.positive.button').removeClass('disabled');
                 //show the stop replay button as disabled
                 $('.ui.runReplay.container .ui.stopReplay.negative.button').addClass('disabled');
                 //then we need to add the start recording handler again
-                addReplaysTableStartReplayHandler();
+                addReplayEventsTableStartReplayHandler();
             }
         );
         
@@ -750,7 +772,7 @@ function addReplaysTableStartReplayHandler() {
 $(document).ready (function(){
 
     //add the listener for the run replay button
-    addReplaysTableStartReplayHandler();
+    addReplayEventsTableStartReplayHandler();
     //activate the tab control
     $('.ui.showReplay.container .ui.top.attached.replay.tabular.menu .item').tab({
         //we need to rehide stuff as tabs are shown

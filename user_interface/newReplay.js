@@ -330,6 +330,118 @@ function updateNewReplayEventsTable(newReplay) {
         //then use the function that is shared by replays.js
         addNewReplayEventToTable(newReplay, newReplay.replayEventArray[replayEvent], table);
     }
+    //then add the link click listeners for the row
+    addNewReplayReplayEventsTableButtonListeners();
+
+}
+
+//SLAVE NEW REPLAY EVENTS TABLE OPERATION - THIS ADDS BUTTON LISTENERS FOR SUBORDINATE NEW REPLAY, REPLAY EVENTS TABLE
+
+function addNewReplayReplayEventsTableButtonListeners() {
+
+    $('.ui.newReplayReplayEventsTable.table .showReplayEventRow').on('click', function(){
+
+        console.log("Firing Run New Replay Table Row Show Link");
+        //here we deal with messages that are appended to the html as the replay is running
+        //we have log messages for all replay events
+        const logMessages = JSON.parse($(this).attr("data-log-messages"));
+        //we will have error messages for some replay events 
+        const errorMessages = JSON.parse($(this).attr("data-error-messages"));
+        //show the information row
+        $('.ui.newReplayReplayEventsTable.table .informationMessageRow').css('display', 'table-row');
+        //then what we show depends on the content of the messages
+        switch(true) {
+            //then if it's empty then we have no messages because the event has been run
+            case logMessages.length == 0 && errorMessages.length == 0:
+                //show the warning message
+                $('.ui.newReplayReplayEventsTable.table .ui.warning.noDetails.message').css('display', 'block');
+                break;
+            case logMessages.length > 0 && errorMessages.length == 0:
+                //empty the lists
+                $('.ui.newReplayReplayEventsTable.table .logging.list').empty();
+                $('.ui.newReplayReplayEventsTable.table .error.list').empty();
+                //hide the error section
+                $('.ui.newReplayReplayEventsTable.table .ui.negative.error.message').css('display', 'none');
+                //loop through the log messages
+                for (let item in logMessages) {
+                    //attach the logging messages to the message list
+                    $('.ui.newReplayReplayEventsTable.table .logging.list').append(`<li>${logMessages[item]}</li>`);
+                }
+                //show the logging message
+                $('.ui.newReplayReplayEventsTable.table .ui.info.logging.message').css('display', 'block');
+                break;
+            case errorMessages.length > 0:
+                //empty the lists
+                $('.ui.newReplayReplayEventsTable.table .logging.list').empty();
+                $('.ui.newReplayReplayEventsTable.table .error.list').empty();
+                //loop through the log messages
+                for (let item in logMessages) {
+                    //attach the logging messages to the message list
+                    $('.ui.newReplayReplayEventsTable.table .logging.list').append(`<li>${logMessages[item]}</li>`);
+                }
+                //loop through the error messages
+                for (let item in errorMessages) {
+                    //attach the error messages to the message list
+                    $('.ui.newReplayReplayEventsTable.table .error.list').append(`<li>${errorMessages[item]}</li>`);
+                }
+                //show the logging message
+                $('.ui.newReplayReplayEventsTable.table .ui.info.logging.message').css('display', 'block');
+                //show the error message
+                $('.ui.newReplayReplayEventsTable.table .ui.negative.error.message').css('display', 'block');
+        }
+
+    });
+
+    $('.ui.newReplayReplayEventsTable.table .deleteReplayEventRow').on('click', function(){
+
+        console.log("Firing Run New Replay Table Row Delete Link");
+        //find the replay in the database by id, using data-replay-id from the template
+        const replayKey = $(this).attr("data-replay-id");
+        //do the same with the replay event key
+        const replayEventKey = $(this).attr("data-replay-event-id");
+        //the replay key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
+            //then we have a returned js object with the replay details
+            .then(replay => {
+                //first we need to create a new replay, with our recording properties and replay properties
+                const newReplay = new Replay(replay, replay);
+                //then we need to filter the new replay's event table
+                newReplay.replayEventArray = newReplay.replayEventArray
+                    //get rid of the element that has been deleted, by reference to the replay event id or the aeertion id
+                    .filter(item => item.replayEventId != replayEventKey && item.assertionId != replayEventKey)
+                //then we need to create a sorted array, which generates mixed replay events and assertion events in the correct order
+                //we also need the time since previous to be adjusted in cases where assertions share the same timestamp as the hover or text select event
+                newReplay.sortReplayEventsByTime();
+                //storage does not save replays with the class methods attached
+                //it is not clear why, as the recordings are saved OK with class methods attached
+                //probably something to do with extending the recording class with replay
+                delete newReplay.printExecutionTime;
+                delete newReplay.printStatus;
+                delete newReplay.sortReplayEventsByTime;
+                //then we just need to return the replay for saving in the database
+                return newReplay;
+            })
+            //then we need to save the updated replay to the database
+            .then(newReplay => StorageUtils.updateModelObjectInDatabaseTable('replays.js', replayKey, newReplay, 'replays') )
+            //then we need to retrieve the edited replay to update the table to reflect the deleted event
+            .then( () => StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays') )
+            //then we need to do the update to the table 
+            .then(savedReplay => {
+                //empty the table body first
+                $('.ui.newReplayReplayEventsTable.table tbody').empty();
+                //get a reference to the table
+                const table = document.querySelector('.ui.newReplayReplayEventsTable.table tbody')
+                //then for each replayEvent we need to add it to the table and the textarea
+                for (let replayEvent in savedReplay.replayEventArray) { 
+                    //then borrow the function from newReplay.js
+                    addNewReplayEventToTable(savedReplay, savedReplay.replayEventArray[replayEvent], table);
+                }
+            })  
+            //the get single object function will reject if object is not in database
+            .catch(error => console.error(error));      
+
+
+    });
 
 }
 
@@ -563,7 +675,97 @@ function processReplayEvents(replay, tableSelector, containerSelector) {
 
 }
 
+function addNewReplayEventsTableStartReplayHandler() {
+
+    //REPLAYING EVENTS START HANDLER
+    Rx.Observable.fromEvent(document.querySelector('.ui.replayEvents.segment .ui.startReplay.positive.button'), 'click')
+        //we only need to take one of these clicks at a time, the listener is refreshed on completion
+        .take(1)
+        //make the changes to the ui to indicate that we have started
+        .do(event => {
+            //show the start replay button as disabled
+            event.target.className += " disabled";
+            //show the stop replay button as enabled
+            $('.ui.replayEvents.segment .ui.stopReplay.negative.button').removeClass('disabled');
+            //remove all the indicators from the table rows, apart from disabled and assertion row
+            $(`.ui.newReplayReplayEventsTable.table tr`).removeClass('positive');
+            $(`.ui.newReplayReplayEventsTable.table tr`).removeClass('negative');
+            //show the replay loader
+            $('.ui.replayEvents.segment .ui.text.small.replay.loader').addClass('active');  
+            //and hide the 'replay has not run' message 
+            $('.ui.newReplayReplayEventsTable.table .ui.warning.noDetails.message').css('display', 'none');
+            //and the various logging messages
+            $('.ui.newReplayReplayEventsTable.table .ui.info.logging.message').css('display', 'none');
+            $('.ui.newReplayReplayEventsTable.table .ui.negative.error.message').css('display', 'none');
+        })
+        //get the replay from storage using the data id from the button
+        .switchMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('replays.js', event.target.getAttribute('data-replay-id') , 'replays')) )
+        //process the replay using the routine from newreplay.js
+        .flatMap(replay =>  Rx.Observable.fromPromise(processReplayEvents(replay, '.ui.newReplayReplayEventsTable.table', '.ui.replayEvents.segment')) )
+        //then we need to collect any reports that may be required for this replay from the replay's tab runner
+        .switchMap( () =>
+            //send the message and wait for the response promise to be fulfilled
+            Rx.Observable.fromPromise(new RecordReplayMessenger({}).sendMessageGetResponse({getReportObject: "Make Request for Report Object"})),
+            (mutatedReplay, response) => {
+                //update the performance timings if required
+                mutatedReplay.recordingTestPerformanceTimings ? mutatedReplay.replayPerformanceTimings = response.reportObject.performanceTimings : null;
+                //update the resource loads if required
+                mutatedReplay.recordingTestResourceLoads ? mutatedReplay.replayResourceLoads = response.reportObject.resourceLoads : null;
+                //update the screenshot if required
+                mutatedReplay.recordingTestScreenshot ? mutatedReplay.replayScreenShot = response.reportObject.screenShot : null;
+                //return mutated replay with reports
+                return mutatedReplay;    
+            }
+        )
+        //then we need to save the updated replay events and any reports to the database
+        .switchMap(mutatedReplayReports => 
+            Rx.Observable.fromPromise(StorageUtils.updateModelObjectInDatabaseTable('replays.js', mutatedReplayReports.id, mutatedReplayReports, 'replays')),
+            //then just return the active replay
+            (updatedActiveReplay) => updatedActiveReplay 
+        )
+        //then we need to send the command to close the debugger
+        .switchMap(replay => 
+            Rx.Observable.fromPromise(new RecordReplayMessenger({}).sendMessageGetResponse({stopNewReplay: replay})),
+            //then just log the response and return the active replay
+            (activeReplay, response) => {
+                console.log(response.message);
+                return activeReplay;
+            }
+        )
+        //then we need to report the conclusion of the process - we only have a single replay to report
+        .subscribe(
+            replay => {
+                console.log(`Finished Processing ${replay.replayName}`);
+                //update the master replays table at the top to reflect executed time and status
+                updateReplaysTable();
+                //hide the replay loader
+                $('.ui.replayEvents.segment .ui.text.small.replay.loader').removeClass('active');
+                //show the start button as enabled
+                $('.ui.replayEvents.segment .ui.startReplay.positive.button').removeClass('disabled');
+                //show the stop replay button as disabled
+                $('.ui.replayEvents.segment .ui.stopReplay.negative.button').addClass('disabled');
+                //then we need to add the start recording handler again
+                addNewReplayEventsTableStartReplayHandler();
+            },
+            error => {
+                console.log(`Process Replay Error ${error}`);
+                //hide the replay loader
+                $('.ui.replayEvents.segment .ui.text.small.replay.loader').removeClass('active');
+                //show the start button as enabled
+                $('.ui.replayEvents.segment .ui.startReplay.positive.button').removeClass('disabled');
+                //show the stop replay button as disabled
+                $('.ui.replayEvents.segment .ui.stopReplay.negative.button').addClass('disabled');
+                //then we need to add the start recording handler again
+                addNewReplayEventsTableStartReplayHandler();
+            }
+        );
+
+}
+
 $(document).ready (function(){
+
+    //add the listener for the run replay button
+    addNewReplayEventsTableStartReplayHandler();
 
     $('.ui.newReplayForm.form')
         .form({
@@ -649,9 +851,9 @@ $(document).ready (function(){
                     
                         //GETTING READY FOR SECOND TIME AROUND
                         //undisable the button if we have had a previous new replay
-                        $('.ui.startReplay.positive.button').removeClass('disabled');
+                        $('.ui.replayEvents.segment .ui.startReplay.positive.button').removeClass('disabled');
                         //change the data-replay-id of the start and stop buttons, so we can retrieve the replay on replay start
-                        $('.ui.startReplay.positive.button, .ui.stopReplay.negative.button').attr("data-replay-id", savedReplay.id);
+                        $('.ui.replayEvents.segment .ui.startReplay.positive.button, .ui.replayEvents.segment .ui.stopReplay.negative.button').attr("data-replay-id", savedReplay.id);
                         //then we want to reset the hidden assertions collector
                         $('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val("[]");
 
