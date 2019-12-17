@@ -275,6 +275,7 @@ class ReplayTabRunner {
                     //then we send the clean clone
                     replayEvent.sendResponse({replayExecution: replayExecution});
                 }
+                
             });
         
         //HANDLE THE SPECIFIC REQUESTS FROM THE USER INTERFACE TO EXECUTE KEYBOARD ACTIONS

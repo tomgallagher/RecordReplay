@@ -392,8 +392,8 @@ function uodateReplayEventsTableCodeReports(replay) {
             //save the start time 
             startTimeNumber = replay.replayPerformanceTimings.onCommitted;
             startTimeString = new Date(replay.replayPerformanceTimings.onCommitted).toLocaleString();
-            domloadedTimeString = `${((replay.replayPerformanceTimings.onDOMContentLoaded - replay.replayPerformanceTimings.onCommitted) / 1000).toFixed(2)} seconds`;
-            completeTimeString = `${((replay.replayPerformanceTimings.onCompleted - replay.replayPerformanceTimings.onCommitted) / 1000).toFixed(2)} seconds`; 
+            domloadedTimeString = `${((replay.replayPerformanceTimings.onDOMContentLoaded - startTimeNumber) / 1000).toFixed(2)} seconds`;
+            completeTimeString = `${((replay.replayPerformanceTimings.onCompleted - startTimeNumber) / 1000).toFixed(2)} seconds`; 
 
         } else {
 
@@ -411,7 +411,7 @@ function uodateReplayEventsTableCodeReports(replay) {
         //hide the placeholder
         $('.ui.performance.placeholder.segment').hide();
         //remove any existing steps from earlier iterations
-        $('.ui.basic.performance.segment').remove('.ui.three.steps');
+        $('.ui.basic.performance.segment').find('DIV.ui.three.steps').remove();
         //then add the performance steps
         $('.ui.basic.performance.segment').append(tempNode);
         
@@ -420,7 +420,7 @@ function uodateReplayEventsTableCodeReports(replay) {
         //show the placeholder
         $('.ui.performance.placeholder.segment').show();
         //then remove any performance steps
-        $('.ui.basic.performance.segment').remove('.ui.three.steps');
+        $('.ui.basic.performance.segment').find('DIV.ui.three.steps').remove();
 
     }
     
@@ -453,7 +453,7 @@ function uodateReplayEventsTableCodeReports(replay) {
         //hide the standard placeholder
         $('.ui.resourceLoads.placeholder.segment').hide();
         //remove any existing charts from earlier iterations
-        $('.ui.resourceLoads.positive.placeholder.segment').remove('.resourceLoadsChart');
+        $('.ui.resourceLoads.positive.placeholder.segment').empty();
         //show the positive placeholder 
         $('.ui.resourceLoads.positive.placeholder.segment').show();
         //add the canvas 
