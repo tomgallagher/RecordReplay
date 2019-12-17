@@ -452,8 +452,21 @@ function uodateReplayEventsTableCodeReports(replay) {
 
     }
 
-    //TO DO - UPDATE THE REPORTS SECTION USING THE TEMPLATES
-    //report screenshot with replay.replayScreenShot string of Base64-encoded image data
+    //UPDATE RESOURCE LOADS
+    if (replay.replayScreenShot && Object.keys(replay.replayScreenShot).length > 0) {
+        //hide the standard placeholder 
+        $('.ui.screenshot.placeholder.segment').hide();
+        //update the image's src attribute
+        $('.ui.screenshot.positive.placeholder.segment .ui.centered.big.image').prop('src', `data:image/jpeg;base64,${replay.replayScreenShot.data}`);
+        //show the positive placeholder 
+        $('.ui.screenshot.positive.placeholder.segment').show();
+    } else {
+        //hide the positive screenshot placeholder 
+        $('.ui.screenshot.positive.placeholder.segment').hide();
+        //show the standard screenshot placeholder 
+        $('.ui.screenshot.placeholder.segment').show();
+
+    }
 
 }
 
@@ -647,7 +660,7 @@ function addRunReplayReplayEventsTableButtonListeners() {
 
 //MAIN FUNCTION BUTTONS FOR RUNNING THE REPLAY
 
-function addStartReplayHandler() {
+function addReplaysTableStartReplayHandler() {
 
     //REPLAYING EVENTS START HANDLER
     Rx.Observable.fromEvent(document.querySelector('.ui.runReplay.container .ui.startReplay.positive.button'), 'click')
@@ -671,217 +684,73 @@ function addStartReplayHandler() {
             $('.ui.runReplayReplayEventsTable.table .ui.negative.error.message').css('display', 'none');
         })
         //get the replay from storage using the data id from the button
-        .switchMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('replays.js', event.target.getAttribute('data-replay-id') , 'replays')))
-        //send the message to the background script to start the replay processes
-        .switchMap(replay => 
-            //in the background scripts, there is some time required to set up the active replay and the tab runner
-            //we do not want to start processing events until this happens so we send the message and wait for the response
-            Rx.Observable.fromPromise(new RecordReplayMessenger({}).sendMessageGetResponse({newReplay: replay})),
-            (readyStateReplay, response) => { 
-                //then return the replay
-                return readyStateReplay;
+        .switchMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('replays.js', event.target.getAttribute('data-replay-id') , 'replays')) )
+        //process the replay using the routine from newreplay.js
+        .flatMap(replay =>  Rx.Observable.fromPromise(processReplayEvents(replay, '.ui.runReplayReplayEventsTable.table', '.ui.runReplay.container')) )
+        //then we need to collect any reports that may be required for this replay from the replay's tab runner
+        .switchMap( () =>
+            //send the message and wait for the response promise to be fulfilled
+            Rx.Observable.fromPromise(new RecordReplayMessenger({}).sendMessageGetResponse({getReportObject: "Make Request for Report Object"})),
+            (mutatedReplay, response) => {
+                //update the performance timings if required
+                mutatedReplay.recordingTestPerformanceTimings ? mutatedReplay.replayPerformanceTimings = response.reportObject.performanceTimings : null;
+                //update the resource loads if required
+                mutatedReplay.recordingTestResourceLoads ? mutatedReplay.replayResourceLoads = response.reportObject.resourceLoads : null;
+                //update the screenshot if required
+                mutatedReplay.recordingTestScreenshot ? mutatedReplay.replayScreenShot = response.reportObject.screenShot : null;
+                //return mutated replay with reports
+                return mutatedReplay;    
             }
         )
-        //we want to keep track of how the replay performs without making changes to the replay itself - so we add the mutated replay event array
-        .map(replay => Object.assign({}, replay, { mutatedReplayEventArray: [] }) )
-        //then switch map into an observable of the replays events, adding the replay id
+        //then we need to save the updated replay events and any reports to the database
+        .switchMap(mutatedReplayReports => 
+            Rx.Observable.fromPromise(StorageUtils.updateModelObjectInDatabaseTable('replays.js', mutatedReplayReports.id, mutatedReplayReports, 'replays')),
+            //then just return the active replay
+            (updatedActiveReplay) => updatedActiveReplay 
+        )
+        //then we need to send the command to close the debugger
         .switchMap(replay => 
-            //we want a simple observable from the replay event array, each item has all that we need to instruct the event replayer
-            Rx.Observable.from(replay.replayEventArray)
-                //then we need to make sure that the events happen in the same time frame as the recording
-                .concatMap(replayEvent => Rx.Observable.of(replayEvent).delay(replayEvent.recordingTimeSincePrevious))
-                //then we can see if we can add an initialisation message
-                .map(replayEvent => {
-                    //if we have an assertion id, we should add the initialisation statement to the assertion log messages
-                    if (replayEvent.assertionId) { return Object.assign({}, replayEvent, { assertionLogMessages: ["Assertion Initialised"] }); }
-                    //if we have a normal replay, we can just add to the replay log messages 
-                    else { return Object.assign({}, replayEvent, { replayLogMessages: ["Replay Initialised"] }); } 
-                })
-                //then we have to map each event in the replay event array to the response from listeners
-                //listeners include ALL FRAMES IN THE PAGE, AS WELL AS THE BACKGROUND TAB RUNNER (FOR KEYBOARD AND NAVIGATION)
-                .switchMap(replayEvent =>
-                    //it is vital to the functioning of the replaying that each event has a timeout 
-                    //we will receive no response if we have a non-matching url from all frames - so if all frames' urls are non-matching = timeout
-                    //we will receive no response if we get no page navigation onCompleted event = timeout
-                    //otherwise we should, on error, get a response.replayExecution with replay status of false and some error messages 
-                    Rx.Observable.merge(
-                        //for every replay event we need to send a message out, with the promise returning the execution response
-                        Rx.Observable.fromPromise(new RecordReplayMessenger({}).sendMessageGetResponse({replayEvent: replayEvent}))
-                            //then we will have a response object returned from the message service and we only care about the replay execution
-                            .map(response => response.replayExecution),
-                        //we have a have a timer to set a limit on how long we are willing to wait for an execution
-                        //most executions should be quick but page is potentially very slow
-                        Rx.Observable.timer(replayEvent.recordingEventAction == 'Page' ? 60000: 200)
-                            //when the timer emits, we need to return the replay event object with updated fields 
-                            .map( () => {
-                                //we return a newly constructed object, with updated fields for when replayed, the error messages and the status
-                                return Object.assign({}, replayEvent, {replayEventReplayed: Date.now(), replayErrorMessages: ["Unmatched URL Timeout"], replayEventStatus: false }); 
-                            })
-                    //then with our merged observable, we only need to take the first emission - it's either executed or it's an error
-                    ).take(1),
-                    //we need to take the original replay event and the replay execution
-                    (replayEvent, replayExecution) => {
-                        //then what we do here depends upon whether the replay event is standard or assertion
-                        if (replayEvent.assertionId) {
-                            replayEvent.assertionEventReplayed = replayExecution.replayEventReplayed;
-                            replayEvent.assertionEventStatus = replayExecution.replayEventStatus;
-                            replayEvent.assertionLogMessages = replayEvent.assertionLogMessages.concat(replayExecution.replayLogMessages);
-                            replayEvent.assertionErrorMessages = replayExecution.replayErrorMessages;
-                        } else {
-                            replayEvent.replayEventReplayed = replayExecution.replayEventReplayed;
-                            replayEvent.replayEventStatus = replayExecution.replayEventStatus;
-                            replayEvent.replayLogMessages = replayEvent.replayLogMessages.concat(replayExecution.replayLogMessages);
-                            replayEvent.replayErrorMessages = replayExecution.replayErrorMessages;
-                        }
-                        //then return the event
-                        return replayEvent;
-                    }
-                )
-                //and we need to start with a dummy marker so we can operate with only one emission, this must come before pairwise() to create the first pair
-                //as replay event is an extension of recording event, we need to pass in recording object and blank replay options object
-                .startWith(new ReplayEvent({recordingEventOrigin: 'PairwiseStart'}, {}))
-                //then we need to get the time between each emission so we take two emissions at a time
-                .pairwise()
-                //this then delivers an array with the previous and the current, we only need the current, with adjusted recordingTimeSincePrevious
-                .map(([previousReplayEvent, currentReplayEvent]) => {
-                    //if the previous was not the dummy 'PairwiseStart', then we need to add the relative time of the replay event execution
-                    //if it is then the time since previous will be 0, with zero delay, which is what we want
-                    if (previousReplayEvent.recordingEventOrigin != 'PairwiseStart') {
-
-                        //then we are going to want to know when the previous event was replayed, which is different for assertions and normal replay events
-                        const previousEventReplayed = previousReplayEvent.assertionEventReplayed || previousReplayEvent.replayEventReplayed;
-                        //then we are going to need to know when the current event was replayed, which is again different
-                        const currentEventReplayed = currentReplayEvent.assertionEventReplayed || currentReplayEvent.replayEventReplayed;
-                        //then we need to add the difference to the right property, according to whether it is an assertion or not
-                        if (currentReplayEvent.assertionId) {
-                            //the assertion time since previous needs to be updated
-                            currentReplayEvent.assertionTimeSincePrevious = currentEventReplayed - previousEventReplayed;
-                        } else {
-                            //the replay time since previous  needs to be updated
-                            currentReplayEvent.replayTimeSincePrevious = currentEventReplayed - previousEventReplayed;
-                        }
-                    }
-                    //in both cases we only need to return the current replay event, which will return all apart from the dummy pairwise start
-                    return currentReplayEvent;
-                })
-                //then we need to update the user interface
-                .do(replayEvent => {
-                    //we need to work out if we are working with replay or assertion id
-                    const targetId = replayEvent.assertionId || replayEvent.replayEventId;
-                    //find the row in the table that corresponds with the replay event id or the assertionid
-                    const $targetTableRow = $(`.ui.runReplayReplayEventsTable.table tr[data-replay-event-id='${targetId}']`);
-                    //we need to work out if we are dealing with replay or assertion success / failure
-                    const status = replayEvent.assertionEventStatus || replayEvent.replayEventStatus;
-                    //then add the class to indicate success or failure
-                    status == true ? $targetTableRow.addClass('positive'): $targetTableRow.addClass('negative');
-                    //then we need to work out if we are working with replay or assertion time since previous
-                    const timeSincePrevious = replayEvent.assertionTimeSincePrevious || replayEvent.replayTimeSincePrevious;
-                    //then we need to work out if we are working with replay or assertion eventReplayed
-                    const timeReplayed = replayEvent.assertionEventReplayed || replayEvent.replayEventReplayed;
-                    //then do some work to create a nice looking time since previous
-                    const timeSincePreviousString = (timeSincePrevious == 0 ? new Date(timeReplayed).toLocaleString() : `+ ${Math.ceil(timeSincePrevious / 1000)} sec`);
-                    //then we need to add this to the relevant table row
-                    $targetTableRow.children('td[data-label="replay_timestamp_executed"]').text(timeSincePreviousString);
-                    //finally we need to work the messages
-                    const logMessages = replayEvent.assertionLogMessages || replayEvent.replayLogMessages;
-                    //add the stringified logmessages array to the show link
-                    $targetTableRow.find('.showReplayEventRow').attr('data-log-messages', JSON.stringify(logMessages)); 
-                    const errorMessages = replayEvent.assertionErrorMessages || replayEvent.replayErrorMessages;
-                    //add the stringified logmessages array to the show link
-                    $targetTableRow.find('.showReplayEventRow').attr('data-error-messages', JSON.stringify(errorMessages)); 
-                }),
-            //then use the projection function to tie the two together
-            (replay, mutatedReplayEvent) => {
-                //then we need to update the array
-                replay.mutatedReplayEventArray.push(mutatedReplayEvent);
-                //then return the replay so it can be updated in the database
-                return replay;
+            Rx.Observable.fromPromise(new RecordReplayMessenger({}).sendMessageGetResponse({stopNewReplay: replay})),
+            //then just log the response and return the active replay
+            (activeReplay, response) => {
+                console.log(response.message);
+                return activeReplay;
             }
         )
-        //we only want to continue to process replay events until the user interface stop replay button is clicked
-        //if neither of these events happen, then we will just process to the end of the array and then reach an end that way
-        .takeUntil(
-            //merge the two sources of potential recording stop commands, either will do
-            Rx.Observable.merge(
-                //obviously the stop button is a source of finalisation
-                Rx.Observable.fromEvent(document.querySelector('.ui.runReplay.container .ui.stopReplay.negative.button'), 'click')
-                    //we need to send the message to the background script here 
-                    .do(event => new RecordReplayMessenger({}).sendMessage({stopReplay: event.target.getAttribute('data-replay-id')})),
-                //less obviously, the user might choose to stop the replay by closing the tab window
-                //background scripts keep an eye on this and will send a message entitled replayTabClosed
-                new RecordReplayMessenger({}).isAsync(false).chromeOnMessageObservable
-                    //we only want to receive replayTabClosed events here
-                    .filter(msgObject => msgObject.request.hasOwnProperty('replayTabClosed'))
-                    //send the response so we don't get the silly errors
-                    .do(msgObject => msgObject.sendResponse({message: `User Interface Received Tab Closed Event`}) )
-            )
-        )
+        //then we need to report the conclusion of the process - we only have a single replay to report
         .subscribe(
-            mutatedReplay => {
-                //we need to know the progress of the test, which we can assess by seeing how many events have been pushed to the mutated events array
-                const numberMutated = mutatedReplay.mutatedReplayEventArray.length;
-                console.log(`${numberMutated} Replay Events Tested`);
-                //we need to know how many of the replays have failed. which we can do by filtering for false - unperformed replays have a value of null
-                const numberFailed = mutatedReplay.mutatedReplayEventArray.filter(event => event.assertionEventStatus == false || event.replayEventStatus == false).length;
-                console.log(`${numberFailed} Replay Events Failed`);
-                //we need to know how many tests have passed, which we get from the positives
-                const numberPassed = mutatedReplay.mutatedReplayEventArray.filter(event => event.assertionEventStatus == true || event.replayEventStatus == true).length;
-                console.log(`${numberPassed} Replay Events Passed`);
-                //then if the number of events mutated equals the length of the original replayEventsArray we have finished
-                //we only save mutations to the replay if we reach the end of the array naturally, otherwise it was interrupted
-                if (numberMutated == mutatedReplay.replayEventArray.length) {
-                    console.log("Replay Complete by Events")
-                    //then we have to update the replay with the time that this replay was performed
-                    mutatedReplay.replayExecuted = Date.now();
-                    //then we add the replay status
-                    mutatedReplay.replayStatus = (numberMutated == numberPassed ? true : false);
-                    //then we add the fail time if required, otherwise set it to zero
-                    numberMutated != numberPassed ? mutatedReplay.replayFailTime = Date.now() : mutatedReplay.replayFailTime = 0;
-                    //report the final status of the replay events
-                    console.log(mutatedReplay);
-                    //then we need to save all the relevant data to the database
-                    new RecordReplayMessenger({}).sendMessageGetResponse({getReportObject: "Make Request for Report Object"})
-                        //then update the replay status accordingly
-                        .then(response => {
-                            console.log(response.reportObject);
-                            //update the performance timings if required
-                            mutatedReplay.recordingTestPerformanceTimings ? mutatedReplay.replayPerformanceTimings = response.reportObject.performanceTimings : null;
-                            //update the resource loads if required
-                            mutatedReplay.recordingTestResourceLoads ? mutatedReplay.replayResourceLoads = response.reportObject.resourceLoads : null;
-                            //update the screenshot if required
-                            mutatedReplay.recordingTestScreenshot ? mutatedReplay.replayScreenShot = response.reportObject.screenShot : null;
-                            //return mutated replay with reports
-                            return mutatedReplay;                
-                        })
-                        //then we need to save the updated replay events and any reports to the database
-                        .then( mutatedReplayWithReports => StorageUtils.updateModelObjectInDatabaseTable('replays.js', mutatedReplayWithReports.id, mutatedReplayWithReports, 'replays') )
-                        .then( () => {
-                            //and update the master replays table at the top to reflect executed time and status
-                            updateReplaysTable();
-                        });
-                }
-            },
-            error => console.error(error),
-            () => {
-                console.log("Replay Complete by Observable Complete")
-                //hide the recording loader
+            replay => {
+                console.log(`Finished Processing ${replay.replayName}`);
+                //update the master replays table at the top to reflect executed time and status
+                updateReplaysTable();
+                //hide the replay loader
                 $('.ui.text.small.replay.loader').removeClass('active');
                 //show the start button as enabled
                 $('.ui.runReplay.container .ui.startReplay.positive.button').removeClass('disabled');
                 //show the stop replay button as disabled
                 $('.ui.runReplay.container .ui.stopReplay.negative.button').addClass('disabled');
                 //then we need to add the start recording handler again
-                addStartReplayHandler();
+                addReplaysTableStartReplayHandler();
+            },
+            error => {
+                console.log(`Process Replay Error ${error}`);
+                //hide the replay loader
+                $('.ui.text.small.replay.loader').removeClass('active');
+                //show the start button as enabled
+                $('.ui.runReplay.container .ui.startReplay.positive.button').removeClass('disabled');
+                //show the stop replay button as disabled
+                $('.ui.runReplay.container .ui.stopReplay.negative.button').addClass('disabled');
+                //then we need to add the start recording handler again
+                addReplaysTableStartReplayHandler();
             }
-        )
-
-
+        );
+        
 }
 
 $(document).ready (function(){
 
     //add the listener for the run replay button
-    addStartReplayHandler();
+    addReplaysTableStartReplayHandler();
     //activate the tab control
     $('.ui.showReplay.container .ui.top.attached.replay.tabular.menu .item').tab({
         //we need to rehide stuff as tabs are shown

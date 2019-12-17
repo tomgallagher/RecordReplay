@@ -27,8 +27,8 @@ class Replay extends Recording {
             replayPerformanceTimings: {},
             //the replay may save resource loads,
             replayResourceLoads: {},
-            //the replay may save screenshot as data uri
-            replayScreenShot: ''  
+            //the replay may save screenshot as data property of object
+            replayScreenShot: {}
         };
         // create a new object with the defaults over-ridden by the options passed in
         let opts = Object.assign({}, defaults, options);

@@ -208,6 +208,8 @@ class ReplayTabRunner {
         const reportObjectObservable = this.messengerService.chromeOnMessageObservable
             //firstly we only care about messages that are asking for the report object
             .filter(messageObject => messageObject.request.hasOwnProperty('getReportObject'))
+            //then we need a small delay to ensure that, if the last event was a scroll event, we have scrolled to the right place
+            .delay(3000)
             //then we take the screenshot in case we need it
             .switchMap(() =>
                 //this is a promise that sends the message and resolves with a response
@@ -472,7 +474,7 @@ class ReplayTabRunner {
                     //send the screenshot command 
                     "Page.captureScreenshot", 
                     //then the image params
-                    { format: "jpeg", quality: 70 },
+                    { format: "jpeg", quality: 100 },
                     //this returns string of Base64-encoded image data
                     data => { 
                         //save the string to our class property
