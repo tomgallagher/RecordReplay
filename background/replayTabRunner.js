@@ -41,6 +41,8 @@ class ReplayTabRunner {
             //THIS IS THE MOST IMPORTANT PIECE OF CODE AND THE REASON FOR THE ASYNC CONSTRUCTOR
             //we need to have the browser tab id in the constructor
             this.browserTabId = await new Promise(resolve => chrome.tabs.create({ url: activeItem.recordingTestStartUrl }, tab => { this.openState = true; resolve(tab.id); } ));
+            //then we keep track of the time we opened the tab
+            this.openTabTime = Date.now();
             //and we also want the tab runner to be able to tell the active recording when its tab has closed and also change its own tab state
             this.tabClosedObservable = Rx.Observable.fromEventPattern(
                 handler => chrome.tabs.onRemoved.addListener(handler),
@@ -219,7 +221,11 @@ class ReplayTabRunner {
             )
             //then we just send the current report state
             .do(messageObject => {
+                //then we do a small adjustment if we are missing onCommitted, which can happen if we are slow to get going
+                this.performanceTimings.hasOwnProperty('onCommitted') ? null : this.performanceTimings.onCommitted = this.openTabTime;
+                //otherwise the report object should just be sent as it
                 const reportObject = { performanceTimings: this.performanceTimings, resourceLoads: this.resourceLoads, screenShot: this.screenShot };
+                //the get report object is expecting a reply
                 messageObject.sendResponse({reportObject: reportObject})
             });
 
