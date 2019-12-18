@@ -22,7 +22,7 @@ class Assertion extends RecordingEvent {
             assertionLogMessages: [],
             //then we are going to want to know why the assertion event has failed
             assertionErrorMessages: [],
-            //then we are goint to want to know which selector was used in the assertion
+            //then we are going to want to know which selector was used in the assertion
             assertionChosenSelectorString: "",
             //we need to have the kind of assertion, is it Text Content, Present or Content
             assertionType: "Present",

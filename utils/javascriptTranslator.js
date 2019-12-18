@@ -57,9 +57,26 @@ class JavascriptTranslator {
 
     inputText = (selector, text) => `document.querySelector('${selector}').value = '${text}';` 
     
-    sendSpecialKey = (recordingEvent, index) => `const event${index} = new KeyboardEvent("keypress", { key : '${recordingEvent.recordingEventKey}', code : '${recordingEvent.recordingEventKey}', ctrlKey: ${recordingEvent.recordingEventCtrlKey}, shiftKey: ${recordingEvent.recordingEventShiftKey}, altKey: ${recordingEvent.recordingEventAltKey} }); ${this.tabIndex(index)}document.dispatchEvent( event${index} );`
+    nonInputTyping = (selector, recordingEvent, index) => {
 
-    scrollTo = (xPosition, yPosition) => `document.documentElement.scrollTo({left: ${xPosition}, top: ${yPosition}, behavior: 'smooth'}); `
+        //first we need a shorthand of our event
+        const dispatchEvent = recordingEvent.recordingEventDispatchKeyEvent;
+        //then we need each of the modifier keys
+        const ctrlKey = (dispatchEvent.modifiers == 2 ? 'true' : 'false');
+        const shiftKey = (dispatchEvent.modifiers == 8 ? 'true' : 'false');
+        const altKey = (dispatchEvent.modifiers == 1 ? 'true' : 'false');
+        const metaKey = (dispatchEvent.modifiers == 4 ? 'true' : 'false');
+        //then we need to know if the target was the main document or not
+        //then we want to know if the action happened on the main html document or not
+        let prependForTarget = '';
+        //if the target was not the html, we need to focus on the right element using the selector
+        if (recordingEvent.recordingEventHTMLTag == "HTML") { prependForTarget = `document.querySelector('${selector}').focus({ preventScroll: false });${this.tabIndex(index)}` }
+        //then we just need to return the string
+        return `${prependForTarget}const event${index} = new KeyboardEvent('keypress', { key: ${dispatchEvent.key}, code: ${dispatchEvent.code}, location: ${dispatchEvent.location}, repeat: ${dispatchEvent.autoRepeat}, ctrlKey: ${ctrlKey}, shiftKey: ${shiftKey}, altKey: ${altKey}, metaKey: ${metaKey}}); ${this.tabIndex(index)}document.dispatchEvent( event${index} );`
+
+    }
+
+    scrollTo = (xPosition, yPosition) => `document.documentElement.scrollTo({left: ${xPosition}, top: ${yPosition}, behavior: 'smooth'});`
 
     focus = (selector) => `document.querySelector('${selector}').focus({ preventScroll: false });`
 
@@ -113,7 +130,7 @@ class JavascriptTranslator {
             case "TextSelect":
                 return this.textSelect(this.getMostValidSelector(recordingEvent), index);
             case "Keyboard": 
-                return this.sendSpecialKey(recordingEvent, index);
+                return this.nonInputTyping(this.getMostValidSelector(recordingEvent), recordingEvent, index);
             case 'Input':
                 return this.inputText(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue);
             case 'Page':

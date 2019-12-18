@@ -9,6 +9,8 @@ class PuppeteerTranslator {
             //internal defaults
             recordingTestUrl: "",
             recordingTestID: 0,
+            //need a keycode dictionary 
+            keyCodeDictionary: new KeyCodeDictionary,
             //messaging for code
             standardOpeningComment: "\n\t/*\n" 
             + "\t\t Your options for launching Puppeteer will depend upon your system setup and preferences. \n"
@@ -79,6 +81,16 @@ class PuppeteerTranslator {
 
     //ACTION FUNCTIONS
 
+    mapDispatchKeyEventModifer = (modifier) => {
+        switch(modifier) {
+            case 1: return "Alt"
+            case 2: return "Control"
+            case 4: return "Meta"
+            case 8: return "Shift"
+            default: return ""
+        }
+    }
+
     mouseClick = (selector, clicktype, index, target) => {
         switch(clicktype) {
             case 'click': return `await ${target}.click('${selector}', { button: 'left', clickCount: 1 } );`
@@ -94,7 +106,23 @@ class PuppeteerTranslator {
     typeText = (text, target) => `await ${target}.keyboard.type('${text}');`
 
     //Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
-    sendSpecialKey = (keyDescriptor, target) => `await ${target}.keyboard.press('${keyDescriptor}');` 
+    nonInputTyping = (selector, replayEvent, index) => {
+        //so there is some complexity in handling the different types of typing
+        //first we need to know if the typing event contains characters or not
+        const dictionaryEntry = this.keyCodeDictionary[replayEvent.recordingEventDispatchKeyEvent.windowsVirtualKeyCode];
+        //then we want to know if there are any modifier keys pressed at the time
+        const modifiers = this.mapDispatchKeyEventModifer(replayEvent.recordingEventDispatchKeyEvent.modifiers);
+        //then we want to know if the action happened on the main html document or not
+        let prependForTarget = '';
+        //if the target was not the html, we need to focus
+        if (replayEvent.recordingEventHTMLTag == "HTML") { prependForTarget = `await ${target}.focus('${selector}');${this.tabIndex(index)}` }
+        //then we need to work on the modifier, if present
+        if (modifiers.length > 0) {
+            return `${prependForTarget}await page.keyboard.down('${modifiers}');${this.tabIndex(index)}await page.keyboard.press('${dictionaryEntry.descriptor}');${this.tabIndex(index)}await page.keyboard.up('${modifiers}');`
+        } else {
+            return `${prependForTarget}await page.keyboard.press('${dictionaryEntry.descriptor}');`
+        }
+    }
 
     scrollTo = (xPosition, yPosition, index, target) => `await ${target}.evaluate( () => { ${this.tabIndex(-1)} document.documentElement.scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' }); ${this.tabIndex(index)} });`
 
@@ -121,12 +149,21 @@ class PuppeteerTranslator {
 
     getElementAttributesAsArray = (selector, index) => `const attributesArray${index} = await page.$eval('${selector}', element => Array.prototype.slice.call(element.attributes);`
 
-    getMostValidSelector = recordingEvent => {
-        //collect all the existing selectors into an array, filter and return the first valid one
+    getMostValidSelector = replayEvent => {
+
+        //if we have run the replay, we will get a report on the selector that was chosen
+        if (replayEvent.replayChosenSelectorString && replayEvent.replayChosenSelectorString.length > 0) {
+            return replayEvent.replayChosenSelectorString;
+        }
+        //if we have run the assertion, we will get a report on the selector that was chosen
+        if (replayEvent.assertionChosenSelectorString && replayEvent.assertionChosenSelectorString.length > 0) {
+            return replayEvent.assertionChosenSelectorString;
+        }
+        //otherwise collect all the existing selectors into an array, filter and return the first valid one
         return [
-            recordingEvent.recordingEventCssSelectorPath, 
-            recordingEvent.recordingEventCssSimmerPath, 
-            recordingEvent.recordingEventCssDomPath
+            replayEvent.recordingEventCssSelectorPath, 
+            replayEvent.recordingEventCssSimmerPath, 
+            replayEvent.recordingEventCssDomPath
         ]
         //when we filter we need to know what the selectors return when they fail
         .filter(value => value != false && value != 'undefined' && value != null)[0] || ""; 
@@ -185,9 +222,8 @@ class PuppeteerTranslator {
             case "TextSelect":
                 outputStringArray.push(this.textSelect(this.getMostValidSelector(recordingEvent), index, target));
                 break;
-            //TO DO - the keyboard functions are hopeless at the moment
             case "Keyboard": 
-                outputStringArray.push(this.sendSpecialKey(recordingEvent.recordingEventKey, target));
+                outputStringArray.push(this.nonInputTyping(this.getMostValidSelector(recordingEvent), recordingEvent, index));
                 break;
             case 'Input':
                 outputStringArray.push(this.focus(this.getMostValidSelector(recordingEvent), target) += this.tabIndex(index) + this.typeText(recordingEvent.recordingEventInputValue, target));

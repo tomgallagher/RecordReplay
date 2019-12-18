@@ -19,7 +19,7 @@ class ReplayEvent extends RecordingEvent {
             replayLogMessages: [],
             //then we are going to want to know why the replay event has failed
             replayErrorMessages: [],
-            //then we are goint to want to know which selector was used in the replay
+            //then we are going to want to know which selector was used in the replay
             replayChosenSelectorString: ""
         };
         // create a new object with the defaults over-ridden by the options passed in

@@ -144,7 +144,7 @@ function addRecordingTableButtonListeners() {
                 //add the loading indicator to the table section
                 $('.ui.fluid.showRecording.container .ui.bottom.attached.active.tab.segment ').addClass('loading');
                 //update the checkboxes to have the current recording id                
-                $('.ui.code.form .ui.radio.checkbox input[name="outputCodeType"]').attr('data-recording-id', recordingKey);
+                $('.ui.fluid.showRecording.container .ui.code.form .ui.radio.checkbox input[name="outputCodeType"]').attr('data-recording-id', recordingKey);
                 //then update the edit recording events table
                 updateRecordingEventsTableAndCodeText(recording);
                 //then remove the loading indicator

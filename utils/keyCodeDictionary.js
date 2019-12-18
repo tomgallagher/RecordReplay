@@ -8,10 +8,10 @@ class KeyCodeDictionary {
         // set default values for the keycodes class - UK keyboard
         const defaults = {
 
-            8: {value: null, descriptor: "Backspace"},
+            8: {value: null, descriptor: "Backspace", cypressDescriptor: "{backspace}"},
             9: {value: null, descriptor: "Tab"},
 
-            13: {value: null, descriptor: "Enter"},
+            13: {value: null, descriptor: "Enter", cypressDescriptor: "{enter}"},
 
             16: {value: null, descriptor: "Shift"},
             17: {value: null, descriptor: "Control"},
@@ -19,21 +19,21 @@ class KeyCodeDictionary {
             19: {value: null, descriptor: "Pause"},
             20: {value: null, descriptor: "CapsLock"},
 
-            27: {value: null, descriptor: "Escape"},
+            27: {value: null, descriptor: "Escape", cypressDescriptor: "{esc}"},
 
             32: {value: " ", descriptor: "Space"},
-            33: {value: null, descriptor: "PageUp"},
-            34: {value: null, descriptor: "PageDown"},
-            35: {value: null, descriptor: "End"},
-            36: {value: null, descriptor: "Home"},
-            37: {value: null, descriptor: "ArrowLeft"},
-            38: {value: null, descriptor: "ArrowUp"},
-            39: {value: null, descriptor: "ArrowRight"},
-            40: {value: null, descriptor: "ArrowDown"},
+            33: {value: null, descriptor: "PageUp", cypressDescriptor: "{pageup}"},
+            34: {value: null, descriptor: "PageDown", cypressDescriptor: "{pagedown}"},
+            35: {value: null, descriptor: "End", cypressDescriptor: "{end}"},
+            36: {value: null, descriptor: "Home", cypressDescriptor: "{home}"},
+            37: {value: null, descriptor: "ArrowLeft", cypressDescriptor: "{leftarrow}"},
+            38: {value: null, descriptor: "ArrowUp", cypressDescriptor: "{uparrow}"},
+            39: {value: null, descriptor: "ArrowRight", cypressDescriptor: "{rightarrow}"},
+            40: {value: null, descriptor: "ArrowDown", cypressDescriptor: "{downarrow}"},
             
             44: {value: null, descriptor: "PrintScreen"},
-            45: {value: null, descriptor: "Insert"},
-            46: {value: null, descriptor: "Delete"},
+            45: {value: null, descriptor: "Insert", cypressDescriptor: "{insert}"},
+            46: {value: null, descriptor: "Delete", cypressDescriptor: "{del}"},
 
             48: {value: "0", shiftValue: ")", descriptor: "Digit0", shiftDescriptor: "CloseParens"},
             49: {value: "1", shiftValue: "!", descriptor: "Digit1", shiftDescriptor: "ExclamationMark"},

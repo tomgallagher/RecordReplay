@@ -2,7 +2,7 @@
   "manifest_version": 2,
 
   "name": "Record/Replay",
-  "description": "Automated testing via the Chrome DevTools Protocol. Easy to use and open source. Integrated with Jest and Puppeteer.",
+  "description": "Automated testing via the Chrome DevTools Protocol. Easy to use and open source. Code generator for Puppeteer, Jest and Cypress.",
   "author": "Tom Gallagher",
   "version": "1.0.0.1",
   

@@ -553,11 +553,15 @@ function processReplayEvents(replay, tableSelector, containerSelector) {
                                 replayEvent.assertionEventStatus = replayExecution.replayEventStatus;
                                 replayEvent.assertionLogMessages = replayEvent.assertionLogMessages.concat(replayExecution.replayLogMessages);
                                 replayEvent.assertionErrorMessages = replayExecution.replayErrorMessages;
+                                //then for the mutated events, it will be useful to know the selector that has actually been chosen in the page
+                                replayEvent.assertionChosenSelectorString = replayExecution.chosenSelectorReport.selectorString;
                             } else {
                                 replayEvent.replayEventReplayed = replayExecution.replayEventReplayed;
                                 replayEvent.replayEventStatus = replayExecution.replayEventStatus;
                                 replayEvent.replayLogMessages = replayEvent.replayLogMessages.concat(replayExecution.replayLogMessages);
                                 replayEvent.replayErrorMessages = replayExecution.replayErrorMessages;
+                                //then for the mutated events, it will be useful to know the selector that has actually been chosen in the page
+                                replayEvent.replayChosenSelectorString = replayExecution.chosenSelectorReport.selectorString;
                             }
                             //then return the event
                             return replayEvent;

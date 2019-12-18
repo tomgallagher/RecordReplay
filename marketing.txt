@@ -1,0 +1,19 @@
+'Click-through' or manual quality assurance testing demands that someone should click through the finished website to make sure that it really works, before shipping it to customers.
+
+To go from where we are to where we want to be, which is not blocked by manual QA runs and releasing multiple times a day, we need to invest into automated testing as well 
+as into building trust within the organization that our code does what it’s supposed to.
+
+We will be able to test any website using this approach because no matter how you develop your site, be it React, Angular, Vue or some other flavor of the year framework, 
+in the end, you will get a plain old website. And using this approach we can test them all.
+
+Selling points:
+
+1. Multiple CSS and Xpath selector generators for redundancy and continued performance as the site structure changes
+2. Generates short unique selectors for all element targets
+3. Ease of use - no installs required, no knowledge of Node.js or Puppeteer requiredm everything runs in the browser, tests saved locally in storage
+4. Transparent - watch all the recordings replayed in real time in dedicated browser tab
+4. Bulk testing - automated click-through testing of all functions on your page
+
+vs Cypress
+
+1. We support the use of tab key?

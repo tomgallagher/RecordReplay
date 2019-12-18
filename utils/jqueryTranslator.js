@@ -64,7 +64,24 @@ class jQueryTranslator {
 
     inputText = (selector, text) => `$('${selector}').val('${text}');`
 
-    sendSpecialKey = (recordingEvent, index) => `const event${index} = new KeyboardEvent("keypress", { key : '${recordingEvent.recordingEventKey}', code : '${recordingEvent.recordingEventKey}', ctrlKey: ${recordingEvent.recordingEventCtrlKey}, shiftKey: ${recordingEvent.recordingEventShiftKey}, altKey: ${recordingEvent.recordingEventAltKey} }); document.dispatchEvent( event${index} );`
+    nonInputTyping = (selector, recordingEvent, index) => {
+
+        //first we need a shorthand of our event
+        const dispatchEvent = recordingEvent.recordingEventDispatchKeyEvent;
+        //then we need each of the modifier keys
+        const ctrlKey = (dispatchEvent.modifiers == 2 ? 'true' : 'false');
+        const shiftKey = (dispatchEvent.modifiers == 8 ? 'true' : 'false');
+        const altKey = (dispatchEvent.modifiers == 1 ? 'true' : 'false');
+        const metaKey = (dispatchEvent.modifiers == 4 ? 'true' : 'false');
+        //then we need to know if the target was the main document or not
+        //then we want to know if the action happened on the main html document or not
+        let prependForTarget = '';
+        //if the target was not the html, we need to focus on the right element using the selector
+        if (recordingEvent.recordingEventHTMLTag == "HTML") { prependForTarget = `document.querySelector('${selector}').focus({ preventScroll: false });${this.tabIndex(index)}` }
+        //then we just need to return the string
+        return `${prependForTarget}const event${index} = new KeyboardEvent('keypress', { key: ${dispatchEvent.key}, code: ${dispatchEvent.code}, location: ${dispatchEvent.location}, repeat: ${dispatchEvent.autoRepeat}, ctrlKey: ${ctrlKey}, shiftKey: ${shiftKey}, altKey: ${altKey}, metaKey: ${metaKey}}); ${this.tabIndex(index)}document.dispatchEvent( event${index} );`
+
+    }
 
     scrollTo = (xPosition, yPosition) => `$('html').animate({ scrollLeft: ${xPosition}, scrollTop: ${yPosition} }, 500);`
 
@@ -75,6 +92,7 @@ class jQueryTranslator {
     textSelect = selector => `$('${selector}').select();`
 
     //ASSERTIONS HELPERS
+
     getTitle = (selector='document', index) => selector == 'document' ? `const title${index} = $(document).attr('title');` : `const title${index} = $('${selector}').attr('title');`
 
     querySelector = (selector, index) => `const $selected${index} = $('${selector}').first();`
@@ -90,8 +108,6 @@ class jQueryTranslator {
     getElementAttributesAsArray = (selector, index) => `const attributesArray${index} = Array.prototype.slice.call(document.querySelector('${selector}').attributes);`
 
     //RETURN STRING FUNCTIONS
-
-    
 
     getMostValidSelector = recordingEvent => {
         //collect all the existing selectors into an array, filter and return the first valid one
@@ -121,7 +137,7 @@ class jQueryTranslator {
             case "TextSelect":
                 return this.textSelect(this.getMostValidSelector(recordingEvent));
             case "Keyboard": 
-                return sendSpecialKey(recordingEvent, index);
+                return this.nonInputTyping(this.getMostValidSelector(recordingEvent), recordingEvent, index);
             case 'Input':
                 return this.inputText(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue);
             case 'Page':

@@ -174,7 +174,7 @@ function addReplayTableButtonListeners() {
                 //update the checkboxes to have the current replay id                
                 $('.ui.fluid.showReplay.container .ui.code.form .ui.radio.checkbox input[name="outputCodeType"]').attr('data-replay-id', replayKey);
                 //then update the edit replay events table
-                uodateReplayEventsTableCodeReports(replay);
+                updateReplayEventsTableCodeReports(replay);
                 //then remove the loading indicator
                 $('.ui.fluid.showReplay.container .ui.bottom.attached.active.tab.segment ').removeClass('loading');
             })
@@ -250,7 +250,7 @@ function addReplayTableButtonListeners() {
 //SLAVE SHOW REPLAY EVENTS TABLE OPERATION - THIS POPULATES THE SHOW EVENTS TABLE WITH ALL THE REPLAY EVENTS FROM THE SELECTED REPLAY
 //THIS HAS A SEPARATE FUNCTION DUE TO THE COMPEXITIES OF THE CODE GENERATION - THE SLAVE RUN REPLAY POPULATION IS DONE INLINE IN THE BUTTON LISTENER
 
-function uodateReplayEventsTableCodeReports(replay) {
+function updateReplayEventsTableCodeReports(replay) {
 
     console.log(replay);
 
@@ -560,7 +560,7 @@ function addShowReplayReplayEventsTableButtonListeners() {
             //then we need to do the update to the table 
             .then(savedReplay => {
                 //this is specific to the showReplayReplayEventsTable, also used on initial display
-                uodateReplayEventsTableCodeReports(savedReplay);
+                updateReplayEventsTableCodeReports(savedReplay);
             })  
             //the get single object function will reject if object is not in database
             .catch(error => console.error(error));      
@@ -815,6 +815,29 @@ $(document).ready (function(){
             url: url,
             filename: "RecordReplay.js"
         });
+    });
+
+    //respond to requested code language changes, which requires getting the replay from the server and processing it
+    $('.ui.fluid.showReplay.container .ui.code.form .ui.radio.checkbox').change(event => {
+        //get the replay from the database using the key
+        const replayKey = event.target.getAttribute("data-replay-id");
+        //the recording key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
+            //then depending up the recording, fill the code text
+            .then(replay => {
+                switch(true) {
+                    case event.target.value == "jest+puppeteer":
+                    
+                        $('.ui.fluid.showReplay.container .codeOutputTextArea').val(`TO D0 - JEST / PUPPETEER CODE FOR REPLAY ${replay.id}`);
+                        break;
+                    case event.target.value == "cypress":
+                        const toCypress = new CypressTranslator({}); 
+                        $('.ui.fluid.showReplay.container .codeOutputTextArea').val(toCypress.buildReplayStringFromEvents(replay));
+                        break;
+                    default:
+                        $('.ui.fluid.showReplay.container .codeOutputTextArea').val("UNRECOGNISED");
+                }
+            });
     });
 
 });
