@@ -26,6 +26,8 @@ class CypressTranslator {
 
     openCypressReplay = replay => `\n\tit('${replay.replayName}', function () {\n`
 
+    warnOnIframe = (href) => `\n\t\t// THIS ACTION MUST BE EXECUTED IN CONTEXT OF IFRAME WITH ORIGIN: ${new URL(href).origin}`
+
     //Cypress tests have an extra tab for formatting as everything takes place in a describe AND an it function
     tabIndex = index => {
         switch(index) {
@@ -54,6 +56,8 @@ class CypressTranslator {
     }
 
     //ACTION FUNCTIONS
+
+
 
     navigateStartAndConfirm = (replay) => `${this.tabIndex(0)}cy.visit('${replay.replayRecordingStartUrl}');\n`;
 
@@ -237,6 +241,9 @@ class CypressTranslator {
         if (replay.replayStatus) { eventsArray = replay.mutatedReplayEventArray }
         //then we loop through the array
         for (let event in eventsArray) { 
+            //then add the iframe warning if required
+            eventsArray[event].recordingEventIsIframe ? outputString += this.warnOnIframe(eventsArray[event].recordingEventLocationHref) : null;
+            //then add the string using the action mapped to function
             outputString += `${this.mapActionTypeToFunction(eventsArray[event], event)}\n`;
         }
         //add the close page function

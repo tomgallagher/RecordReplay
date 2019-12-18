@@ -17,3 +17,5 @@ Selling points:
 vs Cypress
 
 1. We support the use of tab key?
+2. We support bandwidth throttling and latency testing, as well as mobile emulation
+3. We support iframes by default, no ifs and no buts
