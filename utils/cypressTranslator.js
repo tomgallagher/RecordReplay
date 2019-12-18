@@ -202,7 +202,7 @@ class CypressTranslator {
                     //checkboxes are created by nodebuilder and then added by listening to clicks on checboxes in newReplay.js
                     switch(replayEvent.assertionType) {
                         case "Visible":
-                            outputStringArray.push(this.visibleAssertion(this.getMostValidSelector(replayEvent), replayEvent));
+                            outputStringArray.push(this.visibleAssertion(this.getMostValidSelector(replayEvent)));
                             break;
                         case "Text Content":
                             outputStringArray.push(this.textAssertion(this.getMostValidSelector(replayEvent), replayEvent));
