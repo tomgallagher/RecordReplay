@@ -117,9 +117,28 @@ class AssertionReplay {
                 if (this.assertionElement == "ROOT" && this.assertionNestedLevel == 0) {
                     //OPERATING ON ROOT ELEMENT - what we do depends on the kind of assertion we are performing
                     switch(this.assertionType) {
+                        case "Visible":
+                            //find the selected element
+                            const element = document.querySelector(this.chosenSelectorReport.selectorString);
+                            //if we have the element then we need to check the style for visibility and then display properties indirectly by getBoundingClientRect
+                            if (element) {
+                                //get the style of the selected element
+                                const style = window.getComputedStyle(element);
+                                //provide a function to check that display is not equal to none
+                                function hasVisibleBoundingBox() { const rect = element.getBoundingClientRect(); return !!(rect.top || rect.bottom || rect.width || rect.height); }
+                                //then set the assertion result to the outcome of this
+                                assertionResult = style && style.visibility !== 'hidden' && hasVisibleBoundingBox();
+                            }
+                            if (assertionResult) {
+                                this.replayLogMessages.push(`Asserted Visible`);
+                            } else {
+                                this.replayErrorMessages.push(`Failed to Assert Visible`);
+                            }
+                            break;
                         case "Text Content":
                             //see if the textcontent of the element matches the value we are expecting
                             assertionResult = document.querySelector(this.chosenSelectorReport.selectorString).textContent == this.assertionValue;
+                            //logging success or failure
                             if (assertionResult) {
                                 this.replayLogMessages.push(`Asserted Text Content: ${this.assertionValue}`);
                             } else {
@@ -127,7 +146,9 @@ class AssertionReplay {
                             }
                             break;
                         case "Present":
+                            //see if the element has the attribute we are expecting
                             assertionResult = document.querySelector(this.chosenSelectorReport.selectorString).hasAttribute(this.assertionAttribute);
+                            //logging success or failure
                             if (assertionResult) {
                                 this.replayLogMessages.push(`Asserted Attribute: ${this.assertionAttribute}`);
                             } else {
@@ -135,7 +156,9 @@ class AssertionReplay {
                             }
                             break;
                         case "Content":
+                            //see if the elmeent has the the attribute we are expecting and the value is what we're expecting
                             assertionResult = document.querySelector(this.chosenSelectorReport.selectorString).getAttribute(this.assertionAttribute) == this.assertionValue;
+                            //logging success or failure
                             if (assertionResult) {
                                 this.replayLogMessages.push(`Asserted Attribute: ${this.assertionAttribute}, Asserted Value: ${this.assertionValue}`)
                             } else {
@@ -157,6 +180,28 @@ class AssertionReplay {
                     const relevantChildrenArray = Array.prototype.slice.call(relevantChildren);
                     //OPERATING ON CHILDREN - what we do depends on the kind of assertion we are performing
                     switch(this.assertionType) {
+                        case "Visible":
+                            //see if any children have are visible
+                            assertionResult = relevantChildrenArray
+                                //we need to have an isVisible property on each of the children
+                                .map(element => {
+                                    //get the style of the child element
+                                    const style = window.getComputedStyle(element);
+                                    //provide a function to check that display is not equal to none
+                                    function hasVisibleBoundingBox() { const rect = element.getBoundingClientRect(); return !!(rect.top || rect.bottom || rect.width || rect.height); }
+                                    //then set the isVisible result to the outcome of the style and display properties
+                                    element.isVisible = style && style.visibility !== 'hidden' && hasVisibleBoundingBox();
+                                    //then return the element
+                                    return element;
+                                })
+                                //return boolean if any of the nested elements are visible
+                                .some(element => element.isVisible);
+                            if (assertionResult) {
+                                this.replayLogMessages.push(`Found Nested Visible ${this.assertionElement} Element`);
+                            } else {
+                                this.replayErrorMessages.push(`Failed to Visible On Nested ${this.assertionElement} Element`);
+                            }
+                            break;
                         case "Text Content":
                             //see if any children have matching text content
                             assertionResult = relevantChildrenArray.some(element => element.textContent == this.assertionValue);

@@ -7,6 +7,7 @@ class NodeBuilder {
         //then for replay checkboxes we need the id
         this.eventId = options.eventId;
         //then we need to define assertion types here
+        this.isVisible = "Visible";
         this.isTextAssertion = "Text Content";
         this.isAttributePresentAssertion = "Present";
         this.hasAttributeContentAssertion = "Content";
@@ -104,12 +105,14 @@ class NodeBuilder {
                 header = this.header.cloneNode();
                 //then we customize the header
                 header.textContent = jsonObject.tagName.toUpperCase();
-                //then we want to allow text assertion on elements with text child nodes
+                //then we want to allow visibility assertion on all nodes and text assertion on elements with text child nodes
                 if (this.isReplay) {
+                    //we need to know if there's an attribute element parent, which will allow us to search for nested elements
+                    let attributeParentNode = jsonObject.tagName.toUpperCase();
+                    //visibility first
+                    header.appendChild(this.buildCheckBox(this.isVisible, "Display", "N/A", attributeParentNode))
                     //check to see if the elments has child nodes and if any of those child nodes are text nodes
                     if (jsonObject.childNodes.length > 0 && jsonObject.childNodes.some(node => node.nodeType == 3)) {
-                        //we need to know if there's an attribute element parent, which will allow us to search for nested elements
-                        let attributeParentNode = jsonObject.tagName.toUpperCase();
                         //then we concatenate the textContent of all the child nodes
                         let textValue = jsonObject.childNodes.filter(node => node.nodeType == 3).reduce((acc, node) => { return acc + node.nodeValue; }, '');
                         //append the return value of the checkbox builder

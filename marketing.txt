@@ -19,3 +19,8 @@ vs Cypress
 1. We support the use of tab key?
 2. We support bandwidth throttling and latency testing, as well as mobile emulation
 3. We support iframes by default, no ifs and no buts
+
+vs Jest / Puppeteer
+
+1. No setup required
+2. No resource limitations

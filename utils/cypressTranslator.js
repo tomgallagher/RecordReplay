@@ -126,6 +126,8 @@ class CypressTranslator {
     //ASSERTION FUNCTIONS
     navigationAssertion = replayEvent => `cy.url().should('include', '${replayEvent.recordingEventLocationHref}');`
 
+    visibleAssertion = selector => `cy.get('${selector}').should('be.visible');`
+
     textAssertion = (selector, assertionEvent) => `cy.get('${selector}').should('contain', '${assertionEvent.assertionValue}');`
 
     hasAttributeAssertion = (selector, assertionEvent) => `cy.get('${selector}').should('have.attr', '${assertionEvent.assertionAttribute}');`
@@ -199,6 +201,9 @@ class CypressTranslator {
                     //here we switch on type of assertion, this is determined by the clicks on the checkboxes
                     //checkboxes are created by nodebuilder and then added by listening to clicks on checboxes in newReplay.js
                     switch(replayEvent.assertionType) {
+                        case "Visible":
+                            outputStringArray.push(this.visibleAssertion(this.getMostValidSelector(replayEvent), replayEvent));
+                            break;
                         case "Text Content":
                             outputStringArray.push(this.textAssertion(this.getMostValidSelector(replayEvent), replayEvent));
                             break;
