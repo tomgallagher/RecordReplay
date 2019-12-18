@@ -300,6 +300,7 @@ function updateReplayEventsTableCodeReports(replay) {
         //then, if we do, we need to deliver some fail cards
         if (failedReplayEventArray.length > 0) {
 
+            console.log("Showing Error Executions");
             //we need a map to give a visual representation of the actions
             const actionToIconMap = {
                 Page : "fab fa-chrome fa-5x",
@@ -364,6 +365,7 @@ function updateReplayEventsTableCodeReports(replay) {
            
         } else {
 
+            console.log("Showing Good Executions");
             //hide the placeholder
             $('.ui.history.placeholder.segment').hide();
             //hide the error cards 
@@ -379,6 +381,7 @@ function updateReplayEventsTableCodeReports(replay) {
 
     if (replay.replayPerformanceTimings && Object.keys(replay.replayPerformanceTimings).length > 0) {
 
+        console.log("Showing Performance Steps");
         let targetNode = document.querySelector('.performanceTimingsTemplate');
         //we need to do more work as we have to save the template in a table, which we don't need, we just want the row
         let targetSteps = targetNode.querySelector('.ui.three.steps');
@@ -429,6 +432,7 @@ function updateReplayEventsTableCodeReports(replay) {
 
     if (replay.replayResourceLoads && Object.keys(replay.replayResourceLoads).length > 0) {
 
+        console.log("Showing Resource Loads Chart");
         //then we need to create the data for the chart from the replay resource loads object
         //labels from the object keys
         const chartLabels = Object.keys(replay.replayResourceLoads);
@@ -466,7 +470,7 @@ function updateReplayEventsTableCodeReports(replay) {
     } else {
 
         //show the standard placeholder
-        $('.ui.resourceLoads.placeholder.segment').show();
+        $('.ui.resourceLoads.placeholder.segment:not(.positive)').show();
         //then remove any charts
         $('.ui.resourceLoads.positive.placeholder.segment').remove('.resourceLoadsChart');
         //then hide the positive placeholder segment
@@ -475,7 +479,8 @@ function updateReplayEventsTableCodeReports(replay) {
     }
 
     //UPDATE RESOURCE LOADS
-    if (replay.replayScreenShot && Object.keys(replay.replayScreenShot).length > 0) {
+    if (replay.hasOwnProperty('replayScreenShot') && Object.keys(replay.replayScreenShot).length > 0) {
+        console.log("Showing Screenshot");
         //hide the standard placeholder 
         $('.ui.screenshot.placeholder.segment').hide();
         //update the image's src attribute
@@ -483,10 +488,11 @@ function updateReplayEventsTableCodeReports(replay) {
         //show the positive placeholder 
         $('.ui.screenshot.positive.placeholder.segment').show();
     } else {
+        //show the standard screenshot placeholder 
+        $('.ui.screenshot.placeholder.segment:not(.positive)').show();
         //hide the positive screenshot placeholder 
         $('.ui.screenshot.positive.placeholder.segment').hide();
-        //show the standard screenshot placeholder 
-        $('.ui.screenshot.placeholder.segment').show();
+        
 
     }
 
