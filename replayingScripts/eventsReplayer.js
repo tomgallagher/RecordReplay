@@ -28,7 +28,10 @@ var EventReplayer = {
         }
     },
     mapEventToReplayer: replayEvent => {
-        switch(replayEvent.recordingEventAction) {
+        //then we need to get a uniform action, including assertions, which are labelled differently
+        //the reason for this is that an assertion extends an underlying recording with an action - TextSelect or Hover
+        const action = replayEvent.assertionEventAction || replayEvent.recordingEventAction;
+        switch(action) {
             case 'TextSelect': return new TextSelectReplay(replayEvent)
             case 'Mouse': return new MouseReplay(replayEvent)
             case 'Input': return new InputReplay(replayEvent)
@@ -93,7 +96,7 @@ EventReplayer.startReplayingEvents = () => {
         //firstly we only care about messages that contain a replay event
         .filter(messageObject => messageObject.request.hasOwnProperty('replayEvent')) 
         //the messages that need to go to all content script are all the user events and the assertions, marked as replay events
-        .filter(messageObject => messageObject.request.replayEvent.recordingEventOrigin == 'User' || messageObject.request.replayEvent.recordingEventOrigin == 'Replay')
+        .filter(messageObject => messageObject.request.replayEvent.recordingEventOrigin == 'User' || messageObject.request.replayEvent.assertionEventOrigin == 'Replay')
         //but we don't want to send the keyboard events, as they are handled in background script
         .filter(messageObject => messageObject.request.replayEvent.recordingEventAction != 'Keyboard')
         //if we have a replay event, then map the message object to the replay event only and attach the sendResponse so we can return feedback as soon as we get it
@@ -106,8 +109,11 @@ EventReplayer.startReplayingEvents = () => {
             return replayEvent;
         })
         //then we start operating our replay logic - we start by mapping the event to our individual event type handlers
+        //this will make an assessment of the execution context url vs the replay event url and the selectors' presence in the page 
         .map(replayEvent => EventReplayer.mapEventToReplayer(replayEvent) )
-        //then we can filter all those event handlers that return with a state of false
+        //then we can filter all those event replayers that return with a state of false
+        //VERY IMPORTANT IT REMAINS A NOT_FALSE CHECK 
+        //we have only completed the url and selector checks - passing typereplayers have a replayEventStatus of null pending further checks 
         .filter(typeReplayer => typeReplayer.replayEventStatus != false)
         //then we have to add the listener for playback confirmation and subsequently execute the function
         .flatMap(typeReplayer =>

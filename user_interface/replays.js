@@ -761,7 +761,7 @@ function addReplayEventsTableStartReplayHandler() {
                 addReplayEventsTableStartReplayHandler();
             },
             error => {
-                console.log(`Process Replay Error ${error}`);
+                console.error(`Process Replay Error ${error}`);
                 //hide the replay loader
                 $('.ui.runReplay.container .ui.text.small.replay.loader').removeClass('active');
                 //show the start button as enabled

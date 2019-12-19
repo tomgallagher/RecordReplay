@@ -130,7 +130,7 @@ class PuppeteerTranslator {
 
     hover = (selector, target) => `await ${target}.hover('${selector}');` 
 
-    textSelect = (selector, index, target) => `await ${target}.evaluate( () => { ${this.tabIndex(-1)} const event${index} = new Event("selectstart", {view: window, bubbles: true, cancelable: false}); ${this.tabIndex(-1)} document.querySelector('${selector}').dispatchEvent( event${index} ); ${this.tabIndex(index)} });`
+    textSelect = (selector, index, target) => `await ${target}.evaluate( () => { ${this.tabIndex(-1)}const range${index} = document.createRange(); ${this.tabIndex(-1)}const referenceNode${index} = document.querySelector('${selector}'); ${this.tabIndex(-1)}range${index}.selectNode(referenceNode${index}); ${this.tabIndex(-1)}const currentSelection${index} = window.getSelection(); ${this.tabIndex(-1)}currentSelection${index}.removeAllRanges(); ${this.tabIndex(-1)}currentSelection${index}.addRange(range${index}); ${this.tabIndex(index)} });`
 
 
     //ASSERTIONS HELPERS, we need to have the index of each item in the Rx.js flow so we can have unique assertions

@@ -5,16 +5,20 @@ class MatchingUrlReport {
         //we need to work out if the incoming message is intended for this content script - this can be complex with iframes which change their search params
         this.contentScriptUrl = new URL(window.location.href);
         this.eventTargetUrl = new URL(replayEvent.recordingEventLocationHref);
+        //we start with the assumption that the urls are not going to match
+        this.matched = false;
         //then we need to take some decisions based on the comparison between the two urls
         switch(true){
             //this differentiates host pages from third party iframes
             case this.contentScriptUrl.origin != this.eventTargetUrl.origin:
+                //no match so we just log this for debugging and then break
                 EventReplayer.logWithContext(`Not Replaying ${replayEvent.assertionId || replayEvent.replayEventId} from Unmatched Origin`);
-                return false;
+                break;
             //this differentiates host pages from same domain iframes
             case this.contentScriptUrl.pathname != this.eventTargetUrl.pathname:
+                //no match so we just log this for debugging and then break
                 EventReplayer.logWithContext(`Not Replaying ${replayEvent.assertionId || replayEvent.replayEventId} from Unmatched Path`);
-                return false;
+                break;
             //then we need to look in more detail at search params, which can vary on each loading of same domain or third party iframes
             case this.contentScriptUrl.search != this.eventTargetUrl.search:
                 //we are going to need an object for each set of search params to make a more detailed judgment
@@ -31,16 +35,16 @@ class MatchingUrlReport {
                 if (lengthMatched && keysMatched) {
                     //then we can return true
                     EventReplayer.logWithContext(`Matched Location On Search Params Key Equivalence: Executing ${replayEvent.assertionId || replayEvent.replayEventId}`);
-                    return true;
+                    this.matched = true;
                 } else {
                     //otherwise we need to report 
                     EventReplayer.logWithContext(`Not Replaying ${replayEvent.assertionId || replayEvent.replayEventId} from Unmatched Search Params`);
-                    return false;
                 }
+                break;
             //when we have no fails then we can just return true
                 default:
                     EventReplayer.logWithContext(`Matched Location: Executing ${replayEvent.assertionId || replayEvent.replayEventId}`);
-                    return true;
+                    this.matched = true;
 
         }
 

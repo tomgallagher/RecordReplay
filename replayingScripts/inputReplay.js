@@ -44,54 +44,53 @@ class InputReplay {
         //first we check in each class that we have a matching url
         this.matchingUrlReport = new MatchingUrlReport(replayEvent);
 
-        //if the matching url report returns false then we add the property that ensures it will be filtered
-        if (this.matchingUrlReport == false) {
-            //set the property
-            this.replayEventStatus = false;
-            //then just return this early as we have no need to so any further work
-            return this;
-        }
+        //then we only need to do any further work if we have a matching url report
+        //if the url report is not matching, everything else is a waste of time
+        //we especially don't need any messages sent back from unmatched urls, reporting that we can't find a selector
+        if (this.matchingUrlReport.matched) {
 
-        //then each replay class must have a collected set of Replay Selector Reports
-        this.replaySelectorReports = [
-            new ReplaySelectorReport({ key: "CssSelector", selectorString: this.cssSelectorPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
-            new ReplaySelectorReport({ key: "DomPathSelector", selectorString: this.domPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
-            new ReplaySelectorReport({ key: "SimmerSelector", selectorString: this.simmerPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
-            //here we need to send slightly different input into the class, which must then generate its own CSS selector string
-            new ReplayXpathReport({ key: "XPathSelector", xpathString: this.xpath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName })
-        ];
+            //then each replay class must have a collected set of Replay Selector Reports
+            this.replaySelectorReports = [
+                new ReplaySelectorReport({ key: "CssSelector", selectorString: this.cssSelectorPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
+                new ReplaySelectorReport({ key: "DomPathSelector", selectorString: this.domPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
+                new ReplaySelectorReport({ key: "SimmerSelector", selectorString: this.simmerPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
+                //here we need to send slightly different input into the class, which must then generate its own CSS selector string
+                new ReplayXpathReport({ key: "XPathSelector", xpathString: this.xpath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName })
+            ];
 
-        //see if we have any invalid selector reports
-        this.failedReplaySelectorReports = this.replaySelectorReports.filter(report => report.invalidSelector);
-        //if we have invalid selectors then we need to know
-        if (this.failedReplaySelectorReports.length > 0) this.replayErrorMessages.push(this.failedReplaySelectorReports.map(report => report.warningMessages).join(', '));
-        //see if we have any valid selector reports, and if we do, we save as the definitive selector reports 
-        this.replaySelectorReports = this.replaySelectorReports.filter(report => !report.invalidSelector);
-        //if we have valid selectors then we need to know about which ones remain valid
-        if (this.replaySelectorReports.length > 0) this.replayLogMessages.push(this.replaySelectorReports.map(report => report.logMessages).join(', '));
+            //see if we have any invalid selector reports
+            this.failedReplaySelectorReports = this.replaySelectorReports.filter(report => report.invalidSelector);
+            //if we have invalid selectors then we need to know
+            if (this.failedReplaySelectorReports.length > 0) this.replayErrorMessages.push(this.failedReplaySelectorReports.map(report => report.warningMessages).join(', '));
+            //see if we have any valid selector reports, and if we do, we save as the definitive selector reports 
+            this.replaySelectorReports = this.replaySelectorReports.filter(report => !report.invalidSelector);
+            //if we have valid selectors then we need to know about which ones remain valid
+            if (this.replaySelectorReports.length > 0) this.replayLogMessages.push(this.replaySelectorReports.map(report => report.logMessages).join(', '));
 
-        //then we need to have an outcome
-        if (this.replaySelectorReports.length > 0) {
-            //select the first report that has provided a positive response
-            this.chosenSelectorReport = this.replaySelectorReports[0];
-        } else {
-            //then we need to push an error message to the logs
-            this.replayErrorMessages.push(`No Valid Target On Page`);
-            //otherwise we report the time of the fail
-            this.replayEventReplayed = Date.now();
-            //and we set the status to false to indicate a failed replay
-            this.replayEventStatus = false;
-            //then send the response if we have the facility
-            if (this.sendResponse != null) {
-                //first we make a clone of this 
-                var replayExecution = Object.assign({}, this);
-                //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
-                delete replayExecution.sendResponse;
-                //then we send the clean clone
-                this.sendResponse({replayExecution: replayExecution});
-            }            
+            //then we need to have an outcome
+            if (this.replaySelectorReports.length > 0) {
+                //select the first report that has provided a positive response
+                this.chosenSelectorReport = this.replaySelectorReports[0];
+            } else {
+                //then we need to push an error message to the logs
+                this.replayErrorMessages.push(`No Valid Target On Page`);
+                //otherwise we report the time of the fail
+                this.replayEventReplayed = Date.now();
+                //and we set the status to false to indicate a failed replay
+                this.replayEventStatus = false;
+                //then send the response if we have the facility
+                if (this.sendResponse != null) {
+                    //first we make a clone of this 
+                    var replayExecution = Object.assign({}, this);
+                    //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
+                    delete replayExecution.sendResponse;
+                    //then we send the clean clone
+                    this.sendResponse({replayExecution: replayExecution});
+                }            
+            }
 
-        }
+        //if we have a non-matching url report, just set the event status to false so no further processing is done
+        } else { this.replayEventStatus = false; }
 
     }
 

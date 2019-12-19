@@ -89,7 +89,7 @@ class jQueryTranslator {
 
     hover = selector => `$('${selector}').mouseenter();`
 
-    textSelect = selector => `$('${selector}').select();`
+    textSelect = (selector, index) => `const range${index} = document.createRange(); ${this.tabIndex(index)}const referenceNode${index} = document.querySelector('${selector}'); ${this.tabIndex(index)}range${index}.selectNode(referenceNode${index}); ${this.tabIndex(index)}const currentSelection${index} = window.getSelection(); ${this.tabIndex(index)}currentSelection${index}.removeAllRanges(); ${this.tabIndex(index)}currentSelection${index}.addRange(range${index});`;
 
     //ASSERTIONS HELPERS
 
@@ -135,7 +135,7 @@ class jQueryTranslator {
             case "Scroll":
                 return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
             case "TextSelect":
-                return this.textSelect(this.getMostValidSelector(recordingEvent));
+                return this.textSelect(this.getMostValidSelector(recordingEvent), index);
             case "Keyboard": 
                 return this.nonInputTyping(this.getMostValidSelector(recordingEvent), recordingEvent, index);
             case 'Input':

@@ -491,6 +491,65 @@ function refreshNewReplayRecordingDropdown() {
 
 //THIS FUNCTION IS SHARED BY REPLAYS.JS
 //CHECK BOTH FILES BEFORE MAKING CHANGES
+function runExecutionMessageWithFailover(replayEvent) {
+
+    //it is vital to the functioning of the replaying that each event has a timeout 
+    //we will receive no response if we have a non-matching url from all frames - so if all frames' urls are non-matching = timeout
+    //we will receive no response if we get no page navigation onCompleted event = timeout
+    //so we need each event to have this promise
+    return new Promise(resolve => {
+        //we need to have an error object with the crucial fields resolved by the timeout
+        const syntheticExecution = {replayEventReplayed: Date.now(), replayLogMessages: [], replayErrorMessages: ["Unmatched URL Timeout"], replayEventStatus: false };
+        //we run a race between the messenger and our timeout to see which returns first
+        Promise.race([
+            //the messenger will resolve with a standard messaging response - we are interested in the response replayExecution only
+            new RecordReplayMessenger({}).sendMessageGetResponse({replayEvent: replayEvent}),
+            //the timeout will resolve with the error object so the outcomes are uniform in important ways, using the waitForExecutionTime that varies according to replay event type
+            new Promise(resolve => window.setTimeout(() => resolve(syntheticExecution), replayEvent.waitForExecutionTime))
+        ])
+        //then we either get back the response or the synthetic object 
+        .then(replayFeedback => {
+            //always good to log the response from different parts of the extension
+            console.log(replayFeedback);
+            //set the replay execution - if the feedback has replay execution property then we deal with that, otherwise we deal with the synthetic feedback
+            const replayExecution = (replayFeedback.hasOwnProperty('replayExecution') ? replayFeedback.replayExecution : replayFeedback);
+            //then what we do here depends upon whether the replay event is standard or assertion
+            if (replayEvent.assertionId) {
+                replayEvent.assertionEventReplayed = replayExecution.replayEventReplayed;
+                replayEvent.assertionEventStatus = replayExecution.replayEventStatus;
+                replayEvent.assertionLogMessages = replayEvent.assertionLogMessages.concat(replayExecution.replayLogMessages);
+                replayEvent.assertionErrorMessages = replayExecution.replayErrorMessages;
+                //then for the mutated events, it will be useful to know the selector that has actually been chosen in the page
+                if (replayExecution.chosenSelectorReport) {
+                    replayEvent.assertionChosenSelectorString = replayExecution.chosenSelectorReport.selectorString;
+                } else {
+                    console.log(`No Chosen Selector Report for Assertion Type: ${replayEvent.assertionEventAction}`);
+                }
+            } else {
+                replayEvent.replayEventReplayed = replayExecution.replayEventReplayed;
+                replayEvent.replayEventStatus = replayExecution.replayEventStatus;
+                replayEvent.replayLogMessages = replayEvent.replayLogMessages.concat(replayExecution.replayLogMessages);
+                replayEvent.replayErrorMessages = replayExecution.replayErrorMessages;
+                //then for the mutated events, it will be useful to know the selector that has actually been chosen in the page
+                if (replayExecution.chosenSelectorReport) {
+                    replayEvent.replayChosenSelectorString = replayExecution.chosenSelectorReport.selectorString;
+                } else {
+                    console.log(`No Chosen Selector Report for Replay Type: ${replayEvent.recordingEventAction}`);
+                }
+            }
+            //the execution time has served its purpose and we don't need it polluting the event array in storage
+            delete replayEvent.waitForExecutionTime
+            //then return the replay event
+            resolve(replayEvent);
+        })
+        .catch(error => console.info(error));
+
+    });
+
+}
+
+//THIS FUNCTION IS SHARED BY REPLAYS.JS
+//CHECK BOTH FILES BEFORE MAKING CHANGES
 function processReplayEvents(replay, tableSelector, containerSelector) {
 
     //we use a promise as the processing of replay events is of uncertain duration
@@ -514,59 +573,20 @@ function processReplayEvents(replay, tableSelector, containerSelector) {
                 Rx.Observable.from(replay.replayEventArray)
                     //then we need to make sure that the events happen in the same time frame as the recording
                     .concatMap(replayEvent => Rx.Observable.of(replayEvent).delay(replayEvent.recordingTimeSincePrevious))
-                    //then we add an initialisation message to the processing of the event AT THIS LEVEL
-                    //all event replayer functions in content and background scripts add their own logging - we combine on feedback 
+                    //then we need to add some properties to the replay event as we start processing
+                    //we need to have a basic initialisation message to signal processing start AT THIS LEVEL - we combine on feedback 
+                    //we need to have a wait time for getting a response - this will be different for different types of action
                     .map(replayEvent => {
-                        //if we have an assertion id, we should add the initialisation statement to the assertion log messages
-                        if (replayEvent.assertionId) { return Object.assign({}, replayEvent, { assertionLogMessages: ["Assertion Initialised"] }); }
-                        //if we have a normal replay, we can just add to the replay log messages 
-                        else { return Object.assign({}, replayEvent, { replayLogMessages: ["Replay Initialised"] }); } 
+                        //if we have an assertion id, we should add the initialisation statement to the assertion log messages, otherwise normal logging
+                        replayEvent.assertionId ? replayEvent.assertionLogMessages = ["Assertion Initialised"] : replayEvent.replayLogMessages = ["Replay Initialised"];
+                        //then we need to have an execution wait time, we need a long wait time for page actions as it waits for load, otherwise a shorter time to allow for scrol
+                        replayEvent.recordingEventAction == "Page" ? replayEvent.waitForExecutionTime = 60000 : replayEvent.waitForExecutionTime = 2000;
+                        //then return the replay event
+                        return replayEvent; 
                     })
                     //then we have to map each event in the replay event array to the response from listeners
                     //listeners include ALL FRAMES IN THE PAGE, AS WELL AS THE BACKGROUND TAB RUNNER (FOR KEYBOARD AND NAVIGATION)
-                    .switchMap(replayEvent =>
-                        //it is vital to the functioning of the replaying that each event has a timeout 
-                        //we will receive no response if we have a non-matching url from all frames - so if all frames' urls are non-matching = timeout
-                        //we will receive no response if we get no page navigation onCompleted event = timeout
-                        //otherwise we should, on error, get a response.replayExecution with replay status of false and some error messages 
-                        Rx.Observable.merge(
-                            //for every replay event we need to send a message out, with the promise returning the execution response
-                            Rx.Observable.fromPromise(new RecordReplayMessenger({}).sendMessageGetResponse({replayEvent: replayEvent}))
-                                //then we will have a response object returned from the message service and we only care about the replay execution
-                                .map(response => response.replayExecution),
-                            //we have a have a timer to set a limit on how long we are willing to wait for an execution
-                            //this timer has to be co-ordinated with the timer in the event replayers
-                            //most executions should be quick, scroll is the reasons for 3 seconds, page is potentially very slow - up to 60 seconds
-                            Rx.Observable.timer(replayEvent.recordingEventAction == 'Page' ? 60000: 3000)
-                                //when the timer emits, we need to return the replay event object with updated fields 
-                                .map( () => {
-                                    //we return a newly constructed object, with updated fields for when replayed, the error messages and the status
-                                    return Object.assign({}, replayEvent, {replayEventReplayed: Date.now(), replayErrorMessages: ["Unmatched URL Timeout"], replayEventStatus: false }); 
-                                })
-                        //then with our merged observable, we only need to take the first emission - it's either executed or it's an error
-                        ).take(1),
-                        //we need to take the original replay event and the replay execution
-                        (replayEvent, replayExecution) => {
-                            //then what we do here depends upon whether the replay event is standard or assertion
-                            if (replayEvent.assertionId) {
-                                replayEvent.assertionEventReplayed = replayExecution.replayEventReplayed;
-                                replayEvent.assertionEventStatus = replayExecution.replayEventStatus;
-                                replayEvent.assertionLogMessages = replayEvent.assertionLogMessages.concat(replayExecution.replayLogMessages);
-                                replayEvent.assertionErrorMessages = replayExecution.replayErrorMessages;
-                                //then for the mutated events, it will be useful to know the selector that has actually been chosen in the page
-                                replayEvent.assertionChosenSelectorString = replayExecution.chosenSelectorReport.selectorString;
-                            } else {
-                                replayEvent.replayEventReplayed = replayExecution.replayEventReplayed;
-                                replayEvent.replayEventStatus = replayExecution.replayEventStatus;
-                                replayEvent.replayLogMessages = replayEvent.replayLogMessages.concat(replayExecution.replayLogMessages);
-                                replayEvent.replayErrorMessages = replayExecution.replayErrorMessages;
-                                //then for the mutated events, it will be useful to know the selector that has actually been chosen in the page
-                                replayEvent.replayChosenSelectorString = replayExecution.chosenSelectorReport.selectorString;
-                            }
-                            //then return the event
-                            return replayEvent;
-                        }
-                    )
+                    .concatMap(replayEvent => Rx.Observable.fromPromise(runExecutionMessageWithFailover(replayEvent)) )
                     //and we need to start with a dummy marker so we can operate with only one emission, this must come before pairwise() to create the first pair
                     //as replay event is an extension of recording event, we need to pass in recording object and blank replay options object
                     .startWith(new ReplayEvent({recordingEventOrigin: 'PairwiseStart'}, {}))
@@ -752,7 +772,7 @@ function addNewReplayEventsTableStartReplayHandler() {
                 addNewReplayEventsTableStartReplayHandler();
             },
             error => {
-                console.log(`Process Replay Error ${error}`);
+                console.error(`Process Replay Error ${error}`);
                 //hide the replay loader
                 $('.ui.replayEvents.segment .ui.text.small.replay.loader').removeClass('active');
                 //show the start button as enabled

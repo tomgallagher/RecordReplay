@@ -189,7 +189,7 @@ class ReplayTabRunner {
             .filter(messageObject => messageObject.request.hasOwnProperty('replayEvent'))
             //then it is vital that we don't get into some sort of horrendous loop by relaying messages meant to end here
             //the messages that need to go to all content script are all the user events and the assertions, marked as replay events
-            .filter(messageObject => messageObject.request.replayEvent.recordingEventOrigin == 'User' || messageObject.request.replayEvent.recordingEventOrigin == 'Replay')
+            .filter(messageObject => messageObject.request.replayEvent.recordingEventOrigin == 'User' || messageObject.request.replayEvent.assertionEventOrigin == 'Replay')
             //but we don't want to send the keyboard events, as they are handled here
             .filter(messageObject => messageObject.request.replayEvent.recordingEventAction != 'Keyboard')
             //all other events need to be sent to the content scripts and the responses returned to the user interface
@@ -198,8 +198,9 @@ class ReplayTabRunner {
                 Rx.Observable.fromPromise( this.messengerService.sendContentScriptMessageGetResponse(this.browserTabId, {replayEvent: messageObject.request.replayEvent}) ),
                 //then we can work with the incoming user interface message and the response we get from the content script 
                 (updatedMessageObject, response) => {
-                    const origin = updatedMessageObject.request.replayEvent.recordingEventOrigin;
-                    const action = updatedMessageObject.request.replayEvent.recordingEventAction;
+                    //we need to deal with the slight structural differences of assertions. which happen because assertions are extensions of recording events that are not actually replayed
+                    const origin = updatedMessageObject.request.replayEvent.assertionEventOrigin || updatedMessageObject.request.replayEvent.recordingEventOrigin;
+                    const action = updatedMessageObject.request.replayEvent.assertionEventAction || updatedMessageObject.request.replayEvent.recordingEventAction;
                     console.log(`Tab Runner Forwarded ${origin} ${action} Message to Content Script`);
                     //all we need to do is forward the response in the same format as we receive it
                     updatedMessageObject.sendResponse({replayExecution: response.replayExecution});

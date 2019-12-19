@@ -43,55 +43,53 @@ class TextSelectReplay {
         //first we check in each class that we have a matching url
         this.matchingUrlReport = new MatchingUrlReport(replayEvent);
 
-        //if the matching url report returns false then we add the property that ensures it will be filtered
-        if (this.matchingUrlReport == false) {
-            //set the property
-            this.replayEventStatus = false;
-            //then just return this early as we have no need to so any further work
-            //we also offer no report via return message from non-matching locations
-            return this;
-        }
+        //then we only need to do any further work if we have a matching url report
+        //if the url report is not matching, everything else is a waste of time
+        //we especially don't need any messages sent back from unmatched urls, reporting that we can't find a selector
+        if (this.matchingUrlReport.matched) {
 
-        //then each replay class must have a collected set of Replay Selector Reports
-        this.replaySelectorReports = [
-            new ReplaySelectorReport({ key: "CssSelector", selectorString: this.cssSelectorPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
-            new ReplaySelectorReport({ key: "DomPathSelector", selectorString: this.domPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
-            new ReplaySelectorReport({ key: "SimmerSelector", selectorString: this.simmerPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
-            //here we need to send slightly different input into the class, which must then generate its own CSS selector string
-            new ReplayXpathReport({ key: "XPathSelector", xpathString: this.xpath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName })
-        ];
+            //then each replay class must have a collected set of Replay Selector Reports
+            this.replaySelectorReports = [
+                new ReplaySelectorReport({ key: "CssSelector", selectorString: this.cssSelectorPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
+                new ReplaySelectorReport({ key: "DomPathSelector", selectorString: this.domPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
+                new ReplaySelectorReport({ key: "SimmerSelector", selectorString: this.simmerPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
+                //here we need to send slightly different input into the class, which must then generate its own CSS selector string
+                new ReplayXpathReport({ key: "XPathSelector", xpathString: this.xpath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName })
+            ];
         
-        //see if we have any invalid selector reports
-        this.failedReplaySelectorReports = this.replaySelectorReports.filter(report => report.invalidSelector);
-        //if we have invalid selectors then we need to know
-        if (this.failedReplaySelectorReports.length > 0) this.replayErrorMessages.push(this.failedReplaySelectorReports.map(report => report.warningMessages).join(', '));
-        //see if we have any valid selector reports, and if we do, we save as the definitive selector reports 
-        this.replaySelectorReports = this.replaySelectorReports.filter(report => !report.invalidSelector);
-        //if we have valid selectors then we need to know about which ones remain valid
-        if (this.replaySelectorReports.length > 0) this.replayLogMessages.push(this.replaySelectorReports.map(report => report.logMessages).join(', '));
+            //see if we have any invalid selector reports
+            this.failedReplaySelectorReports = this.replaySelectorReports.filter(report => report.invalidSelector);
+            //if we have invalid selectors then we need to know
+            if (this.failedReplaySelectorReports.length > 0) this.replayErrorMessages.push(this.failedReplaySelectorReports.map(report => report.warningMessages).join(', '));
+            //see if we have any valid selector reports, and if we do, we save as the definitive selector reports 
+            this.replaySelectorReports = this.replaySelectorReports.filter(report => !report.invalidSelector);
+            //if we have valid selectors then we need to know about which ones remain valid
+            if (this.replaySelectorReports.length > 0) this.replayLogMessages.push(this.replaySelectorReports.map(report => report.logMessages).join(', '));
 
-        //then we need to have an outcome
-        if (this.replaySelectorReports.length > 0) {
-            //select the first report that has provided a positive response
-            this.chosenSelectorReport = this.replaySelectorReports[0];
-        } else {
-            //then we need to push an error message to the logs
-            this.replayErrorMessages.push(`No Valid Target On Page`);
-            //otherwise we report the time of the fail
-            this.replayEventReplayed = Date.now();
-            //and we set the status to false to indicate a failed replay
-            this.replayEventStatus = false;
-            //then send the response if we have the facility
-            if (this.sendResponse != null) {
-                //first we make a clone of this 
-                var replayExecution = Object.assign({}, this);
-                //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
-                delete replayExecution.sendResponse;
-                //then we send the clean clone
-                this.sendResponse({replayExecution: replayExecution});
-            }            
-
-        }
+            //then we need to have an outcome
+            if (this.replaySelectorReports.length > 0) {
+                //select the first report that has provided a positive response
+                this.chosenSelectorReport = this.replaySelectorReports[0];
+            } else {
+                //then we need to push an error message to the logs
+                this.replayErrorMessages.push(`No Valid Target On Page`);
+                //otherwise we report the time of the fail
+                this.replayEventReplayed = Date.now();
+                //and we set the status to false to indicate a failed replay
+                this.replayEventStatus = false;
+                //then send the response if we have the facility
+                if (this.sendResponse != null) {
+                    //first we make a clone of this 
+                    var replayExecution = Object.assign({}, this);
+                    //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
+                    delete replayExecution.sendResponse;
+                    //then we send the clean clone
+                    this.sendResponse({replayExecution: replayExecution});
+                }            
+            }
+        
+        //if we have a non-matching url report, just set the event status to false so no further processing is done
+        } else { this.replayEventStatus = false; }
 
     }
 
@@ -102,16 +100,27 @@ class TextSelectReplay {
             //we use setTimeout and resolve to introduce the delay
             setTimeout( () => {
 
-                //we can handle the text select functions with the same bit of code, first creating the event
-                const selectEvent = new Event("selectstart", {view: window, bubbles: true, cancelable: false}); 
-                //then dispatching the event
+                //we need to create the select start event
+                const selectEvent = new Event("selectstart"); 
+                //then dispatch the event to our element
+                //in a sense this is meaningless, as the work for selection is actually done below
+                //however, it enables matching with the playback observable and prevents execution misalignment reports
                 document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( selectEvent );
-                //then we depend on a mouseup event at the same location for our event recorder WHEN TESTING
-                const mouseEvent = new MouseEvent("mouseup", {view: window, bubbles: true, cancelable: false}); 
-                //then dispatching the event
-                document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( mouseEvent );
-                //then report to the log messages array
+                //then report to the log messages array that we have sent the event
                 this.replayLogMessages.push(`${this.actionType.toUpperCase()} Event Dispatched`);
+                //then we need to simulate the selection of our text by adding to the window's Selection API
+                //for this, we first need to create a range
+                let range = document.createRange();
+                //then we need to get our target node, as identified by our selector string
+                let referenceNode = document.querySelector(this.chosenSelectorReport.selectorString);
+                //then we need to add that node to our range
+                range.selectNode(referenceNode);
+                //then we need to add the range to the window Selection API by getting the current selection
+                let currentSelection = window.getSelection();
+                //clearing any existing ranges
+                currentSelection.removeAllRanges();
+                //and adding our existing range
+                currentSelection.addRange(range);
                 //then return the window selection is the same as our saved selection
                 resolve(window.getSelection().toString() == this.selectedText);
 

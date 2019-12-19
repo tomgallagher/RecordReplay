@@ -67,7 +67,10 @@ class RecordReplayMessenger {
     sendMessageGetResponse = message => {
         return new Promise(resolve => {
             chrome.runtime.sendMessage(message, response => {
-                resolve(response);
+                //the extension structure, with no message responses sent if correct replay environment is not found, means we have to check the error
+                //As long as Chrome sees that you checked the value when there is an error (that is, evaluated it within your callback), the error will not be thrown.
+                if (chrome.runtime.lastError) { console.info(chrome.runtime.lastError.message); }
+                response ? resolve(response) : null;
             })
         });
     }
@@ -75,7 +78,10 @@ class RecordReplayMessenger {
     sendContentScriptMessageGetResponse = (tabId, message) => {
         return new Promise(resolve => {
             chrome.tabs.sendMessage(tabId, message, response => {
-                resolve(response);
+                //the extension structure, with no message responses sent if correct replay environment is not found, means we have to check the error
+                //As long as Chrome sees that you checked the value when there is an error (that is, evaluated it within your callback), the error will not be thrown.
+                if (chrome.runtime.lastError) { console.info(chrome.runtime.lastError.message); }
+                response ? resolve(response) : null;
             })
         });
     }

@@ -82,7 +82,7 @@ class JavascriptTranslator {
 
     hover = (selector, index) => `const event${index} = new MouseEvent('mouseover', {view: window, bubbles: true, cancelable: false}); ${this.tabIndex(index)}document.querySelector('${selector}').dispatchEvent( event${index} );`
 
-    textSelect = (selector, index) => `const event${index} = new Event("selectstart", {view: window, bubbles: true, cancelable: false}); ${this.tabIndex(index)}document.querySelector('${selector}').dispatchEvent( event${index} );`
+    textSelect = (selector, index) => `const range${index} = document.createRange(); ${this.tabIndex(index)}const referenceNode${index} = document.querySelector('${selector}'); ${this.tabIndex(index)}range${index}.selectNode(referenceNode${index}); ${this.tabIndex(index)}const currentSelection${index} = window.getSelection(); ${this.tabIndex(index)}currentSelection${index}.removeAllRanges(); ${this.tabIndex(index)}currentSelection${index}.addRange(range${index});`;
 
     //ASSERTIONS HELPERS
 
