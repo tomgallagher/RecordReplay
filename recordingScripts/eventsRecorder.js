@@ -107,8 +107,8 @@ var EventRecorder = {
     getCssSelectorPath: element => EventRecorder.cssSelectorClass.getSelector(element),
     //then we get a function that returns the Dompath CSS selector
     getCssDomPath: element => { const path = new dompath(element); return path.toCSS(); },
-    //then a function that returns the Finder CSS selector - without ID but using attributes
-    getCssFinderPath: element => window.CSSfinder(element, { idName: () => false, attr: () => true}),
+    //then a function that returns the Finder CSS selector - without ID but using attributes, add a threshold to speed it up, the lower the faster
+    getCssFinderPath: element => window.CSSfinder(element, { idName: () => false, attr: () => true, threshold: 500}),
     //then our own basic function that returns xpath of element
     getXPath: element => {
         //get all the nodes in the document by tagname wildcard
@@ -208,6 +208,14 @@ var EventRecorder = {
     contextIsContentScript: () => { return typeof chrome.runtime.getManifest != 'undefined' },
     //we need to know if the element is an input element
     elementIsInput: (element) => element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement  || element.isContentEditable,
+    //then we can do a timed function to measure the performance of CSS selector generators on mouse moves
+    timed: (f) => (...args) => {
+        let start = performance.now();
+        let ret = f(...args);
+        let timeTaken = performance.now()-start;
+        timeTaken > 50 ? console.log(`Performance Report: function ${f.name} took ${timeTaken.toFixed(3)}ms`) : null;
+        return ret;   
+    },
     //we need an array for testing purposes
     testingEventsArray: []
 
@@ -217,7 +225,13 @@ var EventRecorder = {
 EventRecorder.startRecordingEvents = () => {
 
     //ALL OF OUR SEPARATE EVENTS REQUIRE AN UNADULTERATED LOCATOR that generates css selectors BEFORE ACTION
-    
+    //just a quick routine for working out timings
+    //we only attach this to the mouselocator as that it going to be the heaviest load
+    const cssSelectorTimed = EventRecorder.timed(EventRecorder.getCssSelectorPath)
+    const domPathTimed = EventRecorder.timed(EventRecorder.getCssDomPath)
+    const finderTimed = EventRecorder.timed(EventRecorder.getCssFinderPath)
+    const xpathTimed = EventRecorder.timed(EventRecorder.getXPath)
+
     //so we query the latest mouse location, which we collect by referring to the mouseover events
     EventRecorder.MouseLocator = Rx.Observable.merge(...EventRecorder.mouseLocationEventObervables)
         //the mouse location observables are many - we currently only want the mouseover events
@@ -233,10 +247,10 @@ EventRecorder.startRecordingEvents = () => {
         .map(event => {
             return {
                 eventTarget: event.target,
-                eventCssSelectorPath: EventRecorder.getCssSelectorPath(event.target),
-                eventCssDomPath: EventRecorder.getCssDomPath(event.target),
-                eventCssSimmerPath: EventRecorder.getCssFinderPath(event.target),
-                eventXPath: EventRecorder.getXPath(event.target)
+                eventCssSelectorPath: cssSelectorTimed(event.target),
+                eventCssDomPath: domPathTimed(event.target),
+                eventCssSimmerPath: finderTimed(event.target),
+                eventXPath: xpathTimed(event.target)
             }
         });
 
