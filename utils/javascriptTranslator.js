@@ -78,6 +78,8 @@ class JavascriptTranslator {
 
     scrollTo = (xPosition, yPosition) => `document.documentElement.scrollTo({left: ${xPosition}, top: ${yPosition}, behavior: 'smooth'});`
 
+    elementScrollTo = (selector, xPosition, yPosition) => `document.querySelector('${selector}').scrollTo({left: ${xPosition}, top: ${yPosition}, behavior: 'smooth'});`
+
     focus = (selector) => `document.querySelector('${selector}').focus({ preventScroll: false });`
 
     hover = (selector, index) => `const event${index} = new MouseEvent('mouseover', {view: window, bubbles: true, cancelable: false}); ${this.tabIndex(index)}document.querySelector('${selector}').dispatchEvent( event${index} );`
@@ -127,6 +129,8 @@ class JavascriptTranslator {
                 }
             case "Scroll":
                 return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
+            case "ElementScroll":
+                return this.elementScrollTo(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
             case "TextSelect":
                 return this.textSelect(this.getMostValidSelector(recordingEvent), index);
             case "Keyboard": 

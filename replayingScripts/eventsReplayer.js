@@ -36,6 +36,7 @@ var EventReplayer = {
             case 'Mouse': return new MouseReplay(replayEvent)
             case 'Input': return new InputReplay(replayEvent)
             case 'Scroll': return new ScrollReplay(replayEvent)
+            case 'ElementScroll': return new ElementScrollReplay(replayEvent)
             case 'Assertion': return new AssertionReplay(replayEvent)
         }
     },

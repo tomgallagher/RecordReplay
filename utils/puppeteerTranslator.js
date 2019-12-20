@@ -126,6 +126,8 @@ class PuppeteerTranslator {
 
     scrollTo = (xPosition, yPosition, index, target) => `await ${target}.evaluate( () => { ${this.tabIndex(-1)} document.documentElement.scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' }); ${this.tabIndex(index)} });`
 
+    elementScrollTo = (selector, xPosition, yPosition, index, target) => `await ${target}.evaluate( () => { ${this.tabIndex(-1)} document.querySelector('${selector}').scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' }); ${this.tabIndex(index)} });`
+
     focus = (selector, target) => `await ${target}.focus('${selector}');`
 
     hover = (selector, target) => `await ${target}.hover('${selector}');` 
@@ -217,6 +219,9 @@ class PuppeteerTranslator {
             //scroll has no particular solution in Puppeteer
             case "Scroll":
                 outputStringArray.push(this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition, index, target));
+                break;
+            case "ElementScroll":
+                outputStringArray.push(this.elementScrollTo(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition, index, target));
                 break;
             //neither does text select
             case "TextSelect":

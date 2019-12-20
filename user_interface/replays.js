@@ -317,6 +317,7 @@ function updateReplayEventsTableCodeReports(replay) {
                 Mouse : "fas fa-mouse fa-5x",
                 Assertion : "fas fa-equals fa-5x",
                 Scroll : "fas fa-arrows-alt-v fa-5x",
+                ElementScroll : "fas fa-arrows-alt-v fa-5x",
                 Keyboard : "far fa-keyboard fa-5x",
                 Input : "far fa-user fa-5x",
                 TextSelect : "fas fa-highlighter fa-5x",

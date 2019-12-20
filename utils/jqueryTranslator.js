@@ -85,6 +85,8 @@ class jQueryTranslator {
 
     scrollTo = (xPosition, yPosition) => `$('html').animate({ scrollLeft: ${xPosition}, scrollTop: ${yPosition} }, 500);`
 
+    elementScrollTo = (selector, xPosition, yPosition) => `$('${selector}').animate({ scrollLeft: ${xPosition}, scrollTop: ${yPosition} }, 500);`
+
     focus = selector => `$('${selector}').focus();`
 
     hover = selector => `$('${selector}').mouseenter();`
@@ -134,6 +136,8 @@ class jQueryTranslator {
                 }
             case "Scroll":
                 return this.scrollTo(recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
+            case "ElementScroll":
+                return this.elementScrollTo(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventXPosition, recordingEvent.recordingEventYPosition);
             case "TextSelect":
                 return this.textSelect(this.getMostValidSelector(recordingEvent), index);
             case "Keyboard": 

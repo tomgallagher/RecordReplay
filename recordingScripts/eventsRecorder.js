@@ -76,12 +76,21 @@ var EventRecorder = {
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(window, eventName)),
 
-    //SELECT CERTAIN EVENTS FOR CONVERSION TO OBSERVABLEs
+    //SELECT CERTAIN ATTENTION EVENTS FOR CONVERSION TO OBSERVABLEs
     attentionActionEventObservables: EventRecorderEvents.attentionEvents
         //then we are interested in only certain types of attention events
-        .filter(item => item == "selectstart" || item == "focus" || item == "scroll")
+        .filter(item => item == "selectstart" || item == "focus")
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(document, eventName)),
+
+    //SELECT SCROLL EVENTS FOR CONVERSION TO OBSERVABLEs
+    scrollActionEventObservables: EventRecorderEvents.attentionEvents
+        //then we are interested in only certain types of attention events
+        .filter(item => item == "scroll")
+        //we map each string array item to an observable
+        //attach a document-level listener with a third parameter of true to capture the scroll events on all elements
+        //tells the browser to capture the event on dispatch, even if that event does not normally bubble
+        .map(eventName => Rx.Observable.fromEvent(document, eventName, true)),
 
     //SELECT KEYBOARD EVENTS FOR CONVERSION TO OBSERVABLES
     keyBoardActionEventObservables: EventRecorderEvents.keyboardEvents
@@ -500,7 +509,7 @@ EventRecorder.startRecordingEvents = () => {
         .filter(object => object != false);
     
     //SCROLL EVENTS
-    EventRecorder.scrollObservable = Rx.Observable.merge(...EventRecorder.attentionActionEventObservables)
+    EventRecorder.scrollObservable = Rx.Observable.merge(...EventRecorder.scrollActionEventObservables)
         //then we are interested only in scroll events
         .filter(event => event.type == "scroll")
         //then for the time being we only want to record scroll events on the document element
@@ -528,6 +537,36 @@ EventRecorder.startRecordingEvents = () => {
             });
             return newEvent;
         });
+    
+    //SCROLL ITEM EVENTS
+    EventRecorder.scrollItemObservable = Rx.Observable.merge(...EventRecorder.scrollActionEventObservables)
+        //then we are interested only in scroll events
+        .filter(event => event.type == "scroll")
+        //then for the time being we only want to record scroll events on the document element
+        .filter(event => event.target instanceof HTMLDocument == false)
+        //then we only want to get the last event after scrolling has stopped for 1/2 second - longer and the scroll events can occur after the click that should follow
+        .debounceTime(500)
+        //then we need to translate that event into something that can be repeated so we need the x and y co-ordinates and the given scrolling element
+        .map(actionEvent => {
+            const newEvent = new RecordingEvent({
+                //general properties
+                recordingEventAction: 'ElementScroll',
+                recordingEventActionType: `x: ${Math.round(actionEvent.target.scrollLeft)}, y: ${Math.round(actionEvent.target.scrollTop)}`,
+                recordingEventHTMLElement: actionEvent.target.constructor.name,
+                recordingEventHTMLTag: actionEvent.target.tagName,
+                recordingEventCssSelectorPath: EventRecorder.getCssSelectorPath(actionEvent.target),
+                recordingEventCssDomPath: EventRecorder.getCssDomPath(actionEvent.target),
+                recordingEventCssSimmerPath: EventRecorder.getCssSimmerPath(actionEvent.target),
+                recordingEventXPath: EventRecorder.getXPath(actionEvent.target),
+                recordingEventLocation: window.location.origin,
+                recordingEventLocationHref: window.location.href,
+                recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                //information specific to scroll events
+                recordingEventXPosition: Math.round(actionEvent.target.scrollLeft),
+                recordingEventYPosition: Math.round(actionEvent.target.scrollTop),
+            });
+            return newEvent;
+        });
 
     //combine all our observables into a single subscription
     Rx.Observable.merge(
@@ -544,7 +583,9 @@ EventRecorder.startRecordingEvents = () => {
         //handles all non-typing keyboard actions
         EventRecorder.keyboardObservable,
         //handles all window scroll events
-        EventRecorder.scrollObservable
+        EventRecorder.scrollObservable,
+        //handles all element scroll events
+        EventRecorder.scrollItemObservable
     )
     //and log the output  
     .subscribe(recordingEvent => {

@@ -21,6 +21,7 @@ class ActiveReplay extends Replay {
                 "replayingScripts/textSelectReplay.js",
                 "replayingScripts/inputReplay.js",
                 "replayingScripts/scrollReplay.js",
+                "replayingScripts/elementScrollReplay.js",
                 "replayingScripts/assertionReplay.js",
                 "replayingScripts/eventsReplayer.js"
             ],

@@ -117,6 +117,8 @@ class CypressTranslator {
 
     scrollTo = (xPosition, yPosition) => `cy.scrollTo(${xPosition}, ${yPosition});`
 
+    elementScrollTo = (selector, xPosition, yPosition) => `cy.get('${selector}').scrollTo(${xPosition}, ${yPosition});`
+
     focus = (selector) => `cy.get('${selector}').focus();`
 
     hover = (selector) => `cy.get('${selector}').trigger('mouseover');`
@@ -184,6 +186,9 @@ class CypressTranslator {
                 break;
                 case "Scroll":
                     outputStringArray.push(this.scrollTo(replayEvent.recordingEventXPosition, replayEvent.recordingEventYPosition));
+                    break;
+                case "ElementScroll":
+                    outputStringArray.push(this.elementScrollTo(this.getMostValidSelector(replayEvent), replayEvent.recordingEventXPosition, replayEvent.recordingEventYPosition));
                     break;
                 case "TextSelect":
                     outputStringArray.push(this.textSelect(this.getMostValidSelector(replayEvent)));
