@@ -16,7 +16,7 @@ class ScrollReplay {
         //we need to save all three selector paths, it's possible that a class-based selector can fail while the others succeeed
         this.cssSelectorPath = replayEvent.recordingEventCssSelectorPath;
         this.domPath = replayEvent.recordingEventCssDomPath;
-        this.simmerPath = replayEvent.recordingEventCssSimmerPath;
+        this.finderPath = replayEvent.recordingEventCssFinderPath;
         //then we need to save xpath
         this.xpath = replayEvent.recordingEventXPath;
         //then we need to keep the messaging send response function attached to the class as the testing process relies on sending responses back to user interface
@@ -53,7 +53,7 @@ class ScrollReplay {
             this.replaySelectorReports = [
                 new ReplaySelectorReport({ key: "CssSelector", selectorString: this.cssSelectorPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
                 new ReplaySelectorReport({ key: "DomPathSelector", selectorString: this.domPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
-                new ReplaySelectorReport({ key: "SimmerSelector", selectorString: this.simmerPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
+                new ReplaySelectorReport({ key: "FinderSelector", selectorString: this.finderPath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName }),
                 //here we need to send slightly different input into the class, which must then generate its own CSS selector string
                 new ReplayXpathReport({ key: "XPathSelector", xpathString: this.xpath, targetHtmlName: this.targetHTMLName, targetHtmlTag: this.targetTagName })
             ];

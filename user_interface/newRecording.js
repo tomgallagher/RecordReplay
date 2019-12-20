@@ -95,7 +95,7 @@ function addNewRecordingEventButtonListeners() {
                 //fill the form fields with the data from the recording event
                 $('.ui.viewNewRecordingEvent.form input[name=recordingEventCssSelectorPath]').val(recordingEvent.recordingEventCssSelectorPath);
                 $('.ui.viewNewRecordingEvent.form input[name=recordingEventCssDomPath]').val(recordingEvent.recordingEventCssDomPath);
-                $('.ui.viewNewRecordingEvent.form input[name=recordingEventCssSimmerPath]').val(recordingEvent.recordingEventCssSimmerPath);
+                $('.ui.viewNewRecordingEvent.form input[name=recordingEventCssFinderPath]').val(recordingEvent.recordingEventCssFinderPath);
                 $('.ui.viewNewRecordingEvent.form input[name=recordingEventXPath]').val(recordingEvent.recordingEventXPath);
                 $('.ui.viewNewRecordingEvent.form input[name=recordingEventLocation]').val(recordingEvent.recordingEventLocation);
                 //then the checkbox

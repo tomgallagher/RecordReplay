@@ -302,10 +302,10 @@ class ReplayTabRunner {
                 Promise.all([
                     DomSelectorReport({key: "CssSelector", selectorString: replayEvent.recordingEventCssSelectorPath, targetHtmlTag: replayEvent.recordingEventHTMLTag, browserTabId: this.browserTabId}),
                     DomSelectorReport({key: "DomPathSelector", selectorString: replayEvent.recordingEventCssDomPath, targetHtmlTag: replayEvent.recordingEventHTMLTag, browserTabId: this.browserTabId}),
-                    DomSelectorReport({key: "SimmerSelector", selectorString: replayEvent.recordingEventCssSimmerPath, targetHtmlTag: replayEvent.recordingEventHTMLTag, browserTabId: this.browserTabId})
+                    DomSelectorReport({key: "FinderSelector", selectorString: replayEvent.recordingEventCssFinderPath, targetHtmlTag: replayEvent.recordingEventHTMLTag, browserTabId: this.browserTabId})
                 ]),
                 (replayEvent, selectorResultsArray) => {
-
+  
                     //see if we have any invalid selector reports
                     replayEvent.failedReplaySelectorReports = selectorResultsArray.filter(report => report.invalidSelector);
                     //if we have invalid selectors then we need to know

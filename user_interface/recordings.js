@@ -320,7 +320,7 @@ function addRecordingEventTableButtonListeners() {
                 //fill the form fields with the data from the recording event
                 $('.ui.viewRecordingEvent.form input[name=recordingEventCssSelectorPath]').val(recordingEvent.recordingEventCssSelectorPath);
                 $('.ui.viewRecordingEvent.form input[name=recordingEventCssDomPath]').val(recordingEvent.recordingEventCssDomPath);
-                $('.ui.viewRecordingEvent.form input[name=recordingEventCssSimmerPath]').val(recordingEvent.recordingEventCssSimmerPath);
+                $('.ui.viewRecordingEvent.form input[name=recordingEventCssFinderPath]').val(recordingEvent.recordingEventCssFinderPath);
                 $('.ui.viewRecordingEvent.form input[name=recordingEventXPath]').val(recordingEvent.recordingEventXPath);
                 $('.ui.viewRecordingEvent.form input[name=recordingEventLocation]').val(recordingEvent.recordingEventLocationHref);
                 //then the checkbox

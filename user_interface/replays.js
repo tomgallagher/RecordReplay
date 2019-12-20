@@ -528,7 +528,7 @@ function addShowReplayReplayEventsTableButtonListeners() {
                 //fill the form fields with the data from the replay event
                 $('.ui.viewReplayEvent.form input[name=replay_recordingEventCssSelectorPath]').val(replayEvent.recordingEventCssSelectorPath);
                 $('.ui.viewReplayEvent.form input[name=replay_recordingEventCssDomPath]').val(replayEvent.recordingEventCssDomPath);
-                $('.ui.viewReplayEvent.form input[name=replay_recordingEventCssSimmerPath]').val(replayEvent.recordingEventCssSimmerPath);
+                $('.ui.viewReplayEvent.form input[name=replay_recordingEventCssFinderPath]').val(replayEvent.recordingEventCssFinderPath);
                 $('.ui.viewReplayEvent.form input[name=replay_recordingEventXPath]').val(replayEvent.recordingEventXPath);
                 $('.ui.viewReplayEvent.form input[name=replay_recordingEventLocation]').val(replayEvent.recordingEventLocationHref);
                 //then the checkbox

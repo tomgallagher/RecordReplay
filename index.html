@@ -42,7 +42,7 @@
         <!-- FOR RECORDING AND REPLAYING EVENT TESTING ONLY -->
         <script src="recordingScripts/cssSelectorGenerator.js"></script>
         <script src="recordingScripts/dompath.js"></script>
-        <script src="recordingScripts/simmer.js"></script>
+        <script src="recordingScripts/finder.js"></script>
         <script src="utils/keyCodeDictionary.js"></script>
         <script src="recordingScripts/eventsRecorder.js"></script>
 
@@ -119,7 +119,7 @@
 
                     <div class="ui vertical fluid violet tabular menu">
                     
-                        <a class="active gettingStarted item">
+                        <a id="testID" class="active gettingStarted item">
                             <strong>Getting Started</strong>
                         </a>
 
@@ -1317,7 +1317,7 @@
                                                                 
                                                             <label>CSS Selector 3</label>
                                                                             
-                                                            <input type="text" name="recordingEventCssSimmerPath" readonly="readonly">
+                                                            <input type="text" name="recordingEventCssFinderPath" readonly="readonly">
                                                                             
                                                         </div>
 
@@ -1707,7 +1707,7 @@
                                                             
                                                         <label>CSS Selector 3</label>
                                                                         
-                                                        <input type="text" name="recordingEventCssSimmerPath" readonly="readonly">
+                                                        <input type="text" name="recordingEventCssFinderPath" readonly="readonly">
                                                                         
                                                     </div>
 
@@ -1928,7 +1928,7 @@
                                                                 
                                                             <label>CSS Selector 3</label>
                                                                             
-                                                            <input type="text" name="replay_recordingEventCssSimmerPath" readonly="readonly">
+                                                            <input type="text" name="replay_recordingEventCssFinderPath" readonly="readonly">
                                                                             
                                                         </div>
 
@@ -2512,9 +2512,9 @@
                                     
                                     <i class="angle right icon"></i>
 
-                                    If you are testing as you are developing, <strong>attach id attributes to elements you want to action or to verify</strong>.
-                                    Great care is taken to ensure that recordings can be reliably replayed in any circumstance, even when the structure of the page changes. 
-                                    You can still bomb-proof your tests and ease your reading of output by adding a <strong>unique</strong> id to each element you want to test.
+                                    If you are testing as you are developing, <strong>we recommend attaching id attributes to elements you want to action or to verify</strong>.
+                                    You can bomb-proof your tests and ease your reading of output by adding a <strong>unique</strong> id to each element you want to test.
+                                    Redundancy is built into the selector generation process so don't worry if attaching id attributes is impossible for you. 
                               
                                 </div>
                             

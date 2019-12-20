@@ -164,7 +164,7 @@ class PuppeteerTranslator {
         //otherwise collect all the existing selectors into an array, filter and return the first valid one
         return [
             replayEvent.recordingEventCssSelectorPath, 
-            replayEvent.recordingEventCssSimmerPath, 
+            replayEvent.recordingEventCssFinderPath, 
             replayEvent.recordingEventCssDomPath
         ]
         //when we filter we need to know what the selectors return when they fail

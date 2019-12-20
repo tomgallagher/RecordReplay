@@ -14,7 +14,7 @@ class RecordingEvent {
             recordingEventHTMLTag: 'N/A',
             recordingEventCssSelectorPath: 'N/A',
             recordingEventCssDomPath: 'N/A',
-            recordingEventCssSimmerPath: 'N/A',
+            recordingEventCssFinderPath: 'N/A',
             recordingEventXPath: 'N/A',
             recordingEventLocation: 'N/A',
             recordingEventLocationHref: 'N/A',
