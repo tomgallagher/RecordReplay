@@ -197,6 +197,8 @@ var EventRecorder = {
     },
     //we should always be in the context of a content script
     contextIsContentScript: () => { return typeof chrome.runtime.getManifest != 'undefined' },
+    //we need to know if the element is an input element
+    elementIsInput: (element) => element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement  || element.isContentEditable,
     //we need an array for testing purposes
     testingEventsArray: []
 
@@ -317,7 +319,7 @@ EventRecorder.startRecordingEvents = () => {
         //we don't care about mouseup or mousedown events here as we're covered with the click event
         .filter(event => event.type != "mouseup" && event.type != "mousedown")
         //then we only want mouse events to activate on non-input elements because we have a separate handler for them
-        .filter(event => event.target instanceof HTMLInputElement == false)
+        .filter(event => EventRecorder.elementIsInput(event.target) == false)
         //then as each action occurs, we want to know the state of the element BEFORE the action took place
         .withLatestFrom(EventRecorder.MouseLocator, EventRecorder.textSelectionObservable.startWith({recordingEventCssSelectorPath: null}))
         //then map the event to the Recording Event type
@@ -452,9 +454,22 @@ EventRecorder.startRecordingEvents = () => {
         .withLatestFrom(EventRecorder.FocusLocator.startWith({}))
         //then combine the two observables properties to create our RecordingEvent object
         .map( ([actionEvent, focusEvent]) => {
+            //lets get some information about the key that has been pressed
+            const keyInfoObject = EventRecorder.keyCodeDictionary[actionEvent.keyCode];
+            const descriptor = keyInfoObject.descriptor;
             //there is no point in recording text typing in INPUT elements - we use the input change event for that
-            if (EventRecorder.keyCodeDictionary[actionEvent.keyCode].value != null && actionEvent.target instanceof HTMLInputElement) {
-                console.log(`Keyboard: Not Recording Typed "${actionEvent.key}" on HTMLInputElement`);
+            if (keyInfoObject.value != null && EventRecorder.elementIsInput(actionEvent.target)) {
+                console.log(`Keyboard: Not Recording Typed "${actionEvent.key}" on HTMLInputElement, HTMLTextAreaElement or isContentEditable Element`);
+                //just return an empty observable as a placeholder which we can easily filter out
+                return false;
+            }
+            if ((descriptor == "Backspace" || descriptor == "Insert" || descriptor == "Delete") && EventRecorder.elementIsInput(actionEvent.target)) {
+                console.log(`Keyboard: Not Recording Text Editing Key "${descriptor}" on HTMLInputElement, HTMLTextAreaElement or isContentEditable Element`);
+                //just return an empty observable as a placeholder which we can easily filter out
+                return false;
+            }
+            if ((descriptor == "ArrowLeft" || descriptor == "ArrowUp" || descriptor == "ArrowRight" || descriptor == "ArrowDown") && EventRecorder.elementIsInput(actionEvent.target)) {
+                console.log(`Keyboard: Not Recording Text Navigation Key "${descriptor}" on HTMLInputElement, HTMLTextAreaElement or isContentEditable Element`);
                 //just return an empty observable as a placeholder which we can easily filter out
                 return false;
             }

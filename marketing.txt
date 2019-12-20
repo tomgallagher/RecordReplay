@@ -34,6 +34,7 @@ Selling points:
 4. Transparent - watch all the recordings replayed in real time in dedicated browser tab
 5. Bulk testing - automated click-through testing of all functions on your page
 6. It is an end to end automation testing framework dedicated for testing your website or application in a real browser, making automated interaction just like a real user.
+7. Chrome only not a problem - functional tests will only ever catch a specific class of bug that is mostly logic related, these bugs will be caught in Chrome and if you want the real cross-browser experience, export the code
 
 vs Cypress
 
@@ -52,7 +53,17 @@ One major drawback of Headless Chrome (thus of Puppeteer as well) is that it doe
 It’s much faster than Selenium and avoids a lot of the messy configuration and flakiness that comes with trying to launch a real browser. 
 No steps in the beginning asking you to download specific versions of the selenium server jar, geckodriver, chromedriver etc which is both fiddly and error prone. 
 
+vs Selenium webdriver
+
+1. Flaky tests: they often fail erroneously.
+2. Complicated setup: it takes a long time to configure the Selenium driver on any given environment.
+3. Slow: Selenium runs very slowly because it has to spin up a browser for each test.
 
 One really awesome thing about testcafe is that it automatically detects JS errors that happened when the test page was executing. I suppose this is the kind of awesome you can attain when you reach outside of the Selenium box! I also noted that the terminal output when tests failed where quite readable/clean.
 
 In contrast to the waterfall method, I’ve seen the continuous delivery process running smoothly at dozens of organizations — but I’ve never seen it work anywhere without a quality array of test suites that includes both unit tests and functional tests, and frequently includes integration tests, as well.
+
+Who is non-code web-service-based automated testing best for?
+Startup founders like my friend Matt, who want to save the time they normally have to spend before/after a production deploy to avoid hearing embarrassing support issues day later. 🙇
+Sites that change infrequently. Teams which manually deploy their code (whether via a git push heroku master, cap production deploy, or `ssh my-production-server` and `rsync`). 💪
+Websites where some breakage is OK 💁, and not catastrophic. Marketing sites, blogs—sites without a “Buy Now” button and shopping cart flow. A bug on production might distract one person for an hour or two, but won’t block content creators or folks depending on your service to complete their daily tasks
