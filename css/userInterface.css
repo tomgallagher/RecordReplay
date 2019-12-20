@@ -89,3 +89,33 @@
     background: #bc1c1c63!important;
     color: white!important;
 }
+/*need an override here for inserting special content into block header */
+.defaultProject.content {
+    float: left;
+    font-weight: normal;
+    font-size: 0.6em;
+    font-style: normal;
+    width: 20%;
+    text-align: left;
+    text-overflow: ellipsis;
+    visibility: hidden;
+}
+.defaultTest.content {
+    float: right;
+    font-weight: normal;
+    font-size: 0.6em;
+    font-style: normal;
+    width: 20%;
+    text-align: right;
+    text-overflow: ellipsis;
+    visibility: hidden;
+}
+/*need an override here for special customized checkboxes */
+.ui.toggle.checkbox input:focus:checked~.box:before,
+.ui.toggle.checkbox input:focus:checked~label:before {
+    background-color: #6435c9 !important;
+}
+.ui.toggle.checkbox input:checked ~ .box:before,
+.ui.toggle.checkbox input:checked ~ label:before {
+    background-color: #6435c9 !important;
+}

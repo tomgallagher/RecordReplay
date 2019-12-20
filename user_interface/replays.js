@@ -7,6 +7,11 @@ function updateReplaysTable() {
         //once we have the array then we can start populating the table by looping through the array
         .then(replayStorageArray => {
 
+            //filter tests for default project by fetching from local storage
+            const defaultProjectId = Number(localStorage.getItem("DefaultProject"));
+            //if we have any number greater than zero, which indicates no default, then filter
+            defaultProjectId > 0 ? replayStorageArray = replayStorageArray.filter(replay => replay.recordingProjectId == defaultProjectId) : null;
+
             //then we paginate here using the class
             const paginator = new Pagination(replayStorageArray);
             //first we want to get the number of pages
@@ -116,6 +121,11 @@ function addReplayTablePaginationListener() {
             //once we have the array then we can start populating the table by looping through the array
             .then(replayStorageArray => {
                 
+                //filter tests for default project by fetching from local storage
+                const defaultProjectId = Number(localStorage.getItem("DefaultProject"));
+                //if we have any number greater than zero, which indicates no default, then filter
+                defaultProjectId > 0 ? replayStorageArray = replayStorageArray.filter(replay => replay.recordingProjectId == defaultProjectId) : null;
+
                 //then we paginate here using the class
                 const paginator = new Pagination(replayStorageArray);
                 //get the maximum number of possible pages
@@ -724,6 +734,11 @@ function addReplayEventsTableStartReplayHandler() {
                 mutatedReplay.recordingTestPerformanceTimings ? mutatedReplay.replayPerformanceTimings = response.reportObject.performanceTimings : null;
                 //update the resource loads if required
                 mutatedReplay.recordingTestResourceLoads ? mutatedReplay.replayResourceLoads = response.reportObject.resourceLoads : null;
+
+                //TO DO: we can monitor visual regressions here if we want
+                
+                
+                
                 //update the screenshot if required
                 mutatedReplay.recordingTestScreenshot ? mutatedReplay.replayScreenShot = response.reportObject.screenShot : null;
                 //return mutated replay with reports

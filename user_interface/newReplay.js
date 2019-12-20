@@ -452,6 +452,11 @@ function refreshNewReplayRecordingDropdown() {
         //once we have the array then we can start populating the new test form projects dropdwon by looping through the array
         .then(recordingStorageArray => {
             
+            //filter recordings for default project by fetching from local storage
+            const defaultProjectId = Number(localStorage.getItem("DefaultProject"));
+            //if we have any number greater than zero, which indicates no default, then filter
+            defaultProjectId > 0 ? recordingStorageArray = recordingStorageArray.filter(recording => recording.recordingProjectId == defaultProjectId) : null;
+
             //get a reference to the drop down in the new recording form
             var newReplayDropDownMenu = $('.ui.fluid.selection.newReplay.recording.dropdown .menu');
             //empty the dropdown of existing items

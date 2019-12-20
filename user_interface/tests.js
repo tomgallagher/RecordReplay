@@ -81,6 +81,11 @@ function refreshEditTestProjectDropdown() {
         //once we have the array then we can start populating the new test form projects dropdwon by looping through the array
         .then(projectStorageArray => {
 
+            //filter projects for default by fetching from local storage
+            const defaultProjectId = Number(localStorage.getItem("DefaultProject"));
+            //if we have any number greater than zero, which indicates no default, then filter
+            defaultProjectId > 0 ? projectStorageArray = projectStorageArray.filter(project => project.id == defaultProjectId) : null;
+
             //get a reference to the drop down in the new test form
             var editTestDropDownMenu = $('.ui.fluid.selection.editTest.project.dropdown .menu');
             //empty the dropdown of existing items
@@ -110,6 +115,11 @@ function addTestTablePaginationListener() {
             //once we have the array then we can start populating the table by looping through the array
             .then(testStorageArray => {
                 
+                //filter tests for default project by fetching from local storage
+                const defaultProjectId = Number(localStorage.getItem("DefaultProject"));
+                //if we have any number greater than zero, which indicates no default, then filter
+                defaultProjectId > 0 ? testStorageArray = testStorageArray.filter(test => test.testProjectId == defaultProjectId) : null;
+
                 //then we paginate here using the class
                 const paginator = new Pagination(testStorageArray);
                 //get the maximum number of possible pages
@@ -212,6 +222,11 @@ function updateTestsTable() {
     StorageUtils.getAllObjectsInDatabaseTable('tests.js', 'tests')
         //once we have the array then we can start populating the table by looping through the array
         .then(testStorageArray => {
+
+            //filter tests for default project by fetching from local storage
+            const defaultProjectId = Number(localStorage.getItem("DefaultProject"));
+            //if we have any number greater than zero, which indicates no default, then filter
+            defaultProjectId > 0 ? testStorageArray = testStorageArray.filter(test => test.testProjectId == defaultProjectId) : null;
 
             //then we paginate here using the class
             const paginator = new Pagination(testStorageArray);

@@ -68,6 +68,11 @@ function refreshEditRecordingTestDropdown() {
         //once we have the array then we can start populating the new recording form tests dropdoqn by looping through the array
         .then(testStorageArray => {
 
+            //filter tests for default project by fetching from local storage
+            const defaultProjectId = Number(localStorage.getItem("DefaultProject"));
+            //if we have any number greater than zero, which indicates no default, then filter
+            defaultProjectId > 0 ? testStorageArray = testStorageArray.filter(test => test.testProjectId == defaultProjectId) : null;
+
             //get a reference to the drop down in thee edit recording form
             var editRecordingDropDownMenu = $('.ui.fluid.selection.editRecording.test.dropdown .menu');
             //empty the dropdown of existing items
@@ -97,6 +102,11 @@ function addRecordingTablePaginationListener() {
             //once we have the array then we can start populating the table by looping through the array
             .then(recordingStorageArray => {
                 
+                //filter recordings for default project by fetching from local storage
+                const defaultProjectId = Number(localStorage.getItem("DefaultProject"));
+                //if we have any number greater than zero, which indicates no default, then filter
+                defaultProjectId > 0 ? recordingStorageArray = recordingStorageArray.filter(recording => recording.recordingProjectId == defaultProjectId) : null;
+
                 //then we paginate here using the class
                 const paginator = new Pagination(recordingStorageArray);
                 //get the maximum number of possible pages
@@ -229,6 +239,12 @@ function updateRecordingsTable() {
     StorageUtils.getAllObjectsInDatabaseTable('recordings.js', 'recordings')
         //once we have the array then we can start populating the table by looping through the array
         .then(recordingStorageArray => {
+
+            //filter recordings for default project by fetching from local storage
+            const defaultProjectId = Number(localStorage.getItem("DefaultProject"));
+            //if we have any number greater than zero, which indicates no default, then filter
+            defaultProjectId > 0 ? recordingStorageArray = recordingStorageArray.filter(recording => recording.recordingProjectId == defaultProjectId) : null;
+
 
             //then we paginate here using the class
             const paginator = new Pagination(recordingStorageArray);

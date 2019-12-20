@@ -36,6 +36,10 @@ function addProjectTableRowsFragment(projectStorageArray) {
         let projectDeleteButton = tempNode.querySelector('.ui.deleteProject.button');
         projectDeleteButton.setAttribute('data-project-id', projectStorageArray[project].id);
         //then we need to attach the clone of the template node to our container fragment
+        //<input type="checkbox" data-project-id="0" data-project-name="">
+        let projectCheckbox = tempNode.querySelector('input[type="checkbox"]');
+        projectCheckbox.setAttribute('data-project-id', projectStorageArray[project].id);
+        projectCheckbox.setAttribute('data-project-name', projectStorageArray[project].projectName);
         docFrag.appendChild(tempNode);
 
     }
@@ -143,8 +147,39 @@ function addProjectTableButtonListeners() {
             //the delete single object function will reject if object is not in database
             .catch( () => console.error(`Error Deleting Project ${projectKey}`));  
 
-        
     });
+
+    //default project check box handler
+    $('.ui.projectsTable .projectDefaultCheckbox').change(function() {
+        if (this.checked) {
+            //make sure we set the others as not checked in the user interface
+            $('.ui.projectsTable .projectDefaultCheckbox:checked').not(this).prop("checked", false);
+            //then enable all delete buttons
+            $(`.ui.projectsTable .ui.deleteProject.button`).removeClass('disabled');
+            //then disable the related delete button - we cannot have a default project being deleted
+            $(`.ui.projectsTable .ui.deleteProject.button[data-project-id=${$(this).attr("data-project-id")}]`).addClass('disabled');
+            //then write the project name to the top left corner
+            $('.defaultProject').text($(this).attr("data-project-name"));
+            //then make it visible
+            $('.defaultProject').css('visibility', 'visible');
+            //and save the default project to local storage
+            localStorage.setItem("DefaultProject", $(this).attr("data-project-id"));
+        } else {
+            //then disable the related delete button - we cannot have a default project being deleted
+            $(`.ui.projectsTable .ui.deleteProject.button[data-project-id=${$(this).attr("data-project-id")}]`).removeClass('disabled');
+            //change text to default
+            $('.defaultProject').text("Default Project");
+            //then make it hidden
+            $('.defaultProject').css('visibility', 'hidden');
+            //save value of zero to local storage, indicating no default project
+            localStorage.setItem("DefaultProject", "0");
+        }
+    });
+
+    //make sure the default project is reflected in the checkboxes
+    const defaultProjectId = localStorage.getItem("DefaultProject");
+    $(`.ui.projectsTable .projectDefaultCheckbox[data-project-id=${defaultProjectId}]`).click();
+
 
 }
 
@@ -180,6 +215,19 @@ function updateProjectsTable() {
 }
 
 $(document).ready (function(){
+
+    //make sure the default project is reflected in the header
+    const defaultProjectId = localStorage.getItem("DefaultProject");
+    //the project key will be in string format - StorageUtils handles conversion
+    StorageUtils.getSingleObjectFromDatabaseTable('projects.js', defaultProjectId, 'projects')
+        //then we have a returned js object with the project details
+        .then(project => {
+            //then write the project name to the top left corner
+            $('.defaultProject').text(project.projectName);
+            //then make it visible
+            $('.defaultProject').css('visibility', 'visible');
+        })
+        .catch(_ => console.log("No Default Project Set"));
 
     //validation for the edit project form
     $('.ui.editProjectForm.form')

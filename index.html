@@ -104,9 +104,12 @@
               
             </div>
 
-            <h1 class="ui center aligned block header" style="font-style: italic; font-size: 2.5rem;">
-                Record-Replay
-            </h1>
+            
+            <div class="ui center aligned block header" style="font-style: italic; font-size: 2.5rem;">
+                <div class="defaultProject content">Default Project</div>
+                <div class="content">Record-Replay</div>
+                <div class="defaultTest content">Default Test</div>
+            </div>
 
             <!-- VERTICAL MENU -->
 
@@ -425,6 +428,7 @@
                                     <th>Author</th>
                                     <th>Created</th>
                                     <th class="center aligned">Action</th>
+                                    <th class="center aligned">Default</th>
                                 </tr>
                             </thead>
                             
@@ -2627,6 +2631,12 @@
                                     <button class="ui editProject button" data-project-id="0">Edit</button>
                                     <div class="or"></div>
                                     <button class="ui deleteProject negative button" data-project-id="0" data-tooltip="To delete project and all associated tests, recordings and replays" data-position="left center">Delete</button>
+                                </div>
+                            </td>
+                            <td data-label="projectDefault">
+                                <div class="ui fitted toggle checkbox">
+                                    <input class="projectDefaultCheckbox" type="checkbox" data-project-id="0" data-project-name="">
+                                    <label></label>
                                 </div>
                             </td>
                         </tr>
