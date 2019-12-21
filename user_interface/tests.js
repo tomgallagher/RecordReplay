@@ -177,9 +177,9 @@ function addTestTableButtonListeners() {
                 $('.ui.editTestForm .ui.latency.dropdown').dropdown('set selected', test.testLatencyValue);
 
                 //then check the check boxes according to values saved in the test data
-                test.testPerformanceTimings == true ? $('.ui.editTestForm .ui.performance.checkbox').checkbox('set checked') : null;
-                test.testResourceLoads == true ? $('.ui.editTestForm .ui.resource.checkbox').checkbox('set checked') : null;
-                test.testScreenshot == true ? $('.ui.editTestForm .ui.screenshot.checkbox').checkbox('set checked') : null;
+                test.testPerformanceTimings == true ? $('.ui.editTestForm .ui.performance.checkbox').checkbox('set checked') : $('.ui.editTestForm .ui.performance.checkbox').checkbox('set unchecked');
+                test.testResourceLoads == true ? $('.ui.editTestForm .ui.resource.checkbox').checkbox('set checked') : $('.ui.editTestForm .ui.resource.checkbox').checkbox('set unchecked');
+                test.testScreenshot == true ? $('.ui.editTestForm .ui.screenshot.checkbox').checkbox('set checked') : $('.ui.editTestForm .ui.screenshot.checkbox').checkbox('set unchecked');
        
                 //clear any success state from the form
                 $('.ui.editTestForm.form').removeClass('success');
