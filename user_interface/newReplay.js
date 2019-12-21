@@ -289,13 +289,13 @@ function addNewReplayEventToTable(replay, replayEvent, table) {
     if (replayEvent.assertionEventStatus && replayEvent.assertionEventStatus !== null) {  
         let replayEventTimeExecutedNode = tempNode.querySelector('td[data-label="replay_timestamp_executed"]');
         //then we need to handle both replays and assertions
-        replayEventTimeExecutedNode.textContent = replayEvent.assertionEventReplayed;
+        replayEventTimeExecutedNode.textContent = replayEvent.assertionTimeSincePrevious == 0 ? new Date(replayEvent.assertionEventReplayed).toLocaleString() : `+ ${Math.ceil(replayEvent.assertionTimeSincePrevious / 1000)} sec`;
     }
 
     if (replayEvent.replayEventStatus && replayEvent.replayEventStatus !== null) {  
         let replayEventTimeExecutedNode = tempNode.querySelector('td[data-label="replay_timestamp_executed"]');
         //then we need to handle both replays and assertions
-        replayEventTimeExecutedNode.textContent = replayEvent.replayEventReplayed;
+        replayEventTimeExecutedNode.textContent = replayEvent.replayTimeSincePrevious == 0 ? new Date(replayEvent.replayEventReplayed).toLocaleString() : `+ ${Math.ceil(replayEvent.replayTimeSincePrevious / 1000)} sec`;
     }
 
     //then the buttons need the replay event id
@@ -742,6 +742,12 @@ function addNewReplayEventsTableStartReplayHandler() {
                 mutatedReplay.recordingTestResourceLoads ? mutatedReplay.replayResourceLoads = response.reportObject.resourceLoads : null;
                 //update the screenshot if required
                 mutatedReplay.recordingTestScreenshot ? mutatedReplay.replayScreenShot = response.reportObject.screenShot : null;
+
+                //TO DO: we can monitor visual regressions here if we want
+
+
+                
+
                 //return mutated replay with reports
                 return mutatedReplay;    
             }
