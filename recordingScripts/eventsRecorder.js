@@ -108,7 +108,7 @@ var EventRecorder = {
     //then we get a function that returns the Dompath CSS selector
     getCssDomPath: element => { const path = new dompath(element); return path.toCSS(); },
     //then a function that returns the Finder CSS selector - without ID but using attributes, add a threshold to speed it up, the lower the faster
-    getCssFinderPath: element => window.CSSfinder(element, { idName: () => false, attr: () => true, threshold: 500}),
+    getCssFinderPath: element => window.recordReplayCssGenerator(element),
     //then our own basic function that returns xpath of element
     getXPath: element => {
         //get all the nodes in the document by tagname wildcard
@@ -213,7 +213,7 @@ var EventRecorder = {
         let start = performance.now();
         let ret = f(...args);
         let timeTaken = performance.now()-start;
-        timeTaken > 50 ? console.log(`Performance Report: function ${f.name} took ${timeTaken.toFixed(3)}ms`) : null;
+        timeTaken > 20 ? console.log(`Performance Report: function ${f.name} took ${timeTaken.toFixed(3)}ms`) : null;
         return ret;   
     },
     //we need an array for testing purposes

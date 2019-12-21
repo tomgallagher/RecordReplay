@@ -69,8 +69,8 @@ class ScrollReplay {
 
             //then we need to have an outcome
             if (this.replaySelectorReports.length > 0) {
-                //select the first report that has provided a positive response
-                this.chosenSelectorReport = this.replaySelectorReports[0];
+                //select the first report that has provided a positive response and has the shortest selector
+                this.chosenSelectorReport = this.replaySelectorReports.sort((reportA, reportB) => reportA.selectorString.length - reportB.selectorString.length)[0];
             } else {
                 //then we need to push an error message to the logs
                 this.replayErrorMessages.push(`No Valid Target On Page`);

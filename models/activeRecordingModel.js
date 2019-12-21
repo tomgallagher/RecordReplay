@@ -13,7 +13,7 @@ class ActiveRecording extends Recording {
                 "third_party/Rx.min.js",
                 "recordingScripts/cssSelectorGenerator.js", 
                 "recordingScripts/dompath.js",
-                "recordingScripts/finder.js",
+                "recordingScripts/recordReplayCssGenerator.js",
                 "models/recordingEventModel.js",
                 "utils/recordReplayMessenger.js",
                 "utils/keyCodeDictionary.js",
