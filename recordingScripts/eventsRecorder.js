@@ -108,7 +108,7 @@ var EventRecorder = {
     //then we get a function that returns the Dompath CSS selector
     getCssDomPath: element => { const path = new dompath(element); return path.toCSS(); },
     //then a function that returns the Finder CSS selector - without ID but using attributes, add a threshold to speed it up, the lower the faster
-    getCssFinderPath: element => window.recordReplayCssGenerator(element),
+    getCssFinderPath: element => window.recordReplaySelectorGenerator(element),
     //then our own basic function that returns xpath of element
     getXPath: element => {
         //get all the nodes in the document by tagname wildcard

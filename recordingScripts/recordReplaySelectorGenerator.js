@@ -9,7 +9,7 @@
 
 (function() {
     
-    window.recordReplayCssGenerator = (element) => {
+    window.recordReplaySelectorGenerator = (element) => {
 
         //to generate a CSS path we only need to check html elements
         if (!(element instanceof HTMLElement)) return;
