@@ -42,9 +42,10 @@ function addTestTableRowsFragment(testStorageArray) {
         let testAdditionalReportingNode = tempNode.querySelector('td[data-label="testAdditionalReporting"]');
         //we need to combine the booleans into a comma separated string indicating extra values
         var additionalReportsArray = [];
-        testStorageArray[test].testPerformanceTimings == true ? additionalReportsArray.push('Performance Timings') : null;
-        testStorageArray[test].testResourceLoads == true ? additionalReportsArray.push('Resource Loads') : null;
-        testStorageArray[test].testScreenshot == true ? additionalReportsArray.push('Take Screenshot') : null;
+        testStorageArray[test].testPerformanceTimings == true ? additionalReportsArray.push('Performance') : null;
+        testStorageArray[test].testResourceLoads == true ? additionalReportsArray.push('Resources') : null;
+        testStorageArray[test].testScreenshot == true ? additionalReportsArray.push('Screenshot') : null;
+        testStorageArray[test].testVisualRegression == true ? additionalReportsArray.push('Visual Changes') : null;
         testAdditionalReportingNode.textContent = additionalReportsArray.join(', ');
         //tempNode child <td data-label="testCreated"></td> needs to have text content set to database testCreated
         let testCreatedNode = tempNode.querySelector('td[data-label="testCreated"]');
@@ -172,15 +173,16 @@ function addTestTableButtonListeners() {
                 $('.ui.editTestForm.form input[name=testStartUrl]').val(test.testStartUrl);
        
                 //then select the correct option from the select boxes - you use the data-value attribute rather than the text content
-                $('.ui.editTestForm .ui.project.dropdown').dropdown('set selected', test.testProjectId);
-                $('.ui.editTestForm .ui.bandwidth.dropdown').dropdown('set selected', test.testBandwidthValue);
-                $('.ui.editTestForm .ui.latency.dropdown').dropdown('set selected', test.testLatencyValue);
+                $('.ui.editTestForm .ui.project.dropdown').dropdown('set selected', test.testProjectId.toString());
+                $('.ui.editTestForm .ui.bandwidth.dropdown').dropdown('set selected', test.testBandwidthValue.toString());
+                $('.ui.editTestForm .ui.latency.dropdown').dropdown('set selected', test.testLatencyValue.toString());
 
                 //then check the check boxes according to values saved in the test data
                 test.testPerformanceTimings == true ? $('.ui.editTestForm .ui.performance.checkbox').checkbox('set checked') : $('.ui.editTestForm .ui.performance.checkbox').checkbox('set unchecked');
                 test.testResourceLoads == true ? $('.ui.editTestForm .ui.resource.checkbox').checkbox('set checked') : $('.ui.editTestForm .ui.resource.checkbox').checkbox('set unchecked');
                 test.testScreenshot == true ? $('.ui.editTestForm .ui.screenshot.checkbox').checkbox('set checked') : $('.ui.editTestForm .ui.screenshot.checkbox').checkbox('set unchecked');
-       
+                test.testVisualRegression == true ? $('.ui.editTestForm .ui.regression.checkbox').checkbox('set checked') : $('.ui.editTestForm .ui.regression.checkbox').checkbox('set unchecked');
+
                 //clear any success state from the form
                 $('.ui.editTestForm.form').removeClass('success');
                 //clear any error state from the form
@@ -332,7 +334,8 @@ $(document).ready (function(){
                     //then the checkboxes, which unhelpfully deliver either 'on' string or false boolean - we need to convert all to boolean
                     testPerformanceTimings: fields.testPerformanceTimings == false ? false : true,
                     testResourceLoads: fields.testResourceLoads == false ? false : true,
-                    testScreenshot: fields.testScreenShot == false ? false : true
+                    testScreenshot: fields.testScreenShot == false && fields.testVisualRegression == false ? false : true,
+                    testVisualRegression: fields.testVisualRegression == false ? false : true,
                 });
                 //then we need to save to the database
                 StorageUtils.updateModelObjectInDatabaseTable('tests.js', fields.hiddenTestId, editedTest, 'tests')

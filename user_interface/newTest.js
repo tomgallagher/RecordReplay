@@ -106,7 +106,8 @@ $(document).ready (function(){
                     //then the checkboxes, which unhelpfully deliver either 'on' string or false boolean - we need to convert all to boolean
                     testPerformanceTimings: fields.testPerformanceTimings == false ? false : true,
                     testResourceLoads: fields.testResourceLoads == false ? false : true,
-                    testScreenshot: fields.testScreenshot == false ? false : true
+                    testScreenshot: fields.testScreenShot == false && fields.testVisualRegression == false ? false : true,
+                    testVisualRegression: fields.testVisualRegression == false ? false : true,
                 });
                 //then we need to save to the database
                 StorageUtils.addModelObjectToDatabaseTable('newTest.js', newTest, 'tests')

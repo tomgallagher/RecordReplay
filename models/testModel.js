@@ -18,7 +18,8 @@ class Test {
             testLatencyName: 'N/A',
             testPerformanceTimings: false,
             testResourceLoads: false,
-            testScreenshot: false
+            testScreenshot: false,
+            testVisualRegression: false
         };      
         
         // create a new object with the defaults over-ridden by the options passed in
