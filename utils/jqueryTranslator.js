@@ -64,6 +64,8 @@ class jQueryTranslator {
 
     inputText = (selector, text) => `$('${selector}').val('${text}');`
 
+    inputContentEditable = (selector, text) => `$('${selector}').text('${text}');`
+
     nonInputTyping = (selector, recordingEvent, index) => {
 
         //first we need a shorthand of our event
@@ -143,7 +145,11 @@ class jQueryTranslator {
             case "Keyboard": 
                 return this.nonInputTyping(this.getMostValidSelector(recordingEvent), recordingEvent, index);
             case 'Input':
-                return this.inputText(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue);
+                if (recordingEvent.recordingEventInputType == "contentEditable") {
+                    return this.inputContentEditable(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue);
+                } else {
+                    return this.inputText(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue);
+                }
             case 'Page':
                 return `// Page navigated to ${recordingEvent.recordingEventLocationHref}`; 
             default:

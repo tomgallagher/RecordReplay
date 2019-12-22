@@ -105,6 +105,8 @@ class PuppeteerTranslator {
     //Note you should always focus before you type
     typeText = (text, target) => `await ${target}.keyboard.type('${text}');`
 
+    inputContentEditable = (selector, text, target) => `await ${target}.evaluate( () => { ${this.tabIndex(-1)} document.querySelector('${selector}').textContent = '${text}'; ${this.tabIndex(index)} });` 
+
     //Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
     nonInputTyping = (selector, replayEvent, index) => {
         //so there is some complexity in handling the different types of typing
@@ -231,7 +233,11 @@ class PuppeteerTranslator {
                 outputStringArray.push(this.nonInputTyping(this.getMostValidSelector(recordingEvent), recordingEvent, index));
                 break;
             case 'Input':
-                outputStringArray.push(this.focus(this.getMostValidSelector(recordingEvent), target) += this.tabIndex(index) + this.typeText(recordingEvent.recordingEventInputValue, target));
+                if (recordingEvent.recordingEventInputType == "contentEditable") {
+                    return this.inputContentEditable(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue, target);
+                } else {
+                    outputStringArray.push(this.focus(this.getMostValidSelector(recordingEvent), target) += this.tabIndex(index) + this.typeText(recordingEvent.recordingEventInputValue, target));
+                }
                 break;
             case 'Page':
                 //here we just do a simple return with the standard tabbing

@@ -57,8 +57,6 @@ class CypressTranslator {
 
     //ACTION FUNCTIONS
 
-
-
     navigateStartAndConfirm = (replay) => `${this.tabIndex(0)}cy.visit('${replay.replayRecordingStartUrl}');\n`;
 
     mouseClick = (selector, clicktype) => {
