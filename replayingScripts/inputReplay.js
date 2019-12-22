@@ -101,18 +101,30 @@ class InputReplay {
             //we use setTimeout and resolve to introduce the delay
             setTimeout( () => {
                 
-                //do we need to be sensitive to input types here?
-
-                //set the value of the input element to be our saved value
-                document.querySelector(this.chosenSelectorReport.selectorString).value = this.inputValue;
-                //then report to the log messages array
-                this.replayLogMessages.push(`${this.actionType.toUpperCase()} Value Executed`);
-                //then fire the artificial event so our playback can confirm
+                //we have to be sensitive here to whether the input element is input, textarea or contenteditable as we change them in different ways
+                const targetElement = document.querySelector(this.chosenSelectorReport.selectorString);
+                //we fire the same event for any type - the artificial event so our playback can confirm
                 const inputEvent = new Event("change", {view: window, bubbles: true, cancelable: false}); 
-                //then dispatching the event
-                document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( inputEvent );
-                //then return the current input value is the same as our saved input value
-                resolve(document.querySelector(this.chosenSelectorReport.selectorString).value == this.inputValue);
+                //if we are talking about an input element or a text area element, then we know what we are doing
+                if (targetElement instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+                    //set the value of the input element to be our saved value
+                    targetElement.value = this.inputValue;
+                    //then report to the log messages array
+                    this.replayLogMessages.push(`${this.actionType.toUpperCase()} Value Executed`);
+                    //then return the current input value is the same as our saved input value
+                    resolve(targetElement.value == this.inputValue);
+                }
+                //if we are talking about a contentEditable element, then we do not use value but text content
+                if (targetElement.isContentEditable) {
+                    //set the value of the input element to be our saved value
+                    targetElement.textContent = this.inputValue;
+                    //then report to the log messages array
+                    this.replayLogMessages.push(`${this.actionType.toUpperCase()} Value Executed`);
+                    //then return the current input value is the same as our saved input value
+                    resolve(targetElement.textContent == this.inputValue);
+                }
+                //then dispatching the same event for both
+                targetElement.dispatchEvent( inputEvent );
 
             }, 5);
         });

@@ -788,10 +788,10 @@ function addNewReplayEventsTableStartReplayHandler() {
                 mutatedReplay.recordingTestPerformanceTimings ? mutatedReplay.replayPerformanceTimings = response.reportObject.performanceTimings : null;
                 //update the resource loads if required
                 mutatedReplay.recordingTestResourceLoads ? mutatedReplay.replayResourceLoads = response.reportObject.resourceLoads : null;   
-                //if the user has selected visual regression analysis, now is the time to do it
-                if (mutatedReplay.recordingTestVisualRegression) { 
+                //if the user has selected visual regression analysis, and we have a previous screenshot, now is the time to do it
+                if (mutatedReplay.recordingTestVisualRegression && mutatedReplay.hasOwnProperty('replayScreenShot') && Object.keys(mutatedReplay.replayScreenShot).length > 0) { 
                     //the function needs to have the container to find the images, the current screenshot saved to the database and the reported screenshot
-                    runVisualRegressionAnalysis('.ui.replayEvents.segment', mutatedReplay.replayScreenShot, response.reportObject.screenShot); 
+                    runVisualRegressionAnalysis('.ui.replayEvents.segment', mutatedReplay.replayScreenShot.data, response.reportObject.screenShot.data); 
                 }
                 //update the screenshot if required
                 mutatedReplay.recordingTestScreenshot ? mutatedReplay.replayScreenShot = response.reportObject.screenShot : null;

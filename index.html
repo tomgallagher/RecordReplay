@@ -2665,7 +2665,7 @@
 
                                     When you start your first recording, you may notice that a popup at the top of the recorded page, alerting you that Record/Replay uses 
                                     the <strong>Chrome Devtools Protocol</strong>. If this bothers you, you can paste 'chrome://flags/#silent-debugger-extension-api' into your
-                                    browser address bar, click enable and then relaunch. The message will not appear again.
+                                    browser address bar, click enable, then relaunch. The message disappears until Chrome version updates.
                                 
                                 </div>
                             
@@ -2709,6 +2709,20 @@
                                     that can be checked on replay. Text selection operates as you would expect - if you select text on the page during a <strong>recording</strong>, 
                                     the element selected is made available for adding assertions. All other actions are subject to their own verification checks.
                                 
+                                </div>
+                            
+                            </div>
+
+                            <div class="item">
+                              
+                                <div class="content" contenteditable="true">
+                                    
+                                    <i class="angle right icon"></i>
+
+                                    If you wish to monitor visual changes on <strong> replay</strong>, it is important to remember that replay visual regression analysis is 
+                                    sensitive to changes in the size of compared screenshots. The rule is: <strong> keep your browser window at a uniform size</strong>. 
+                                    Otherwise you will get a lot of false negatives in visual checks. Tests will pass but the visual check image will look messy.
+                    
                                 </div>
                             
                             </div>

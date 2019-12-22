@@ -3,10 +3,6 @@ James Cryer / Huddle
 URL: https://github.com/Huddle/Resemble.js
 */
 
-var isNode = new Function(
-    "return (typeof process !== 'undefined') && (process.release.name === 'node')"
-); //eslint-disable-line
-
 (function(root, factory) {
     "use strict";
     if (typeof define === "function" && define.amd) {
@@ -16,34 +12,40 @@ var isNode = new Function(
     } else {
         root.resemble = factory();
     }
-})(this /* eslint-disable-line no-invalid-this*/, function() {
+})(this, function() {
     "use strict";
 
     var Img;
     var Canvas;
-    var loadNodeCanvasImage;
 
-    if (isNode()) {
-        Canvas = require("canvas"); // eslint-disable-line global-require
-        Img = Canvas.Image;
-        loadNodeCanvasImage = Canvas.loadImage;
-    } else {
+    if (typeof Image !== "undefined") {
         Img = Image;
+    } else {
+        Canvas = require("canvas-prebuilt"); // eslint-disable-line global-require
+        Img = Canvas.Image;
     }
 
-    function createCanvas(width, height) {
-        if (isNode()) {
-            return Canvas.createCanvas(width, height);
-        }
-
-        var cnvs = document.createElement("canvas");
-        cnvs.width = width;
-        cnvs.height = height;
-        return cnvs;
-    }
+    var document =
+        typeof window !== "undefined"
+            ? window.document
+            : {
+                  createElement: function() {
+                      // This will work as long as only createElement is used on window.document
+                      return new Canvas();
+                  }
+              };
 
     var oldGlobalSettings = {};
     var globalOutputSettings = oldGlobalSettings;
+
+    function setGlobalOutputSettings(settings) {
+        var msg =
+            "warning resemble.outputSettings mutates global state, and " +
+            "will be removed in 3.0.0";
+        console.warn(msg);
+        globalOutputSettings = settings;
+        return this;
+    }
 
     var resemble = function(fileData) {
         var pixelTransparency = 1;
@@ -57,6 +59,44 @@ var isNode = new Function(
         };
 
         var targetPix = { r: 0, g: 0, b: 0, a: 0 }; // isAntialiased
+
+        function colorsDistance(c1, c2) {
+            return (
+                (Math.abs(c1.r - c2.r) +
+                    Math.abs(c1.g - c2.g) +
+                    Math.abs(c1.b - c2.b)) /
+                3
+            );
+        }
+
+        function withinBoundingBox(x, y, width, height, box) {
+            return (
+                x > (box.left || 0) &&
+                x < (box.right || width) &&
+                y > (box.top || 0) &&
+                y < (box.bottom || height)
+            );
+        }
+
+        function withinComparedArea(x, y, width, height) {
+            var isIncluded = true;
+
+            if (
+                boundingBox !== undefined &&
+                !withinBoundingBox(x, y, width, height, boundingBox)
+            ) {
+                isIncluded = false;
+            }
+
+            if (
+                ignoredBox !== undefined &&
+                withinBoundingBox(x, y, width, height, ignoredBox)
+            ) {
+                isIncluded = false;
+            }
+
+            return isIncluded;
+        }
 
         var errorPixelTransform = {
             flat: function(px, offset) {
@@ -86,7 +126,7 @@ var isNode = new Function(
                 px[offset + 3] = colorsDistance(d1, d2);
             },
             movementDifferenceIntensity: function(px, offset, d1, d2) {
-                var ratio = (colorsDistance(d1, d2) / 255) * 0.8;
+                var ratio = colorsDistance(d1, d2) / 255 * 0.8;
 
                 px[offset] =
                     (1 - ratio) * (d2.r * (errorPixelColor.red / 255)) +
@@ -109,9 +149,8 @@ var isNode = new Function(
 
         var errorPixel = errorPixelTransform.flat;
         var errorType;
-        var boundingBoxes;
-        var ignoredBoxes;
-        var ignoreAreasColoredWith;
+        var boundingBox;
+        var ignoredBox;
         var largeImageThreshold = 1200;
         var useCrossOrigin = true;
         var data = {};
@@ -131,74 +170,6 @@ var isNode = new Function(
         var ignoreAntialiasing = false;
         var ignoreColors = false;
         var scaleToSameSize = false;
-        var compareOnly = false;
-        var returnEarlyThreshold;
-
-        function colorsDistance(c1, c2) {
-            return (
-                (Math.abs(c1.r - c2.r) +
-                    Math.abs(c1.g - c2.g) +
-                    Math.abs(c1.b - c2.b)) /
-                3
-            );
-        }
-
-        function withinBoundingBox(x, y, width, height, box) {
-            return (
-                x > (box.left || 0) &&
-                x < (box.right || width) &&
-                y > (box.top || 0) &&
-                y < (box.bottom || height)
-            );
-        }
-
-        function withinComparedArea(x, y, width, height, pixel2) {
-            var isIncluded = true;
-            var i;
-            var boundingBox;
-            var ignoredBox;
-            var selected;
-            var ignored;
-
-            if (boundingBoxes instanceof Array) {
-                selected = false;
-                for (i = 0; i < boundingBoxes.length; i++) {
-                    boundingBox = boundingBoxes[i];
-                    if (withinBoundingBox(x, y, width, height, boundingBox)) {
-                        selected = true;
-                        break;
-                    }
-                }
-            }
-            if (ignoredBoxes instanceof Array) {
-                ignored = true;
-                for (i = 0; i < ignoredBoxes.length; i++) {
-                    ignoredBox = ignoredBoxes[i];
-                    if (withinBoundingBox(x, y, width, height, ignoredBox)) {
-                        ignored = false;
-                        break;
-                    }
-                }
-            }
-
-            if (ignoreAreasColoredWith) {
-                return colorsDistance(pixel2, ignoreAreasColoredWith) !== 0;
-            }
-
-            if (selected === undefined && ignored === undefined) {
-                return true;
-            }
-            if (selected === false && ignored === true) {
-                return false;
-            }
-            if (selected === true || ignored === true) {
-                isIncluded = true;
-            }
-            if (selected === false || ignored === false) {
-                isIncluded = false;
-            }
-            return isIncluded;
-        }
 
         function triggerDataUpdate() {
             var len = updateCallbackArray.length;
@@ -249,11 +220,11 @@ var isNode = new Function(
 
                 pixelCount++;
 
-                redTotal += (red / 255) * 100;
-                greenTotal += (green / 255) * 100;
-                blueTotal += (blue / 255) * 100;
-                alphaTotal += ((255 - alpha) / 255) * 100;
-                brightnessTotal += (brightness / 255) * 100;
+                redTotal += red / 255 * 100;
+                greenTotal += green / 255 * 100;
+                blueTotal += blue / 255 * 100;
+                alphaTotal += (255 - alpha) / 255 * 100;
+                brightnessTotal += brightness / 255 * 100;
             });
 
             data.red = Math.floor(redTotal / pixelCount);
@@ -261,35 +232,10 @@ var isNode = new Function(
             data.blue = Math.floor(blueTotal / pixelCount);
             data.alpha = Math.floor(alphaTotal / pixelCount);
             data.brightness = Math.floor(brightnessTotal / pixelCount);
-            data.white = Math.floor((whiteTotal / pixelCount) * 100);
-            data.black = Math.floor((blackTotal / pixelCount) * 100);
+            data.white = Math.floor(whiteTotal / pixelCount * 100);
+            data.black = Math.floor(blackTotal / pixelCount * 100);
 
             triggerDataUpdate();
-        }
-
-        function onLoadImage(hiddenImage, callback) {
-            // don't assign to hiddenImage, see https://github.com/Huddle/Resemble.js/pull/87/commits/300d43352a2845aad289b254bfbdc7cd6a37e2d7
-            var width = hiddenImage.width;
-            var height = hiddenImage.height;
-
-            if (scaleToSameSize && images.length === 1) {
-                width = images[0].width;
-                height = images[0].height;
-            }
-
-            var hiddenCanvas = createCanvas(width, height);
-            var imageData;
-
-            hiddenCanvas
-                .getContext("2d")
-                .drawImage(hiddenImage, 0, 0, width, height);
-            imageData = hiddenCanvas
-                .getContext("2d")
-                .getImageData(0, 0, width, height);
-
-            images.push(imageData);
-
-            callback(imageData, width, height);
         }
 
         function loadImageData(fileDataForImage, callback) {
@@ -314,16 +260,37 @@ var isNode = new Function(
             hiddenImage.onload = function() {
                 hiddenImage.onload = null; // fixes pollution between calls
                 hiddenImage.onerror = null;
-                onLoadImage(hiddenImage, callback);
+
+                var hiddenCanvas = document.createElement("canvas");
+                var imageData;
+
+                // don't assign to hiddenImage, see https://github.com/Huddle/Resemble.js/pull/87/commits/300d43352a2845aad289b254bfbdc7cd6a37e2d7
+                var width = hiddenImage.width;
+                var height = hiddenImage.height;
+
+                if (scaleToSameSize && images.length === 1) {
+                    width = images[0].width;
+                    height = images[0].height;
+                }
+
+                hiddenCanvas.width = width;
+                hiddenCanvas.height = height;
+
+                hiddenCanvas
+                    .getContext("2d")
+                    .drawImage(hiddenImage, 0, 0, width, height);
+                imageData = hiddenCanvas
+                    .getContext("2d")
+                    .getImageData(0, 0, width, height);
+
+                images.push(imageData);
+
+                callback(imageData, width, height);
             };
 
             if (typeof fileDataForImage === "string") {
                 hiddenImage.src = fileDataForImage;
-                if (
-                    !isNode() &&
-                    hiddenImage.complete &&
-                    hiddenImage.naturalWidth > 0
-                ) {
+                if (hiddenImage.complete && hiddenImage.naturalWidth > 0) {
                     hiddenImage.onload();
                 }
             } else if (
@@ -343,20 +310,7 @@ var isNode = new Function(
                 fileDataForImage instanceof Buffer
             ) {
                 // If we have Buffer, assume we're on Node+Canvas and its supported
-                // hiddenImage.src = fileDataForImage;
-
-                loadNodeCanvasImage(fileDataForImage)
-                    .then(function(image) {
-                        hiddenImage.onload = null; // fixes pollution between calls
-                        hiddenImage.onerror = null;
-                        onLoadImage(image, callback);
-                    })
-                    .catch(function(err) {
-                        images.push({
-                            error: err ? err + "" : "Image load error."
-                        });
-                        callback();
-                    });
+                hiddenImage.src = fileDataForImage;
             } else {
                 fileReader = new FileReader();
                 fileReader.onload = function(event) {
@@ -559,20 +513,17 @@ var isNode = new Function(
         }
 
         function analyseImages(img1, img2, width, height) {
+            var hiddenCanvas = document.createElement("canvas");
+
             var data1 = img1.data;
             var data2 = img2.data;
-            var hiddenCanvas;
-            var context;
-            var imgd;
-            var pix;
 
-            if (!compareOnly) {
-                hiddenCanvas = createCanvas(width, height);
+            hiddenCanvas.width = width;
+            hiddenCanvas.height = height;
 
-                context = hiddenCanvas.getContext("2d");
-                imgd = context.createImageData(width, height);
-                pix = imgd.data;
-            }
+            var context = hiddenCanvas.getContext("2d");
+            var imgd = context.createImageData(width, height);
+            var pix = imgd.data;
 
             var mismatchCount = 0;
             var diffBounds = {
@@ -603,13 +554,7 @@ var isNode = new Function(
             var pixel1 = { r: 0, g: 0, b: 0, a: 0 };
             var pixel2 = { r: 0, g: 0, b: 0, a: 0 };
 
-            var skipTheRest = false;
-
             loop(width, height, function(horizontalPos, verticalPos) {
-                if (skipTheRest) {
-                    return;
-                }
-
                 if (skip) {
                     // only skip if the image isn't small
                     if (
@@ -621,20 +566,19 @@ var isNode = new Function(
                 }
 
                 var offset = (verticalPos * width + horizontalPos) * 4;
+                var isWithinComparedArea = withinComparedArea(
+                    horizontalPos,
+                    verticalPos,
+                    width,
+                    height
+                );
+
                 if (
                     !getPixelInfo(pixel1, data1, offset, 1) ||
                     !getPixelInfo(pixel2, data2, offset, 2)
                 ) {
                     return;
                 }
-
-                var isWithinComparedArea = withinComparedArea(
-                    horizontalPos,
-                    verticalPos,
-                    width,
-                    height,
-                    pixel2
-                );
 
                 if (ignoreColors) {
                     addBrightnessInfo(pixel1);
@@ -644,14 +588,9 @@ var isNode = new Function(
                         isPixelBrightnessSimilar(pixel1, pixel2) ||
                         !isWithinComparedArea
                     ) {
-                        if (!compareOnly) {
-                            copyGrayScalePixel(pix, offset, pixel2);
-                        }
+                        copyGrayScalePixel(pix, offset, pixel2);
                     } else {
-                        if (!compareOnly) {
-                            errorPixel(pix, offset, pixel1, pixel2);
-                        }
-
+                        errorPixel(pix, offset, pixel1, pixel2);
                         mismatchCount++;
                         updateBounds(horizontalPos, verticalPos);
                     }
@@ -659,9 +598,7 @@ var isNode = new Function(
                 }
 
                 if (isRGBSimilar(pixel1, pixel2) || !isWithinComparedArea) {
-                    if (!compareOnly) {
-                        copyPixel(pix, offset, pixel1);
-                    }
+                    copyPixel(pix, offset, pixel1);
                 } else if (
                     ignoreAntialiasing &&
                     (addBrightnessInfo(pixel1), // jit pixel info augmentation looks a little weird, sorry.
@@ -687,49 +624,25 @@ var isNode = new Function(
                         isPixelBrightnessSimilar(pixel1, pixel2) ||
                         !isWithinComparedArea
                     ) {
-                        if (!compareOnly) {
-                            copyGrayScalePixel(pix, offset, pixel2);
-                        }
+                        copyGrayScalePixel(pix, offset, pixel2);
                     } else {
-                        if (!compareOnly) {
-                            errorPixel(pix, offset, pixel1, pixel2);
-                        }
-
+                        errorPixel(pix, offset, pixel1, pixel2);
                         mismatchCount++;
                         updateBounds(horizontalPos, verticalPos);
                     }
                 } else {
-                    if (!compareOnly) {
-                        errorPixel(pix, offset, pixel1, pixel2);
-                    }
-
+                    errorPixel(pix, offset, pixel1, pixel2);
                     mismatchCount++;
                     updateBounds(horizontalPos, verticalPos);
                 }
-
-                if (compareOnly) {
-                    var currentMisMatchPercent =
-                        (mismatchCount / (height * width)) * 100;
-
-                    if (currentMisMatchPercent > returnEarlyThreshold) {
-                        skipTheRest = true;
-                    }
-                }
             });
 
-            data.rawMisMatchPercentage =
-                (mismatchCount / (height * width)) * 100;
+            data.rawMisMatchPercentage = mismatchCount / (height * width) * 100;
             data.misMatchPercentage = data.rawMisMatchPercentage.toFixed(2);
             data.diffBounds = diffBounds;
             data.analysisTime = Date.now() - time;
 
             data.getImageDataUrl = function(text) {
-                if (compareOnly) {
-                    throw Error(
-                        "No diff image available - ran in compareOnly mode"
-                    );
-                }
-
                 var barHeight = 0;
 
                 if (text) {
@@ -741,7 +654,7 @@ var isNode = new Function(
                 return hiddenCanvas.toDataURL("image/png");
             };
 
-            if (!compareOnly && hiddenCanvas.toBuffer) {
+            if (hiddenCanvas.toBuffer) {
                 data.getBuffer = function(includeOriginal) {
                     if (includeOriginal) {
                         var imageWidth = hiddenCanvas.width + 2;
@@ -789,7 +702,9 @@ var isNode = new Function(
             var context;
 
             if (img.height < h || img.width < w) {
-                c = createCanvas(w, h);
+                c = document.createElement("canvas");
+                c.width = w;
+                c.height = h;
                 context = c.getContext("2d");
                 context.putImageData(img, 0, 0);
                 return context.getImageData(0, 0, w, h);
@@ -837,23 +752,11 @@ var isNode = new Function(
             }
 
             if (options.boundingBox !== undefined) {
-                boundingBoxes = [options.boundingBox];
+                boundingBox = options.boundingBox;
             }
 
             if (options.ignoredBox !== undefined) {
-                ignoredBoxes = [options.ignoredBox];
-            }
-
-            if (options.boundingBoxes !== undefined) {
-                boundingBoxes = options.boundingBoxes;
-            }
-
-            if (options.ignoredBoxes !== undefined) {
-                ignoredBoxes = options.ignoredBoxes;
-            }
-
-            if (options.ignoreAreasColoredWith !== undefined) {
-                ignoreAreasColoredWith = options.ignoreAreasColoredWith;
+                ignoredBox = options.ignoredBox;
             }
         }
 
@@ -923,13 +826,6 @@ var isNode = new Function(
             }
 
             var self = {
-                setReturnEarlyThreshold: function(threshold) {
-                    if (threshold) {
-                        compareOnly = true;
-                        returnEarlyThreshold = threshold;
-                    }
-                    return self;
-                },
                 scaleToSameSize: function() {
                     scaleToSameSize = true;
 
@@ -1064,17 +960,8 @@ var isNode = new Function(
                 return rootSelf;
             }
         };
-
         return rootSelf;
     };
-
-    function setGlobalOutputSettings(settings) {
-        var msg =
-            "resemble.outputSettings mutates global state, and will be removed in a later major version";
-        console.warn(msg);
-        globalOutputSettings = settings;
-        return resemble;
-    }
 
     function applyIgnore(api, ignore) {
         switch (ignore) {
@@ -1118,10 +1005,6 @@ var isNode = new Function(
         }
 
         compare = res.compareTo(image2);
-
-        if (opt.returnEarlyThreshold) {
-            compare.setReturnEarlyThreshold(opt.returnEarlyThreshold);
-        }
 
         if (opt.scaleToSameSize) {
             compare.scaleToSameSize();

@@ -442,15 +442,39 @@ EventRecorder.startRecordingEvents = () => {
 
 
     //INPUT EVENTS
-    EventRecorder.inputObservable = Rx.Observable.merge(...EventRecorder.inputActionEventObservables)
+    EventRecorder.inputObservable = Rx.Observable.merge(
+            //we need to have the normal input observables
+            Rx.Observable.merge(...EventRecorder.inputActionEventObservables),
+            //but then we also need to pick up blur changes from the whole document for contenteditable elements, with true set so we can listen to event dispatch
+            Rx.Observable.fromEvent(document, "blur", true).filter(event => event.target.isContentEditable)
+        )   
         //then as each action occurs, we want to know the state of the element BEFORE the action took place
         .withLatestFrom(EventRecorder.InputLocator)
         //then map the event to the Recording Event type
         .map(([actionEvent, locationEvent]) => {
+            //we need to be sensitive to contenteditable events here, as the method of retrieving the value is different
+            let inputType, inputValue;
+            //if the element is a contentEditable element then we have to use set the special input type and use textContent
+            if (actionEvent.target.isContentEditable) {
+                //add the special label for content editable actions
+                actionType = 'Content Edit'
+                //give the special label for contenteditable type so we can distinguish
+                inputType = 'contentEditable'
+                //then we go for the textcontent as the value of a contenteditable div, for example, is meaningless
+                //we trim the text here for presentation purposes - we do not assert on input elements so stripping whitespace and special characters should not cause problems
+                inputValue = actionEvent.target.textContent.trim(); 
+            }
+            //if the element is an input element or a text area element then we can just use the normal action type, input type and value
+            if (actionEvent.target instanceof HTMLInputElement || actionEvent.target instanceof HTMLTextAreaElement) { 
+                actionType = actionEvent.type;
+                inputType = actionEvent.target.type;
+                inputValue = actionEvent.target.value; 
+            }
+            //then create the new event
             const newEvent = new RecordingEvent({
                 //general properties
                 recordingEventAction: 'Input',
-                recordingEventActionType: actionEvent.type,
+                recordingEventActionType: actionType,
                 recordingEventHTMLElement: actionEvent.target.constructor.name,
                 recordingEventHTMLTag: actionEvent.target.tagName,
                 recordingEventCssSelectorPath: locationEvent.eventCssSelectorPath,
@@ -461,8 +485,8 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 //information specific to input events
-                recordingEventInputType: actionEvent.target.type,
-                recordingEventInputValue: actionEvent.target.value,
+                recordingEventInputType: inputType,
+                recordingEventInputValue: inputValue,
             });
             return newEvent;
         });
