@@ -704,6 +704,54 @@ function processReplayEvents(replay, tableSelector, containerSelector) {
 
 }
 
+//THIS FUNCTION IS SHARED BY REPLAYS.JS
+//CHECK BOTH FILES BEFORE MAKING CHANGES
+function runVisualRegressionAnalysis(containerSelector, previousRunImage, currentRunImage) {
+
+    //enter the previous image to perform basic analysis
+    resemble(previousRunImage)
+        //enter the second image to provide a comparison
+        .compareTo(currentRunImage)
+        //scale second image to dimensions of the first one
+        .scaleToSameSize()
+        //antialiasing can produce a lot of noise that we don't need
+        .ignoreAntialiasing()
+        //set the output settings
+        .outputSettings({
+            //set the error colour as bright pink 
+            errorColor: { red: 255, green: 0, blue: 255 },
+            //just treat all differences the same
+            errorType: "flat",
+            //then produce an image that is slightly transparent to highlight differences
+            transparency: 0.7,
+            //useCrossOrigin is true by default, you might need to set it to false if you're using Data URIs.
+            useCrossOrigin: false,
+            //then produce output image
+            outputDiff: true
+        })
+        //then on complete we can update the UI
+        .onComplete(function(data) {
+            console.log(data);
+            //save the diff image data uri
+            const diffImage = data.getImageDataUrl();
+            //update the previous run image src
+            $(`${containerSelector} .previousRunImage`).prop('src', `data:image/jpeg;base64,${previousRunImage}`);
+            //update the current run image src
+            $(`${containerSelector} .currentRunImage`).prop('src', `data:image/jpeg;base64,${currentRunImage}`);
+            //update the image diff image src
+            $(`${containerSelector} .visualRegressionImage`).prop('src', `${diffImage}`);
+            //show the relevant image analysis segment
+            $(`${containerSelector} .ui.basic.visualChanges.segment`).show();
+        });
+
+
+    //show the relevant image analysis segment
+    $(`${containerSelector} .ui.basic.visualChanges.segment`).show();
+
+    data.getImageDataUrl();
+
+}
+
 function addNewReplayEventsTableStartReplayHandler() {
 
     //REPLAYING EVENTS START HANDLER
@@ -739,15 +787,14 @@ function addNewReplayEventsTableStartReplayHandler() {
                 //update the performance timings if required
                 mutatedReplay.recordingTestPerformanceTimings ? mutatedReplay.replayPerformanceTimings = response.reportObject.performanceTimings : null;
                 //update the resource loads if required
-                mutatedReplay.recordingTestResourceLoads ? mutatedReplay.replayResourceLoads = response.reportObject.resourceLoads : null;
+                mutatedReplay.recordingTestResourceLoads ? mutatedReplay.replayResourceLoads = response.reportObject.resourceLoads : null;   
+                //if the user has selected visual regression analysis, now is the time to do it
+                if (mutatedReplay.recordingTestVisualRegression) { 
+                    //the function needs to have the container to find the images, the current screenshot saved to the database and the reported screenshot
+                    runVisualRegressionAnalysis('.ui.replayEvents.segment', mutatedReplay.replayScreenShot, response.reportObject.screenShot); 
+                }
                 //update the screenshot if required
                 mutatedReplay.recordingTestScreenshot ? mutatedReplay.replayScreenShot = response.reportObject.screenShot : null;
-
-                //TO DO: we can monitor visual regressions here if we want
-
-
-                
-
                 //return mutated replay with reports
                 return mutatedReplay;    
             }
@@ -838,6 +885,8 @@ $(document).ready (function(){
                 $('.ui.newReplayForm .ui.submit.button').addClass('loading');
                 //clear the new replay replay events table of any previous entries
                 $('.ui.newReplayReplayEventsTable.table tbody').empty();
+                //hide the image analysis segment
+                $('.ui.replayEvents.segment .ui.basic.visualChanges.segment').hide();
                 //then we can start to create our new replay, starting with the fetching of the recording from the database
                 const recordingKey = fields.replayRecordingId;
                 //the recording key will be in string format - StorageUtils handles conversion

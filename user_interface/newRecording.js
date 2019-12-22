@@ -346,6 +346,7 @@ $(document).ready (function(){
                             recordingTestPerformanceTimings: test.testPerformanceTimings,
                             recordingTestResourceLoads: test.testResourceLoads,
                             recordingTestScreenshot: test.testScreenshot,
+                            recordingTestVisualRegression: test.testVisualRegression,
                         });
                         console.log(newRecording);
                         //then we need to save to the database

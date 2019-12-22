@@ -26,6 +26,7 @@ class Recording {
             recordingTestPerformanceTimings: false,
             recordingTestResourceLoads: false,
             recordingTestScreenshot: false,
+            recordingTestVisualRegression: false,
             //container for recording event output from user interaction or page navigation
             recordingEventArray: []
         };      

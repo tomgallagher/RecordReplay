@@ -214,6 +214,8 @@ function addReplayTableButtonListeners() {
                 $('.ui.runReplay.container .ui.startReplay.positive.button').removeClass('disabled');
                 //hide the information message about being unable to show events that have not been run at least once
                 $('.ui.runReplayReplayEventsTable.table .informationMessageRow').hide();
+                //hide the image analysis segment
+                $('.ui.runReplay.container .ui.basic.visualChanges.segment').hide();
                 //empty the table body first
                 $('.ui.runReplayReplayEventsTable.table tbody').empty();
                 //get a reference to the table
@@ -735,11 +737,12 @@ function addReplayEventsTableStartReplayHandler() {
                 mutatedReplay.recordingTestPerformanceTimings ? mutatedReplay.replayPerformanceTimings = response.reportObject.performanceTimings : null;
                 //update the resource loads if required
                 mutatedReplay.recordingTestResourceLoads ? mutatedReplay.replayResourceLoads = response.reportObject.resourceLoads : null;
-
-                //TO DO: we can monitor visual regressions here if we want
-                
-                
-                
+                //if the user has selected visual regression analysis, now is the time to do it
+                //BORROWING FUNCTION FROM newReplay.js
+                if (mutatedReplay.recordingTestVisualRegression) { 
+                    //the function needs to have the container to find the images, the current screenshot saved to the database and the reported screenshot
+                    runVisualRegressionAnalysis('.ui.runReplay.container', mutatedReplay.replayScreenShot, response.reportObject.screenShot); 
+                }
                 //update the screenshot if required
                 mutatedReplay.recordingTestScreenshot ? mutatedReplay.replayScreenShot = response.reportObject.screenShot : null;
                 //return mutated replay with reports
