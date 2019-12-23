@@ -17,27 +17,37 @@ function addTestTableRowsFragment(testStorageArray) {
         //then we make a clone of the row, that will serve the purpose
         let tempNode = targetRow.cloneNode(true);
         //then we need to find each of the elements of the template that need to be adjusted and input from the current project
+        
         //tempNode child <td data-label="testName"></td> needs to have text content set to database testName
         let testNameNode = tempNode.querySelector('td[data-label="testName"]');
         testNameNode.textContent = testStorageArray[test].testName;
+        
         //tempNode child <td data-label="testDescription"></td> needs to have text content set to database testDescription
         let testDescriptionNode = tempNode.querySelector('td[data-label="testDescription"]');
         testDescriptionNode.textContent = testStorageArray[test].testDescription;
+        
         //tempNode child <td data-label="testAuthor"></td> needs to have text content set to database testAuthor
         let testAuthorNode = tempNode.querySelector('td[data-label="testAuthor"]');
         testAuthorNode.textContent = testStorageArray[test].testAuthor;
+        
         //tempNode child <td data-label="projectName"></td> needs to have text content set to database projectName
         let testProjectNode = tempNode.querySelector('td[data-label="projectName"]');
         testProjectNode.textContent = testStorageArray[test].testProjectName;     
-        //tempNode child <td data-label="testStartUrl"></td> needs to have text content set to database testStartUrl
+        
+        //tempNode child <td data-label="testStartUrl" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;"></td>
         let testUrlNode = tempNode.querySelector('td[data-label="testStartUrl"]');
         testUrlNode.textContent = testStorageArray[test].testStartUrl;
+        //any text-overflow elements should have a title with the whole string
+        testUrlNode.title = testStorageArray[test].testStartUrl;
+        
         //tempNode child <td data-label="testBandwidth"></td> needs to have text content set to database testBandwidth
         let testBandWidthNode = tempNode.querySelector('td[data-label="testBandwidth"]');
         testBandWidthNode.textContent = testStorageArray[test].testBandwidthName;
+        
         //tempNode child <td data-label="testLatency"></td> needs to have text content set to database testLatency
         let testLatencyNode = tempNode.querySelector('td[data-label="testLatency"]');
         testLatencyNode.textContent = testStorageArray[test].testLatencyName;
+        
         //tempNode child <td data-label="testAdditionalReporting"></td> needs to have text content set to database testAdditionalReporting
         let testAdditionalReportingNode = tempNode.querySelector('td[data-label="testAdditionalReporting"]');
         //we need to combine the booleans into a comma separated string indicating extra values
@@ -47,12 +57,15 @@ function addTestTableRowsFragment(testStorageArray) {
         testStorageArray[test].testScreenshot == true ? additionalReportsArray.push('Screenshot') : null;
         testStorageArray[test].testVisualRegression == true ? additionalReportsArray.push('Visual Changes') : null;
         testAdditionalReportingNode.textContent = additionalReportsArray.join(', ');
+        
         //tempNode child <td data-label="testCreated"></td> needs to have text content set to database testCreated
         let testCreatedNode = tempNode.querySelector('td[data-label="testCreated"]');
         testCreatedNode.textContent = new Date(testStorageArray[test].testCreated).toLocaleString();
+        
         //tempNode child <a class="editTestLink" data-test-id="0">Edit</a> needs to have data-test-id set to the database id
         let testEditButton = tempNode.querySelector('.editTestLink');
         testEditButton.setAttribute('data-test-id', `${testStorageArray[test].id}`);
+        
         //tempNode child <a class="deleteTestLink" style="color: red" data-test-id="0" data-tooltip="To delete test and all associated recordings and replays" data-position="left center">Edit</a> needs to have data-test-id set to the database id
         let testDeleteButton = tempNode.querySelector('.deleteTestLink');
         testDeleteButton.setAttribute('data-test-id', `${testStorageArray[test].id}`);

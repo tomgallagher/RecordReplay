@@ -17,23 +17,42 @@ function addRecordingTableRowsFragment(recordingStorageArray) {
         //then we make a clone of the row, that will serve the purpose
         let tempNode = targetRow.cloneNode(true);
         //then we need to find each of the elements of the template that need to be adjusted and input from the current project
+        //<td data-label="recordingName"></td>
         let recordingNameNode = tempNode.querySelector('td[data-label="recordingName"]');
         recordingNameNode.textContent = recordingStorageArray[recording].recordingName;
+        
+        //<td data-label="recordingDescription" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;"></td>
         let recordingDescriptionNode = tempNode.querySelector('td[data-label="recordingDescription"]');
         recordingDescriptionNode.textContent = recordingStorageArray[recording].recordingDescription;
+        //any text-overflow elements should have a title with the whole string
+        recordingDescriptionNode.title = recordingStorageArray[recording].recordingDescription;
+
+        //<td data-label="recordingAuthor"></td>
         let recordingAuthorNode = tempNode.querySelector('td[data-label="recordingAuthor"]');
         recordingAuthorNode.textContent = recordingStorageArray[recording].recordingAuthor;
+        
+        //<td data-label="recordingProjectName"></td>
         let recordingProjectNode = tempNode.querySelector('td[data-label="recordingProjectName"]');
         recordingProjectNode.textContent = recordingStorageArray[recording].recordingProjectName;
+        
+        //<td data-label="recordingTestName"></td>
         let recordingTestNode = tempNode.querySelector('td[data-label="recordingTestName"]');
         recordingTestNode.textContent = recordingStorageArray[recording].recordingTestName; 
+        
+        //<td data-label="recordingTestStartUrl" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;"></td>
         let recordingStartUrlNode = tempNode.querySelector('td[data-label="recordingTestStartUrl"]');
-        recordingStartUrlNode.textContent = recordingStorageArray[recording].recordingTestStartUrl; 
+        recordingStartUrlNode.textContent = recordingStorageArray[recording].recordingTestStartUrl;
+        //any text-overflow elements should have a title with the whole string
+        recordingStartUrlNode.title = recordingStorageArray[recording].recordingTestStartUrl;
+        
+        //<td data-label="recordingAdditionalReporting"></td>
         let recordingAdditionalReportingNode = tempNode.querySelector('td[data-label="recordingAdditionalReporting"]');
         var additionalReportsArray = [];
         recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push('Mobile') : additionalReportsArray.push('Computer');
         recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push(recordingStorageArray[recording].recordingMobileOrientation) : null;
         recordingAdditionalReportingNode.textContent = additionalReportsArray.join(', ');
+        
+        //<td data-label="recordingCreated"></td>
         let recordingCreatedNode = tempNode.querySelector('td[data-label="recordingCreated"]');
         recordingCreatedNode.textContent = new Date(recordingStorageArray[recording].recordingCreated).toLocaleString(); 
 

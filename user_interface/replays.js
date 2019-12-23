@@ -68,12 +68,14 @@ function addReplayTableRowsFragment(replayStorageArray) {
         //<td data-label="replayRecordingStartUrl" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;"></td>
         let replayStartUrlNode = tempNode.querySelector('td[data-label="replayRecordingStartUrl"]');
         replayStartUrlNode.textContent = replayStorageArray[replay].replayRecordingStartUrl;
+        //any text-overflow elements should have a title with the whole string
+        replayStartUrlNode.title = replayStorageArray[replay].replayRecordingStartUrl;
         //<td data-label="replayAssertionsCount"></td>
         let replayAssertionsLengthNode = tempNode.querySelector('td[data-label="replayAssertionsCount"]');
         replayAssertionsLengthNode.textContent = replayStorageArray[replay].replayEventArray.filter(item => item.hasOwnProperty('assertionId')).length;
         //<td data-label="replayCreated"></td>
         let replayCreatedNode = tempNode.querySelector('td[data-label="replayCreated"]');
-        replayCreatedNode.textContent = new Date(replayStorageArray[replay].replayCreated).toLocaleString();
+        replayCreatedNode.textContent = new Date(replayStorageArray[replay].replayCreated).toLocaleDateString();
         //<td data-label="replayExecuted"></td>
         let replayExecutedNode = tempNode.querySelector('td[data-label="replayExecuted"]');
         //this makes a copy of the replay WITH THE RIGHT RECORDING PARAMETERS to access the formatting functions

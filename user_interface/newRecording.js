@@ -20,27 +20,41 @@ function addNewRecordingEventToTable(recording, recordingEvent, table) {
     //<td data-field="recordingEventOrigin">User</td>
     let recordingEventOriginNode = tempNode.querySelector('td[data-label="recordingEventOrigin"]');
     recordingEventOriginNode.textContent = recordingEvent.recordingEventOrigin;
+
     //<td data-field="recordingEventAction">Click</td>
     let recordingEventActionNode = tempNode.querySelector('td[data-label="recordingEventAction"]');
     recordingEventActionNode.textContent = recordingEvent.recordingEventAction;
+    
     //<td data-label="recordingEventActionType">Click</td>
     let recordingEventActionTypeNode = tempNode.querySelector('td[data-label="recordingEventActionType"]');
     recordingEventActionTypeNode.textContent = recordingEvent.recordingEventActionType;
+    
     //<td data-field="recordingEventHTMLTag">BUTTON</td>
     let recordingEventHTMLTagNode = tempNode.querySelector('td[data-label="recordingEventHTMLTag"]');
     recordingEventHTMLTagNode.textContent = recordingEvent.recordingEventHTMLTag;
+    
     //<td data-label="recordingEventCssSelectorPath" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">div > a</td>
     let recordingEventSelectorNode = tempNode.querySelector('td[data-label="recordingEventCssSelectorPath"]');
     recordingEventSelectorNode.textContent = recordingEvent.recordingEventCssSelectorPath || recordingEvent.recordingEventCssDomPath;
+    //any text-overflow elements should have a title with the whole string
+    recordingEventSelectorNode.title = recordingEvent.recordingEventCssSelectorPath || recordingEvent.recordingEventCssDomPath;
+    
     //<td data-field="recordingEventInputType">N/A</td>
     let recordingEventInputTypeNode = tempNode.querySelector('td[data-label="recordingEventInputType"]');
     recordingEventInputTypeNode.textContent = recordingEvent.recordingEventInputType;
+    
     //<td data-field="recordingEventInputValue" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">N/A</td>
     let recordingEventInputValueNode = tempNode.querySelector('td[data-label="recordingEventInputValue"]');
     recordingEventInputValueNode.textContent = recordingEvent.recordingEventInputValue;
+    //any text-overflow elements should have a title with the whole string
+    recordingEventInputValueNode.title = recordingEvent.recordingEventInputValue;
+    
     //<td data-field="recordingEventLocation" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
     let recordingEventLocationNode = tempNode.querySelector('td[data-label="recordingEventLocation"]');
     recordingEventLocationNode.textContent = recordingEvent.recordingEventLocation;
+    //any text-overflow elements should have a title with the whole string
+    recordingEventLocationNode.title = recordingEvent.recordingEventLocation;
+    
     //<td data-field="recordingEventCreated">Some time</td>
     let recordingEventCreatedNode = tempNode.querySelector('td[data-label="recordingEventCreated"]');
     recordingEventCreatedNode.textContent = recordingEvent.recordingTimeSincePrevious == 0 ? new Date(recordingEvent.recordingEventCreated).toLocaleString() : `+ ${Math.ceil(recordingEvent.recordingTimeSincePrevious / 1000)} sec`

@@ -16,24 +16,35 @@ function addAssertableEventsToTable(recording, assertableArray) {
             
             //then we make a clone of the row, that will serve the purpose
             let tempNode = targetRow.cloneNode(true);
+            
             //<td data-label="replay_recordingEventOrigin">User</td>
             let assertionOriginNode = tempNode.querySelector('td[data-label="replay_recordingEventOrigin"]');
             assertionOriginNode.textContent = assertableArray[assertable].recordingEventOrigin;
+
             //<td data-label="replay_recordingEventAction">Mouse</td>
             let assertionActionNode = tempNode.querySelector('td[data-label="replay_recordingEventAction"]');
             assertionActionNode.textContent = assertableArray[assertable].recordingEventAction;
+            
             //<td data-label="replay_recordingEventActionType">Click</td>
             let assertionActionTypeNode = tempNode.querySelector('td[data-label="replay_recordingEventActionType"]');
             assertionActionTypeNode.textContent = assertableArray[assertable].recordingEventActionType;
+            
             //<td data-label="replay_recordingEventHTMLTag">BUTTON</td>
             let assertionHTMLTagNode = tempNode.querySelector('td[data-label="replay_recordingEventHTMLTag"]');
             assertionHTMLTagNode.textContent = assertableArray[assertable].recordingEventHTMLTag;
+            
             //<td data-label="replay_recordingEventCssSelectorPath" style="max-width: 1500px; overflow: hidden; text-overflow: ellipsis;">div > a</td>
             let assertionCssSelectorNode = tempNode.querySelector('td[data-label="replay_recordingEventCssSelectorPath"]');
             assertionCssSelectorNode.textContent = assertableArray[assertable].recordingEventCssSelectorPath;
+            //any text-overflow elements should have a title with the whole string
+            assertionCssSelectorNode.title = assertableArray[assertable].recordingEventCssSelectorPath;
+            
             //<td data-label="replay_recordingEventLocation" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
             let assertionLocationNode = tempNode.querySelector('td[data-label="replay_recordingEventLocation"]');
             assertionLocationNode.textContent = assertableArray[assertable].recordingEventLocation;
+            //any text-overflow elements should have a title with the whole string
+            assertionLocationNode.title = assertableArray[assertable].recordingEventLocation;
+            
             //then the buttons
             let assertionAssertLink = tempNode.querySelector('.assertEventLink');
             assertionAssertLink.setAttribute('data-recording-event-id', `${assertableArray[assertable].recordingEventId}`);
@@ -263,6 +274,8 @@ function addNewReplayEventToTable(replay, replayEvent, table) {
     let replayEventCssSelectorNode = tempNode.querySelector('td[data-label="replay_recordingEventCssSelectorPath"]');
     //same for both
     replayEventCssSelectorNode.textContent = replayEvent.recordingEventCssSelectorPath;
+    //any text-overflow elements should have a title with the whole string
+    replayEventCssSelectorNode.title = replayEvent.recordingEventCssSelectorPath;
     
     //<td data-label="replay_recordingEventInputType">N/A</td>
     let replayEventInputNode = tempNode.querySelector('td[data-label="replay_recordingEventInputType"]');
@@ -273,11 +286,15 @@ function addNewReplayEventToTable(replay, replayEvent, table) {
     let replayEventInputValueNode = tempNode.querySelector('td[data-label="replay_recordingEventInputValue"]');
     //then we need to handle both replays and assertions
     replayEventInputValueNode.textContent = replayEvent.assertionValue || replayEvent.recordingEventInputValue;
+    //any text-overflow elements should have a title with the whole string
+    replayEventInputValueNode.title = replayEvent.assertionValue || replayEvent.recordingEventInputValue;
                             
     //<td data-label="replay_recordingEventLocation" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
     let replayEventLocationNode = tempNode.querySelector('td[data-label="replay_recordingEventLocation"]');
     //same for both
     replayEventLocationNode.textContent = replayEvent.recordingEventLocation;
+    //any text-overflow elements should have a title with the whole string
+    replayEventLocationNode.title = replayEvent.recordingEventLocation;
 
     //<td data-label="replay_timestamp_created">Some time</td>
     let replayEventTimeCreatedNode = tempNode.querySelector('td[data-label="replay_timestamp_created"]');
@@ -473,11 +490,8 @@ function refreshNewReplayRecordingDropdown() {
                     const recordingId = Number(value);
                     //then we need to get the right item from the array so we can populate the test start url field in the visible form
                     const recording = recordingStorageArray.find(item => item.id == recordingId);
-                    //then we need a data appended to the recording name for the unique replay name
-                    const date = new Date(Date.now());
-                    const dateString = date.toLocaleString();
                     //populate the visible form but leave it disabled - it's readable but the form does not mutate and require reseting
-                    $('.ui.newReplayForm.form input[name=replayName]').val(`${recording.recordingName} #${dateString}`);
+                    $('.ui.newReplayForm.form input[name=replayName]').val(`${recording.recordingName} (Replay)`);
                     $('.ui.newReplayForm.form input[name=replayRecordingStartUrl]').val(recording.recordingTestStartUrl);
                     //then we want to reset the hidden assertions collector
                     $('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val("[]");
