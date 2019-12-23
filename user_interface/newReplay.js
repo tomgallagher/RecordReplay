@@ -709,9 +709,9 @@ function processReplayEvents(replay, tableSelector, containerSelector) {
 function runVisualRegressionAnalysis(containerSelector, previousRunImage, currentRunImage) {
 
     //enter the previous image to perform basic analysis
-    resemble(previousRunImage)
+    resemble(`data:image/jpeg;base64,${previousRunImage}`)
         //enter the second image to provide a comparison
-        .compareTo(currentRunImage)
+        .compareTo(`data:image/jpeg;base64,${currentRunImage}`)
         //scale second image to dimensions of the first one
         .scaleToSameSize()
         //antialiasing can produce a lot of noise that we don't need
@@ -732,23 +732,19 @@ function runVisualRegressionAnalysis(containerSelector, previousRunImage, curren
         //then on complete we can update the UI
         .onComplete(function(data) {
             console.log(data);
-            //save the diff image data uri
-            const diffImage = data.getImageDataUrl();
-            //update the previous run image src
-            $(`${containerSelector} .previousRunImage`).prop('src', `data:image/jpeg;base64,${previousRunImage}`);
-            //update the current run image src
-            $(`${containerSelector} .currentRunImage`).prop('src', `data:image/jpeg;base64,${currentRunImage}`);
-            //update the image diff image src
-            $(`${containerSelector} .visualRegressionImage`).prop('src', `${diffImage}`);
-            //show the relevant image analysis segment
-            $(`${containerSelector} .ui.basic.visualChanges.segment`).show();
+            if (data.rawMisMatchPercentage > 0) {
+                //save the diff image data uri
+                const diffImage = data.getImageDataUrl();
+                //update the previous run image src
+                $(`${containerSelector} .previousRunImage`).prop('src', `data:image/jpeg;base64,${previousRunImage}`);
+                //update the current run image src
+                $(`${containerSelector} .currentRunImage`).prop('src', `data:image/jpeg;base64,${currentRunImage}`);
+                //update the image diff image src
+                $(`${containerSelector} .visualRegressionImage`).prop('src', `${diffImage}`);
+                //show the relevant image analysis segment
+                $(`${containerSelector} .ui.basic.visualChanges.segment`).show();
+            }
         });
-
-
-    //show the relevant image analysis segment
-    $(`${containerSelector} .ui.basic.visualChanges.segment`).show();
-
-    data.getImageDataUrl();
 
 }
 

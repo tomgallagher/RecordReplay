@@ -1,3 +1,20 @@
+WHAT DOES IT DO?
+
+3 THINGS- focus on the three things that it does: RECORD - REPLAY - REPORT
+
+WHY SHOULD YOU INSTALL IT?
+
+Everyone?
+Beginners?
+Experts?
+
+WHY IS IT BETTER THAN THE COMPETITION?
+
+Everyone?
+Beginners?
+Experts?
+
+
 'Click-through' or manual quality assurance testing demands that someone should click through the finished website to make sure that it really works, before shipping it to customers.
 
 To go from where we are to where we want to be, which is not blocked by manual QA runs and releasing multiple times a day, we need to invest into automated testing as well 
@@ -10,12 +27,18 @@ AUTOMATED TESTS OF GRAPHICAL USER INTERFACE
 
 functional or end-to-end testing - Testing how scenarios function on the product itself, by controlling the browser or the website. 
 
-Many front-end developers and programmers also want to create their own automated tests to get quick feedback on whether or not they’ve broken a code in their application while checking in new code or make changes to the existing code base.
+Many front-end developers and programmers also want to create their own automated tests to get quick feedback on whether or not they’ve broken a code in their application 
+while checking in new code or make changes to the existing code base.
 
-Functional tests control browsers (7) and simulate user behavior on these environments (clicking, typing, scrolling etc…) and make sure these scenarios actually work from the point of view of an end user.
+Functional tests control browsers (7) and simulate user behavior on these environments (clicking, typing, scrolling etc…) and make sure these scenarios actually work from the 
+point of view of an end user.
+
 Functional tests ensure that the app works as expected from the user’s perspective. Assertions primarily test the user interface.
-Functional tests typically have thorough tests for “happy paths” — ensuring the critical app capabilities, such as user logins, signups, purchase work flows, and all the critical user workflows all behave as expected.
-After you deploy a new release to production, it’s important to find out right away whether or not it’s working as expected in the production environment. You don’t want your users to find the bugs before you do — it could chase them away!
+Functional tests typically have thorough tests for “happy paths” — ensuring the critical app capabilities, such as user logins, signups, purchase work flows, and all the critical 
+user workflows all behave as expected.
+
+After you deploy a new release to production, it’s important to find out right away whether or not it’s working as expected in the production environment. You don’t want your 
+users to find the bugs before you do — it could chase them away!
 
 click through parts of the application that are not current being changed/developed to guard against regressions when shared components changes
 
@@ -25,16 +48,18 @@ What does it do:
 2) Assertion functions check if the results of the test are as expected
 3) Generates and displays test progress and results
 4) visual regression tools to compare your screenshots with previous ones
+5) Bulk replays to ensure that ALL happy paths are working before release and then in production
 
 Selling points:
 
 1. Multiple CSS and Xpath selector generators for redundancy and continued performance as the site structure changes
 2. Generates short unique selectors for all element targets
-3. Ease of use - no installs required, no knowledge of Node.js or Puppeteer requiredm everything runs in the browser, tests saved locally in storage
+3. Ease of use - no installs required, no knowledge of Node.js or Puppeteer required everything runs in the browser, tests saved locally in storage
 4. Transparent - watch all the recordings replayed in real time in dedicated browser tab
 5. Bulk testing - automated click-through testing of all functions on your page
 6. It is an end to end automation testing framework dedicated for testing your website or application in a real browser, making automated interaction just like a real user.
-7. Chrome only not a problem - functional tests will only ever catch a specific class of bug that is mostly logic related, these bugs will be caught in Chrome and if you want the real cross-browser experience, export the code
+7. Chrome only not a problem - functional tests will only ever catch a specific class of bug that is mostly logic related, these bugs will be caught in Chrome and if you want the 
+real cross-browser experience, export the code
 
 vs Cypress
 
@@ -50,20 +75,23 @@ vs Jest / Puppeteer
 3. No resource limitations
 Ready-To-Go- Comes with everything you need to start functional testing.
 One major drawback of Headless Chrome (thus of Puppeteer as well) is that it doesn’t supports extensions like Flash and probably won’t in the near future.
-It’s much faster than Selenium and avoids a lot of the messy configuration and flakiness that comes with trying to launch a real browser. 
-No steps in the beginning asking you to download specific versions of the selenium server jar, geckodriver, chromedriver etc which is both fiddly and error prone. 
 
 vs Selenium webdriver
 
 1. Flaky tests: they often fail erroneously.
 2. Complicated setup: it takes a long time to configure the Selenium driver on any given environment.
 3. Slow: Selenium runs very slowly because it has to spin up a browser for each test.
+It’s much faster than Selenium and avoids a lot of the messy configuration and flakiness that comes with trying to launch a real browser. 
+No steps in the beginning asking you to download specific versions of the selenium server jar, geckodriver, chromedriver etc which is both fiddly and error prone. 
 
-One really awesome thing about testcafe is that it automatically detects JS errors that happened when the test page was executing. I suppose this is the kind of awesome you can attain when you reach outside of the Selenium box! I also noted that the terminal output when tests failed where quite readable/clean.
+One really awesome thing about testcafe is that it automatically detects JS errors that happened when the test page was executing. I suppose this is the kind of awesome you can 
+attain when you reach outside of the Selenium box! I also noted that the terminal output when tests failed where quite readable/clean.
 
-In contrast to the waterfall method, I’ve seen the continuous delivery process running smoothly at dozens of organizations — but I’ve never seen it work anywhere without a quality array of test suites that includes both unit tests and functional tests, and frequently includes integration tests, as well.
+In contrast to the waterfall method, I’ve seen the continuous delivery process running smoothly at dozens of organizations — but I’ve never seen it work anywhere without a 
+quality array of test suites that includes both unit tests and functional tests, and frequently includes integration tests, as well.
 
 Who is non-code web-service-based automated testing best for?
 Startup founders like my friend Matt, who want to save the time they normally have to spend before/after a production deploy to avoid hearing embarrassing support issues day later. 🙇
 Sites that change infrequently. Teams which manually deploy their code (whether via a git push heroku master, cap production deploy, or `ssh my-production-server` and `rsync`). 💪
-Websites where some breakage is OK 💁, and not catastrophic. Marketing sites, blogs—sites without a “Buy Now” button and shopping cart flow. A bug on production might distract one person for an hour or two, but won’t block content creators or folks depending on your service to complete their daily tasks
+Websites where some breakage is OK 💁, and not catastrophic. Marketing sites, blogs—sites without a “Buy Now” button and shopping cart flow. A bug on production 
+might distract one person for an hour or two, but won’t block content creators or folks depending on your service to complete their daily tasks
