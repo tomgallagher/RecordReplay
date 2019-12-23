@@ -845,6 +845,18 @@ $(document).ready (function(){
     //add the listener for the run replay button
     addNewReplayEventsTableStartReplayHandler();
 
+    //add the listener for visual check image blowup
+    //THIS FUNCTION IS USED ACROSS THE WHOLE PAGE WITH ANY VISUAL REGRESSION IMAGES
+    $('.previousRunImage, .currentRunImage, .visualRegressionImage').on('click', function() {
+        //first we want to get the target src
+        const src = $(this).prop('src');
+        //then we set the modal src 
+        $('.ui.large.modal .visualCheckBlowUp').prop('src', src);
+        //then we show the modal
+        $('.large.modal').modal('show');
+    })
+
+
     $('.ui.newReplayForm.form')
         .form({
             on: 'blur',

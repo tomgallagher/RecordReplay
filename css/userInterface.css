@@ -119,3 +119,18 @@
 .ui.toggle.checkbox input:checked ~ label:before {
     background-color: #6435c9 !important;
 }
+
+/*need an override here for vertical centering of the visual check modal and its associated dimmer */
+.dimmed.dimmable > .ui.animating.dimmer, .dimmed.dimmable > .ui.visible.dimmer, .ui.active.dimmer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ui.modal, .ui.active.modal {
+    margin: 0 auto!important;
+    top: auto !important;
+    left: auto !important;
+    transform-origin: center !important;
+    transition: all ease .5s;
+  }
