@@ -60,7 +60,7 @@ function addTestTableRowsFragment(testStorageArray) {
         
         //tempNode child <td data-label="testCreated"></td> needs to have text content set to database testCreated
         let testCreatedNode = tempNode.querySelector('td[data-label="testCreated"]');
-        testCreatedNode.textContent = new Date(testStorageArray[test].testCreated).toLocaleString();
+        testCreatedNode.textContent = new Date(testStorageArray[test].testCreated).toLocaleDateString();
         
         //tempNode child <a class="editTestLink" data-test-id="0">Edit</a> needs to have data-test-id set to the database id
         let testEditButton = tempNode.querySelector('.editTestLink');

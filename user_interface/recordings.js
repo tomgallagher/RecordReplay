@@ -54,7 +54,7 @@ function addRecordingTableRowsFragment(recordingStorageArray) {
         
         //<td data-label="recordingCreated"></td>
         let recordingCreatedNode = tempNode.querySelector('td[data-label="recordingCreated"]');
-        recordingCreatedNode.textContent = new Date(recordingStorageArray[recording].recordingCreated).toLocaleString(); 
+        recordingCreatedNode.textContent = new Date(recordingStorageArray[recording].recordingCreated).toLocaleDateString(); 
 
         let recordingShowLink = tempNode.querySelector('.showRecordingLink');
         recordingShowLink.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
