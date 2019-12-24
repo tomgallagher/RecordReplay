@@ -56,6 +56,41 @@ class SeleniumTranslator {
 
     closePage = () => `${this.tabIndex(0)}await driver.quit();\n`
 
+
+    //ACTION FUNCTIONS
+
+    mapDispatchKeyEventModifer = (modifier) => {
+        switch(modifier) {
+            case 1: return "Alt"
+            case 2: return "Control"
+            case 4: return "Meta"
+            case 8: return "Shift"
+            default: return ""
+        }
+    }
+
+    mouseClick = (selector, clicktype, index) => {
+        switch(clicktype) {
+            case 'click': return `const target${index} = await driver.findElement(by.css('${selector}')); await driver.actions().click(target${index}).perform();`
+            case 'dblclick': return `const target${index} = await driver.findElement(by.css('${selector}')); await driver.actions().doubleClick(target${index}).perform();`
+            case 'contextmenu': return `const target${index} = await driver.findElement(by.css('${selector}')); await driver.actions().contextClick(target${index}).perform();`
+            default: return `${this.tabIndex(index)}//No Click Action Available For Action ${clicktype}`
+        }
+    }
+
+    recaptcha = (selector) => `const target${index} = await driver.findElement(by.css('${selector}')); await driver.actions().click(target${index}).perform();`
+
+    scrollTo = (xPosition, yPosition) => `await driver.executeScript("document.documentElement.scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' });");`
+
+    elementScrollTo = (selector, xPosition, yPosition) => `await driver.executeScript("document.querySelector('${selector}').scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' });");`
+
+    focus = (selector) => `await driver.executeScript("document.querySelector('${selector}').focus({ preventScroll: false });");`
+
+    hover = (selector) => `const hoverTarget${index} = await driver.findElement(by.css('${selector}')); await driver.actions().move(target${index}).perform();`
+
+    textSelect = (selector, index) => `await driver.executeScript("const range${index} = document.createRange(); const referenceNode${index} = document.querySelector('${selector}'); range${index}.selectNode(referenceNode${index}); const currentSelection${index} = window.getSelection(); currentSelection${index}.removeAllRanges(); currentSelection${index}.addRange(range${index});");`
+
+
     //ASSERTIONS HELPERS, we need to have the index of each item in the Rx.js flow so we can have unique assertions
 
     getPageUrl = () => 'await driver.getCurrentUrl();'
