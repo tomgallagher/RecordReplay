@@ -36,6 +36,7 @@ class PuppeteerTranslator {
         Object.keys(defaults).forEach(prop => { this[prop] = opts[prop]; });
     }
 
+
     //FORMATTING FUNCTIONS
 
     openAnonAsyncFunction = () => `(async () => { \n`
@@ -61,6 +62,7 @@ class PuppeteerTranslator {
         }
     }
 
+
     //BROWSER CONTROL ACTIONS
 
     openPage = () => `${this.tabIndex(0)}const page = await browser.newPage();\n`
@@ -78,6 +80,7 @@ class PuppeteerTranslator {
         return `${this.tabIndex(0)}await client.send('Network.emulateNetworkConditions', { offline: ${offline}, downloadThroughput: ${download}, uploadThroughput: ${upload}, latency: ${latency} });\n`;
 
     }
+
 
     //ACTION FUNCTIONS
 
@@ -139,6 +142,8 @@ class PuppeteerTranslator {
 
     //ASSERTIONS HELPERS, we need to have the index of each item in the Rx.js flow so we can have unique assertions
 
+    getPageUrl = () => 'page.url();'
+
     getPageTitle = () => `await page.title();`
 
     querySelector = (selector, index) => `const selected${index} = await page.$('${selector}');` 
@@ -152,6 +157,9 @@ class PuppeteerTranslator {
     getElementAttributeValue = (selector, attribute, index) => `const ${attribute}Attribute${index} = await page.$eval('${selector}', element => element.getAttribute('${attribute}');`
 
     getElementAttributesAsArray = (selector, index) => `const attributesArray${index} = await page.$eval('${selector}', element => Array.prototype.slice.call(element.attributes);`
+
+
+    //COMMAND GENERATION FUNCTIONS
 
     getMostValidSelector = replayEvent => {
 
@@ -234,7 +242,7 @@ class PuppeteerTranslator {
                 break;
             case 'Input':
                 if (recordingEvent.recordingEventInputType == "contentEditable") {
-                    return this.inputContentEditable(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue, target);
+                    outputStringArray.push(this.inputContentEditable(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue, target));
                 } else {
                     outputStringArray.push(this.focus(this.getMostValidSelector(recordingEvent), target) += this.tabIndex(index) + this.typeText(recordingEvent.recordingEventInputValue, target));
                 }
@@ -248,7 +256,7 @@ class PuppeteerTranslator {
                 return `${this.tabIndex(index)}//No Mapping Type in Puppeteer for Action ${recordingEvent.recordingEventAction}`; 
         }
 
-        //then if we reach this point we need to mao the string array, with a tabbing element for formatting
+        //then if we reach this point we need to map the string array, with a tabbing element for formatting
         outputStringArray = outputStringArray.map(string => `${this.tabIndex(index)}${string}`);
         //then we need to return the string
         return outputStringArray.join('');

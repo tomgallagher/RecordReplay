@@ -810,6 +810,7 @@ $(document).ready (function(){
                     $('.ui.showReplayReplayEventsTable.table .informationMessageRow').css('display', 'none');
                     break;
                 case 'replayCode':
+                    $('.ui.fluid.showReplay.container .codeOutputTextArea').val(`TO D0 - JEST / PUPPETEER CODE FOR REPLAY`);
                     //init the checkbox, with Javascript checked as default
                     $('.ui.showReplay.container .ui.radio.checkbox input[value="jest+puppeteer"]').prop('checked', true);
                     break;
@@ -860,6 +861,10 @@ $(document).ready (function(){
                     case event.target.value == "cypress":
                         const toCypress = new CypressTranslator({}); 
                         $('.ui.fluid.showReplay.container .codeOutputTextArea').val(toCypress.buildReplayStringFromEvents(replay));
+                        break;
+                    case event.target.value == "selenium":
+
+                        $('.ui.fluid.showReplay.container .codeOutputTextArea').val(`TO D0 - SELENIUM CODE FOR REPLAY ${replay.id}`);
                         break;
                     default:
                         $('.ui.fluid.showReplay.container .codeOutputTextArea').val("UNRECOGNISED");
