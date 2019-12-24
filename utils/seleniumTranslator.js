@@ -48,8 +48,13 @@ class SeleniumTranslator {
 
     //BROWSER CONTROL ACTIONS
 
+    openPage = () => `${this.tabIndex(0)}const driver = await new Builder().forBrowser('chrome').build();\n`
+
     navigateToUrl = url => `${this.tabIndex(0)}await driver.get('${url}');\n`
 
+    returnScreenshot = () => `${this.tabIndex(0)}await driver.takeScreenshot();\n` 
+
+    closePage = () => `${this.tabIndex(0)}await driver.quit();\n`
 
     //ASSERTIONS HELPERS, we need to have the index of each item in the Rx.js flow so we can have unique assertions
 
@@ -57,6 +62,19 @@ class SeleniumTranslator {
 
     getPageTitle = () => `await driver.getTitle();`
 
+    getElementText = (selector) => `await driver.findElement(by.css('${selector}')).getText();`
+
+    querySelector = (selector) => `await driver.findElement(by.css('${selector}'));` 
+
+    querySelectorAll = (selector) => `await driver.findElements(by.css('${selector}'));` 
+
+    countElements = (selector) => `await new Promise(resolve => driver.findElements(by.css('${selector}')).then(elements => resolve(elements.length)));`
+
+    getElementProperty = (selector, property) => `await new Promise(resolve => driver.findElement(by.css('${selector}')).then(element => resolve(element.${property})));`
+
+    getElementAttributeValue = (selector, attribute) => `await new Promise(resolve => driver.findElement(by.css('${selector}')).then(element => resolve(element.getAttribute('${attribute}'))));`
+
+    getElementAttributesAsArray = (selector) => `await new Promise(resolve => driver.findElement(by.css('${selector}')).then(element => Array.prototype.slice.call(element.attributes)));`
 
 
     //COMMAND GENERATION FUNCTIONS

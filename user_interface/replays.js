@@ -862,7 +862,7 @@ $(document).ready (function(){
                         const toCypress = new CypressTranslator({}); 
                         $('.ui.fluid.showReplay.container .codeOutputTextArea').val(toCypress.buildReplayStringFromEvents(replay));
                         break;
-                    case event.target.value == "selenium":
+                    case event.target.value == "jest+selenium":
 
                         $('.ui.fluid.showReplay.container .codeOutputTextArea').val(`TO D0 - SELENIUM CODE FOR REPLAY ${replay.id}`);
                         break;

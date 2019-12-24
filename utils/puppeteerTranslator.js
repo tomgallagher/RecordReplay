@@ -146,17 +146,19 @@ class PuppeteerTranslator {
 
     getPageTitle = () => `await page.title();`
 
-    querySelector = (selector, index) => `const selected${index} = await page.$('${selector}');` 
+    getElementText = (selector) => `await page.$eval('${selector}', element => element.textContent);`
 
-    querySelectorAll = (selector, index) => `const selectedAll${index} = await page.$$('${selector}');` 
+    querySelector = (selector) => `await page.$('${selector}');` 
 
-    countElements = (selector, index) => `const count${index} = await page.$$eval('${selector}', elements => elements.length);`
+    querySelectorAll = (selector) => `await page.$$('${selector}');` 
 
-    getElementProperty = (selector, property, index) => `const ${property}Property${index} = await page.$eval('${selector}', element => element.${property});`
+    countElements = (selector) => `await page.$$eval('${selector}', elements => elements.length);`
 
-    getElementAttributeValue = (selector, attribute, index) => `const ${attribute}Attribute${index} = await page.$eval('${selector}', element => element.getAttribute('${attribute}');`
+    getElementProperty = (selector, property) => `await page.$eval('${selector}', element => element.${property});`
 
-    getElementAttributesAsArray = (selector, index) => `const attributesArray${index} = await page.$eval('${selector}', element => Array.prototype.slice.call(element.attributes);`
+    getElementAttributeValue = (selector, attribute) => `await page.$eval('${selector}', element => element.getAttribute('${attribute}');`
+
+    getElementAttributesAsArray = (selector) => `await page.$eval('${selector}', element => Array.prototype.slice.call(element.attributes);`
 
 
     //COMMAND GENERATION FUNCTIONS
