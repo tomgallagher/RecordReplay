@@ -135,7 +135,12 @@
     transition: all ease .5s;
   }
 
+  /*need an override here for text align in tips and tricks list */
+.ui.help.verticalTabMenu.segment .ui.large.relaxed.list .item .content {
+    text-align: justify;
+}
 
+/*need an override here for mobile - don't show the default project as we don't have the room */
 @media screen and (max-width: 479px) {
     /* start of phone styles */
     .defaultProject.content, .defaultTest.content {
