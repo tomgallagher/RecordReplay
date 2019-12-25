@@ -57,7 +57,7 @@
 
             <div class="ui fluid center aligned container">
                         
-                <div class="ui stackable compact menu">
+                <div class="ui compact menu">
                     
                     <div class="link item">
                         <i class="fas fa-robot" style="color:#6435c9"></i>
@@ -114,7 +114,7 @@
 
             <!-- VERTICAL MENU -->
 
-            <div class="ui padded grid">
+            <div class="ui padded stackable grid">
 
                 <div class="three wide column">
 
@@ -420,7 +420,7 @@
 
                     <div class="ui savedProjects verticalTabMenu segment" style="display: none; overflow-x: auto;">
 
-                        <table class="ui violet celled striped single line four column projectsTable table">
+                        <table class="ui violet celled striped single line four column projectsTable unstackable table">
                             
                             <thead>
                                 <tr>      
@@ -570,7 +570,7 @@
 
                     <div class="ui savedTests verticalTabMenu segment" style="display: none; overflow-x: auto;">
                         
-                        <table class="ui violet celled striped small compact testsTable table">
+                        <table class="ui violet celled striped small compact testsTable unstackable table">
                             
                             <thead>
                                 
@@ -1025,7 +1025,7 @@
 
                     <div class="ui savedRecordings verticalTabMenu segment" style="display: none; overflow-x: auto;">
 
-                        <table class="ui violet celled striped small compact recordingsTable table">
+                        <table class="ui violet celled striped small compact recordingsTable unstackable table">
                             
                             <thead>
                                 
@@ -1251,7 +1251,7 @@
                               
                             <div class="ui bottom attached active tab segment" data-tab="recordingEvents">
                                 
-                                <table class="ui small violet celled single line center aligned compact editRecordingRecordingEventsTable table">
+                                <table class="ui small violet celled single line center aligned compact editRecordingRecordingEventsTable unstackable table">
                         
                                     <thead>
                                                 
@@ -1641,7 +1641,7 @@
                                 Recording Events
                             </h3>
 
-                            <table class="ui small violet celled single line center aligned compact newRecordingRecordingEventsTable table">
+                            <table class="ui small violet celled single line center aligned compact newRecordingRecordingEventsTable unstackable table">
                             
                                 <thead>
                                         
@@ -1788,7 +1788,7 @@
 
                     <div class="ui savedReplays verticalTabMenu segment" style="display: none; overflow-x: auto;">
                         
-                        <table class="ui violet celled striped small compact replaysTable table">
+                        <table class="ui violet celled striped small compact replaysTable unstackable table">
                             
                             <thead>
                                 
@@ -1860,7 +1860,7 @@
                               
                             <div class="ui bottom attached active tab segment" data-tab="replayEvents" style="overflow-x: auto;">
                                 
-                                <table class="ui small violet celled single line center aligned compact showReplayReplayEventsTable table">
+                                <table class="ui small violet celled single line center aligned compact showReplayReplayEventsTable unstackable table">
                         
                                     <thead>
                                                 
@@ -2176,7 +2176,7 @@
                                 <div class="ui text small replay loader">Replaying</div>
                             </div>
                             
-                            <table class="ui small violet celled single line center aligned compact runReplayReplayEventsTable table">
+                            <table class="ui small violet celled single line center aligned compact runReplayReplayEventsTable unstackable table">
                             
                                 <thead>
                                         
@@ -2394,7 +2394,7 @@
 
                                 <label>Add Assertions</label>
 
-                                <table class="ui small violet celled single line center aligned compact newReplayAssertionsTable table">
+                                <table class="ui small violet celled single line center aligned compact newReplayAssertionsTable unstackable table">
                             
                                     <thead>
                                             
@@ -2463,7 +2463,7 @@
                                 Replay Events
                             </h3>
 
-                            <table class="ui small violet celled single line center aligned compact newReplayReplayEventsTable table">
+                            <table class="ui small violet celled single line center aligned compact newReplayReplayEventsTable unstackable table">
                             
                                 <thead>
                                         
@@ -2795,7 +2795,7 @@
                                     <button class="ui deleteProject negative button" data-project-id="0" data-tooltip="To delete project and all associated tests, recordings and replays" data-position="left center">Delete</button>
                                 </div>
                             </td>
-                            <td data-label="projectDefault">
+                            <td data-label="projectDefault" class="center aligned">
                                 <div class="ui fitted toggle checkbox">
                                     <input class="projectDefaultCheckbox" type="checkbox" data-project-id="0" data-project-name="">
                                     <label></label>

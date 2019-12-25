@@ -134,3 +134,11 @@
     transform-origin: center !important;
     transition: all ease .5s;
   }
+
+
+@media screen and (max-width: 479px) {
+    /* start of phone styles */
+    .defaultProject.content, .defaultTest.content {
+        display: none !important;
+    }
+}
