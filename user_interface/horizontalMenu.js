@@ -1,7 +1,7 @@
 $(document).ready (function(){
 
     //info popup
-    $('.ui.stackable.compact.menu .link.item').popup({
+    $('.ui.horizontal.compact.menu .link.item').popup({
         popup : $('.ui.flowing.popup'),
         on : 'hover',
         position : 'bottom center',
@@ -10,7 +10,7 @@ $(document).ready (function(){
     });
 
     //menu operations are not handled automatically by semantic - we handle it ourselves
-    $('.ui.stackable.compact.menu .item').on('click', function() {
+    $('.ui.compact.horizontal.menu .item').on('click', function() {
         //then get the classes of the active item as a list
         const classArray = $(this).attr('class').split(/\s+/);
         const specialTablesArray = [
@@ -65,7 +65,7 @@ $(document).ready (function(){
     //then make sure the theme matches on load
     const inverted = localStorage.getItem("ThemeInverted");
     if (inverted == "true") {
-        $('.ui.stackable.compact.menu .themeSettings.item').trigger('click');
+        $('.ui.compact.horizontal.menu .themeSettings.item').trigger('click');
     }
 
 }); 
