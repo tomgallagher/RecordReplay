@@ -113,6 +113,7 @@ function addProjectTableButtonListeners() {
 
                 //fill the hidden form field with the test id number, so we can retrieve after validation has been passed
                 $('.ui.editProjectForm.form input[name=hiddenProjectId]').val(projectKey);
+                $('.ui.editProjectForm.form input[name=hiddenProjectCreated]').val(project.projectCreated);
                 //fill the form fields with the saved project data
                 $('.ui.editProjectForm.form input[name=projectName]').val(project.projectName);
                 $('.ui.editProjectForm.form input[name=projectDescription]').val(project.projectDescription);
@@ -260,6 +261,9 @@ $(document).ready (function(){
                 $('.ui.editProjectForm ui.submit.button').addClass('loading');
                 //just keep track of field names - they must be the same as model attributes when we create a new class object
                 console.log(fields);
+                //change the fields object to pass the hidden project created field to the edited project, so the project created remains the same
+                //test created going to come as a field value down so it will be a string
+                fields.projectCreated = StorageUtils.standardiseKey(fields.hiddenProjectCreated);
                 //create a new project with the fields from the form - there is the added hidden field to pass project id but model cleans this up
                 const editedProject = new Project(fields);
                 //then send the edited project off to the database

@@ -178,6 +178,7 @@ function addTestTableButtonListeners() {
 
                 //fill the hidden form field with the test id number, so we can retrieve after validation has been passed
                 $('.ui.editTestForm.form input[name=hiddenTestId]').val(testKey);
+                $('.ui.editTestForm.form input[name=hiddenTestCreated]').val(test.testCreated);
 
                 //fill the form fields with the saved test data
                 $('.ui.editTestForm.form input[name=testName]').val(test.testName);
@@ -344,6 +345,8 @@ $(document).ready (function(){
                     testLatencyValue: StorageUtils.standardiseKey(fields.testLatencyValue),
                     //latency name is just a string, look up with jquery
                     testLatencyName: $('.ui.editTestForm .ui.latency.dropdown').dropdown('get text'),
+                    //test created going to come as a field value down so it will be a string
+                    testCreated: StorageUtils.standardiseKey(fields.hiddenTestCreated), 
                     //then the checkboxes, which unhelpfully deliver either 'on' string or false boolean - we need to convert all to boolean
                     testPerformanceTimings: fields.testPerformanceTimings == false ? false : true,
                     testResourceLoads: fields.testResourceLoads == false ? false : true,
