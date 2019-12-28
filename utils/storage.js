@@ -282,9 +282,9 @@ StorageUtils.getExportedDatabase = function(caller) {
             })
             //then resolve
             .then(data => {
-                const serialized =  JSON.stringify(data);
+                const serialized = JSON.stringify(data);
                 //create a blob from the text - maybe set this to "text/plain" when we no longer want to use vscode to check formatting of emitted code
-                var blob = new Blob([serialized], {type: "text/json"});
+                var blob = new Blob([serialized], {type: "application/json"});
                 resolve(blob);
             })
             //If operation fails, returned promise will reject
