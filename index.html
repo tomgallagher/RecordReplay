@@ -39,6 +39,7 @@
         <script src="user_interface/newRecording.js"></script>
         <script src="user_interface/replays.js"></script>
         <script src="user_interface/newReplay.js"></script>
+        <script src="user_interface/importExport.js"></script>
 
         <!-- FOR RECORDING AND REPLAYING EVENT TESTING ONLY -->
         <script src="recordingScripts/cssSelectorGenerator.js"></script>
@@ -154,6 +155,10 @@
     
                         <a class="newReplay disabled item">
                             <strong>New Replay</strong>
+                        </a>
+
+                        <a class="file item">
+                            <strong>Import / Export</strong>
                         </a>
 
                         <a class="help item">
@@ -2629,6 +2634,41 @@
                             
                                 </div>
                         
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- IMPORT / EXPORT SEGMENT -->
+
+                    <div class="ui file verticalTabMenu segment" style="display: none; overflow-x: auto;">
+
+                        <div class="ui equal width center aligned stackable grid">
+
+                            <div class="column">
+
+                                <h3 class="ui header">Import Saved Data From File</h3>
+
+                                <form class="ui form">
+
+                                    <div class="field">
+                                        <label>Drag and Drop File</label>
+                                        <textarea name="file-drop" style="text-align: center; line-height: 8em;" placeholder="Drop file here"></textarea>
+                                    </div>
+
+                                </form>
+
+                            </div>
+
+                            <div class="column">
+
+                                <h3 class="ui header">Export Data to File</h3>
+
+                                <div class="ui hidden divider"></div>
+
+                                <div class="ui large inverted violet button" id="ExportData">Export</div>
+
                             </div>
 
                         </div>

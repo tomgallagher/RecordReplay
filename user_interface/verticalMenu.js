@@ -166,9 +166,13 @@ $(document).ready (function(){
                 //then show the replay segment
                 $('.ui.verticalTabMenu.newReplay.segment').css('display', 'block');
                 break;
+            case classArray.includes('file'):
+                $('.ui.verticalTabMenu.file.segment').css('display', 'block');
+                break;
             case classArray.includes('help'):
                 $('.ui.verticalTabMenu.help.segment').css('display', 'block');
                 break;
+            
         }
 
     });

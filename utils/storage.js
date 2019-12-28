@@ -264,3 +264,63 @@ StorageUtils.standardiseKey = function(key) {
     }
 
 }
+
+//get entire database as json blob
+StorageUtils.getExportedDatabase = function(caller) {
+
+    return new Promise((resolve, reject) => {
+
+        //open the database connection
+        StorageUtils.openModelObjectDatabaseConnection("Storage")
+            //parse the whole database into a string
+            .then(db => {
+                return db.transaction('r', db.tables, ()=>{
+                    return Promise.all(
+                        db.tables.map(table => table.toArray().then(rows => ({table: table.name, rows: rows})))
+                    );
+                });
+            })
+            //then resolve
+            .then(data => {
+                const serialized =  JSON.stringify(data);
+                //create a blob from the text - maybe set this to "text/plain" when we no longer want to use vscode to check formatting of emitted code
+                var blob = new Blob([serialized], {type: "text/json"});
+                resolve(blob);
+            })
+            //If operation fails, returned promise will reject
+            .catch(() => {
+                //report a good delete using key, table and caller
+                console.log (`Storage has failed to export database for ${caller}`);
+                reject();
+            });
+            
+    });
+
+};
+
+//get entire database as json blob
+StorageUtils.importDatabase = function(caller, jsonToImport) {
+
+    return new Promise((resolve, reject) => {
+
+        const dataToImport = JSON.parse(jsonToImport);
+        //open the database connection
+        StorageUtils.openModelObjectDatabaseConnection("Storage")
+            //parse the whole database into a string
+            .then(db => {
+                return db.transaction('rw', db.tables, () => {
+                    return Promise.all(dataToImport.map(t => db.table(t.table).clear().then(()=>db.table(t.table).bulkAdd(t.rows))));
+                });
+            })
+            //then resolve
+            .then(() => resolve())
+            //If operation fails, returned promise will reject
+            .catch(() => {
+                //report a good delete using key, table and caller
+                console.log (`Storage has failed to import database for ${caller}`);
+                reject();
+            });
+            
+    });
+
+};
