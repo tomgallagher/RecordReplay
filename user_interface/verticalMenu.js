@@ -167,6 +167,9 @@ $(document).ready (function(){
                 $('.ui.verticalTabMenu.newReplay.segment').css('display', 'block');
                 break;
             case classArray.includes('file'):
+                //clear the file import message
+                $('#ImportData textarea').val('');
+                //then show the segment
                 $('.ui.verticalTabMenu.file.segment').css('display', 'block');
                 break;
             case classArray.includes('help'):

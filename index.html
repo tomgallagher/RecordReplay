@@ -2644,30 +2644,45 @@
 
                     <div class="ui file verticalTabMenu segment" style="display: none; overflow-x: auto;">
 
-                        <div class="ui equal width center aligned stackable grid">
+                        <div class="ui equal width divided center aligned stackable grid">
 
-                            <div class="column">
+                            <div class="ui column">
 
                                 <h3 class="ui header">Import Saved Data From File</h3>
 
-                                <form class="ui form">
+                                <div class="ui basic segment">
+                                
+                                    <form class="ui import form">
 
-                                    <div class="field">
-                                        <label>Drag and Drop File</label>
-                                        <textarea name="file-drop" style="text-align: center; line-height: 8em;" placeholder="Drop file here"></textarea>
-                                    </div>
+                                        <div class="field" id="ImportData">
+                                            <label>Drag and Drop Record/Replay JSON File</label>
+                                            <textarea style="text-align: center; line-height: 8em;" placeholder="Drop file here"></textarea>
+                                        </div>
 
-                                </form>
+                                    </form>
+
+                                </div>
 
                             </div>
 
-                            <div class="column">
+                            <div class="ui column">
 
                                 <h3 class="ui header">Export Data to File</h3>
 
-                                <div class="ui hidden divider"></div>
+                                <div class="ui basic segment">
 
-                                <div class="ui large inverted violet button" id="ExportData">Export</div>
+                                    <form class="ui export form">
+
+                                        <div class="field">
+                                            <label>Download Record/Replay JSON File</label>
+                                            <div class="ui hidden divider"></div>
+                                            <div class="ui hidden divider"></div>
+                                            <div class="ui large inverted violet submit button" id="ExportData">Export</div>
+                                        </div>
+
+                                    </form>
+                            
+                                </div>
 
                             </div>
 
