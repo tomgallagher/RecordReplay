@@ -99,13 +99,15 @@ class SeleniumTranslator {
 
     getElementText = (selector) => `await driver.findElement(by.css('${selector}')).getText();`
 
+    getVisibleElement = (selector) => `await driver.findElement(by.css('${selector}')).isDisplayed();`
+
     querySelector = (selector) => `await driver.findElement(by.css('${selector}'));` 
 
     querySelectorAll = (selector) => `await driver.findElements(by.css('${selector}'));` 
 
     countElements = (selector) => `await new Promise(resolve => driver.findElements(by.css('${selector}')).then(elements => resolve(elements.length)));`
 
-    getElementProperty = (selector, property) => `await new Promise(resolve => driver.findElement(by.css('${selector}')).then(element => resolve(element.${property})));`
+    getElementAttribute = (selector, attribute) => `await new Promise(resolve => driver.findElement(by.css('${selector}')).then(element => resolve(element[${attribute}])));`
 
     getElementAttributeValue = (selector, attribute) => `await new Promise(resolve => driver.findElement(by.css('${selector}')).then(element => resolve(element.getAttribute('${attribute}'))));`
 

@@ -148,13 +148,15 @@ class PuppeteerTranslator {
 
     getElementText = (selector) => `await page.$eval('${selector}', element => element.textContent);`
 
+    getVisibleElement = (selector) => `await page.waitForSelector('${selector}', { visible: true, timeout: 100 });`
+
     querySelector = (selector) => `await page.$('${selector}');` 
 
     querySelectorAll = (selector) => `await page.$$('${selector}');` 
 
     countElements = (selector) => `await page.$$eval('${selector}', elements => elements.length);`
 
-    getElementProperty = (selector, property) => `await page.$eval('${selector}', element => element.${property});`
+    getElementAttribute = (selector, attribute) => `await page.$eval('${selector}', element => element[${attribute}]);`
 
     getElementAttributeValue = (selector, attribute) => `await page.$eval('${selector}', element => element.getAttribute('${attribute}');`
 

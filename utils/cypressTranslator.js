@@ -57,7 +57,7 @@ class CypressTranslator {
 
     //ACTION FUNCTIONS
 
-    navigateStartAndConfirm = (replay) => `${this.tabIndex(0)}cy.visit('${replay.replayRecordingStartUrl}');\n`;
+    navigateToUrl = (replay) => `${this.tabIndex(0)}cy.visit('${replay.replayRecordingStartUrl}');\n`;
 
     mouseClick = (selector, clicktype) => {
         switch(clicktype) {
@@ -242,7 +242,7 @@ class CypressTranslator {
         //add the standard browser warning
         outputString += this.openCypressReplay(replay);
         //add the open page function
-        outputString += this.navigateStartAndConfirm(replay);
+        outputString += this.navigateToUrl(replay);
         //then we determine if we are working with a replay that has been run or not, we start with the replay event array by default
         var eventsArray = replay.replayEventArray;
         //then if we have a good replay
