@@ -1,6 +1,5 @@
 $(document).ready (function(){
 
-    //TO DO - ADD THE DRAG / DROP LISTENER 
     $('#ImportData').on('dragover', event => {
         // Restrict handler to this one
         event.stopPropagation();

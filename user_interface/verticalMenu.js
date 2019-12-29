@@ -171,6 +171,8 @@ $(document).ready (function(){
                 $('#ImportData textarea').val('');
                 //then show the segment
                 $('.ui.verticalTabMenu.file.segment').css('display', 'block');
+                //make the two forms the same height so we can style the segments
+                $('.ui.file.segment .ui.export.form').height($('.ui.file.segment .ui.import.form').height());
                 break;
             case classArray.includes('help'):
                 $('.ui.verticalTabMenu.help.segment').css('display', 'block');
