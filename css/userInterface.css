@@ -89,6 +89,12 @@
     background: #bc1c1c63!important;
     color: white!important;
 }
+/*need an override here for negative inverted replay table row */
+.ui.inverted.table td.warning, .ui.inverted.table tr.warning {
+    background: #f2711c29!important;
+    color: white!important;
+}
+
 /*need an override here for inserting special content into block header */
 .defaultProject.content {
     float: left;

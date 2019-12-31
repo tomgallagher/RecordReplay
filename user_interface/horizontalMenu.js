@@ -21,7 +21,8 @@ $(document).ready (function(){
             ".ui.newReplayAssertionsTable", 
             ".ui.newReplayReplayEventsTable", 
             ".ui.showReplayReplayEventsTable", 
-            ".ui.runReplayReplayEventsTable"
+            ".ui.runReplayReplayEventsTable",
+            ".ui.bulkReplayReplayEventsTable",
         ];
         //then show the segment accordingly
         switch(true) {
