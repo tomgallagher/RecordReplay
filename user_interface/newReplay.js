@@ -226,7 +226,7 @@ function addAssertionCheckboxListener(recording) {
 
 }
 
-//THIS FUNCTION IS SHARED BY REPLAYS.JS
+//THIS FUNCTION IS SHARED BY REPLAYS.JS AND BULKREPLAYS.JS
 //CHECK BOTH FILES BEFORE MAKING CHANGES
 function addNewReplayEventToTable(replay, replayEvent, table) {
 

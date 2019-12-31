@@ -77,8 +77,35 @@ class JestTranslator {
 
     hasAttributeValueAssertion = (selector, assertionEvent, index) => `const hasAttributeValue${index} = ${this.chosenTranslator.getElementAttributeValue(selector, assertionEvent.assertionAttribute)} ${this.tabIndex(index)} expect(hasAttributeValue${index}).toMatch(${assertionEvent.assertionValue});`
 
-    
+    //COMMAND GENERATION FUNCTIONS
 
+    getMostValidSelector = replayEvent => {
+
+        //if we have run the replay, we will get a report on the selector that was chosen
+        if (replayEvent.replayChosenSelectorString && replayEvent.replayChosenSelectorString.length > 0) {
+            return replayEvent.replayChosenSelectorString;
+        }
+        //if we have run the assertion, we will get a report on the selector that was chosen
+        if (replayEvent.assertionChosenSelectorString && replayEvent.assertionChosenSelectorString.length > 0) {
+            return replayEvent.assertionChosenSelectorString;
+        }
+        //otherwise collect all the existing selectors into an array, filter and return the first valid one
+        return [
+            replayEvent.recordingEventCssSelectorPath, 
+            replayEvent.recordingEventCssFinderPath, 
+            replayEvent.recordingEventCssDomPath
+        ]
+        //when we filter we need to know what the selectors return when they fail
+        .filter(value => value != false && value != 'undefined' && value != null)[0] || ""; 
+
+    }
+
+    //when we are building the string, we can borrow the translators action functions, which have built-in iframe sensitivity 
+    //but we need to be sensitive to iframes with our assertions, handled differently in puppeteer and selenium
+    //check to see if this.chosenTranslator instanceOf PuppeteerTranslator
+    //in puppeteer, we need to change the target before we call the assertions helpers
+    //in puppeteer, we need to have the assertions helpers being responsive to target, frame or page, and send the target as the second param
+    //in selenium, we just need there to be an iframe wrapper
 
 
 }

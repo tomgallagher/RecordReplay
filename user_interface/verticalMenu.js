@@ -16,8 +16,9 @@ function enableVerticalMenuButtonsWhenDataAllows() {
                     //then we want to remove the disabled class from the recordings menu item and the new replay menu item
                     $('.ui.vertical.fluid.tabular.menu .savedRecordings.item').removeClass('disabled');
                     $('.ui.vertical.fluid.tabular.menu .newReplay.item').removeClass('disabled');
-                    //then we want to remove the disabled class from the replays menu item 
+                    //then we want to remove the disabled class from the replays menu item and the bulk replay menu item
                     $('.ui.vertical.fluid.tabular.menu .savedReplays.item').removeClass('disabled');
+                    $('.ui.vertical.fluid.tabular.menu .bulkReplay.item').removeClass('disabled');
                     //and then we want a break as all the appropriate menu items have been enabled
                     break;
                 case recordsCountObject.projects > 0 && recordsCountObject.tests > 0 && recordsCountObject.recordings > 0:
@@ -165,6 +166,21 @@ $(document).ready (function(){
                 $('.ui.center.aligned.replayEvents.segment').css('display', 'none');
                 //then show the replay segment
                 $('.ui.verticalTabMenu.newReplay.segment').css('display', 'block');
+                break;
+            case classArray.includes('bulkReplay'):
+                //clear the dropdown of any lingering choices
+                $('.ui.fluid.selection.bulkReplay.test.dropdown').dropdown('clear');
+                //make sure the bulk replay test dropdown shows an updated account of the tests in storage, using function from bulkReplay.js
+                refreshBulkReplayTestDropdown();
+                //disable the buttons until test is selected
+                $('.ui.bulkReplay.form .ui.startBulkReplay.positive.button').addClass('disabled');
+                $('.ui.bulkReplay.form .ui.stopBulkReplay.negative.button').addClass('disabled');
+                //empty the container of bottom attached segments
+                $('.ui.bulkReplay.segment').find('DIV.ui.bottom.attached.tab.segment').remove();
+                //hide the menu
+                $('.ui.top.attached.bulkReplay.tabular.menu').css('visibility', 'hidden');
+                //then show the replay segment
+                $('.ui.verticalTabMenu.bulkReplay.segment').css('display', 'block');
                 break;
             case classArray.includes('file'):
                 //clear the file import message

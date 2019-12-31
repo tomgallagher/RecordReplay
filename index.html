@@ -39,6 +39,7 @@
         <script src="user_interface/newRecording.js"></script>
         <script src="user_interface/replays.js"></script>
         <script src="user_interface/newReplay.js"></script>
+        <script src="user_interface/bulkReplay.js"></script>
         <script src="user_interface/importExport.js"></script>
 
         <!-- FOR RECORDING AND REPLAYING EVENT TESTING ONLY -->
@@ -155,6 +156,10 @@
     
                         <a class="newReplay disabled item">
                             <strong>New Replay</strong>
+                        </a>
+
+                        <a class="bulkReplay disabled item">
+                            <strong>Bulk Replay</strong>
                         </a>
 
                         <a class="file item">
@@ -2640,6 +2645,58 @@
 
                     </div>
 
+                    <!-- BULK REPLAY SEGMENT -->
+
+                    <div class="ui bulkReplay verticalTabMenu segment" style="display: none; overflow-x: auto;">
+                        
+                        <form class="ui bulkReplay form">
+                            
+                            <div class="three fields">
+
+                                <div class="six wide required field">
+                        
+                                    <label>Run All Replays From Test</label>
+                                    
+                                    <div class="ui fluid selection bulkReplay test dropdown">
+                                        
+                                        <input type="hidden" name="testId">
+                                        
+                                        <div class="default text">Select Test</div>
+                                        
+                                        <i class="dropdown icon"></i>
+                                        
+                                        <div class="menu"></div>
+                                    
+                                    </div>
+                                    
+                                </div>
+
+                                <div class="two wide field"></div>
+
+                                <div class="eight wide field">
+                        
+                                    <label>Bulk Replay Controls</label>
+                                    
+                                    <div class="ui left floated medium buttons">
+                                        <button class="ui startBulkReplay disabled positive button" data-test-id="0">Start</button>
+                                        <div class="or"></div>
+                                        <button class="ui stopBulkReplay disabled negative button" data-test-id="0">Stop</button>
+                                    </div>
+
+                                    <div class="ui right floated basic padded segment">
+                                        <div class="ui text small bulkReplay loader">Replaying</div>
+                                    </div>
+                                    
+                                </div>
+
+                            </div>
+
+                        </form>
+
+                        <div class="ui top attached bulkReplay tabular menu" style="visibility: hidden;"></div>
+
+                    </div>
+
                     <!-- IMPORT / EXPORT SEGMENT -->
 
                     <div class="ui file verticalTabMenu segment" style="display: none; overflow-x: auto;">
@@ -3120,7 +3177,53 @@
                 </div>
             </div>
 
-
+            <div class="bulkReplayTabTemplate">
+                <div class="ui bottom attached tab segment" data-tab="" style="overflow-x: auto;">
+                    <div class="ui center aligned header" data-replay-id=""></div>
+                    <table class="ui small violet celled single line center aligned compact bulkReplayReplayEventsTable unstackable table" data-replay-id="">
+                        <thead> 
+                            <tr> 
+                                <th>Origin</th>
+                                <th>Action</th>
+                                <th>Type</th>
+                                <th>Tag</th>
+                                <th>Selector</th>
+                                <th>Target</th>
+                                <th>Value</th>
+                                <th>Location</th>
+                                <th>Recorded</th>
+                                <th>Replayed</th>
+                                <th>Action</th>
+                            </tr>        
+                        </thead>
+                        <tbody></tbody>
+                        <tfoot class="full-width">
+                            <tr class="informationMessageRow" style="display: none;" data-replay-id="">
+                                <th colspan="12">
+                                    <div class="ui warning noDetails message" style="display: none;" data-replay-id="">
+                                        <div class="header">Replay event has not run</div>
+                                        Replay event information appears here after the replay has been run
+                                    </div>
+                                    <div class="ui equal width stackable padded grid">
+                                        <div class="column">
+                                            <div class="ui info logging message" style="display: none; white-space: normal;" data-replay-id="">
+                                                <div class="header">Event Logging</div>
+                                                <ul class="logging list" data-replay-id=""></ul>
+                                            </div>
+                                        </div>
+                                        <div class="column">
+                                            <div class="ui negative error message" style="display: none; white-space: normal;" data-replay-id="">
+                                                <div class="header">Error Logging</div>
+                                                <ul class="error list" data-replay-id=""></ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
 
         </div>
         
