@@ -236,13 +236,16 @@ EventRecorder.startRecordingEvents = () => {
     EventRecorder.MouseLocator = Rx.Observable.merge(...EventRecorder.mouseLocationEventObervables)
         //the mouse location observables are many - we currently only want the mouseover events
         .filter(event => event.type == "mouseover")
-        //then we only want to have the new event when a new element is first entered, no multiple iterations as that can catch mutations following click
-        .distinctUntilChanged((previousEvent, currentEvent) => 
-            //here we get unique elements according to their position on the screen
-            (previousEvent.target.offsetTop == currentEvent.target.offsetTop) && (previousEvent.target.offsetLeft == currentEvent.target.offsetLeft)
-        )
-        //then log for useful debugging
-        //.do(x => console.log(x))
+        //throttle but emit trailing value after time period
+        .throttleTime(750, Rx.Scheduler.async, {leading: true, trailing: true})
+        //then we want to add a quick xpath calculation to the event so we can work out if we have a unqiue element
+        .map(event => ({ event: event, xpath: xpathTimed(event.target) }))
+        //then we only want to be taking elements that are unique as the css calculation can take a while, at least the CSS selector generator
+        .distinctUntilChanged((prev, curr) => prev.xpath === curr.xpath)
+        //then if we have a fresh element we want to map back to the event
+        .map(eventObject => eventObject.event)
+        //log so we can see what's going on
+        //.do(x => console.log( x.target.offsetTop, x.target.offsetLeft))
         //then we get the selectors for the pre-action event element, so it is not mutated
         .map(event => {
             return {
@@ -252,7 +255,9 @@ EventRecorder.startRecordingEvents = () => {
                 eventCssSimmerPath: finderTimed(event.target),
                 eventXPath: xpathTimed(event.target)
             }
-        });
+        })
+        //then it's very important that we share this one as three users currently and it is computationally costly
+        .share();
 
     //then we also query the latest input location, which we collect by referring to the input events
     EventRecorder.InputLocator = Rx.Observable.merge(...EventRecorder.inputLocationEventObservables)
