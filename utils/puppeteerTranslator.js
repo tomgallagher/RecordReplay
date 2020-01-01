@@ -65,19 +65,19 @@ class PuppeteerTranslator {
 
     //BROWSER CONTROL ACTIONS
 
-    openPage = () => `${this.tabIndex(0)}const page = await browser.newPage();\n`
+    openPage = () => `const page = await browser.newPage();\n`
 
-    navigateToUrl = url => `${this.tabIndex(0)}await page.goto('${url}');\n`
+    navigateToUrl = url => `await page.goto('${url}');\n`
 
-    returnScreenshot = () => `${this.tabIndex(0)}await page.screenshot({path: 'screenshot.png'});\n` 
+    returnScreenshot = () => `await page.screenshot({path: 'screenshot.png'});\n` 
 
-    closePage = () => `${this.tabIndex(0)}await page.close();\n`
+    closePage = () => `await page.close();\n`
 
-    connectToChromeDevtools = () => `${this.tabIndex(0)}const client = await page.target().createCDPSession();\n` 
+    connectToChromeDevtools = () => `const client = await page.target().createCDPSession();\n` 
 
     emulateNetworkConditions = (offline = this.defaultNetworkOffline, download = this.defaultNetworkDownload, upload = this.defaultNetworkUpload, latency = this.defaultLatency) => {
 
-        return `${this.tabIndex(0)}await client.send('Network.emulateNetworkConditions', { offline: ${offline}, downloadThroughput: ${download}, uploadThroughput: ${upload}, latency: ${latency} });\n`;
+        return `await client.send('Network.emulateNetworkConditions', { offline: ${offline}, downloadThroughput: ${download}, uploadThroughput: ${upload}, latency: ${latency} });\n`;
 
     }
 
@@ -103,7 +103,7 @@ class PuppeteerTranslator {
         }
     }
 
-    recaptcha = (selector, target) => `await ${target}.click('${selector}', { button: 'left', clickCount: 1 } );`
+    recaptcha = (selector, index, target) => `await ${target}.click('${selector}', { button: 'left', clickCount: 1 } );`
 
     //Note you should always focus before you type
     typeText = (text, target) => `await ${target}.keyboard.type('${text}');`
@@ -129,15 +129,15 @@ class PuppeteerTranslator {
         }
     }
 
-    scrollTo = (xPosition, yPosition, index, target) => `await ${target}.evaluate( () => { ${this.tabIndex(-1)} document.documentElement.scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' }); ${this.tabIndex(index)} });`
+    scrollTo = (xPosition, yPosition, index, target) => `await ${target}.evaluate( () => { document.documentElement.scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' }); });`
 
-    elementScrollTo = (selector, xPosition, yPosition, index, target) => `await ${target}.evaluate( () => { ${this.tabIndex(-1)} document.querySelector('${selector}').scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' }); ${this.tabIndex(index)} });`
+    elementScrollTo = (selector, xPosition, yPosition, index, target) => `await ${target}.evaluate( () => { document.querySelector('${selector}').scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' }); });`
 
     focus = (selector, target) => `await ${target}.focus('${selector}');`
 
-    hover = (selector, target) => `await ${target}.hover('${selector}');` 
+    hover = (selector, index, target) => `await ${target}.hover('${selector}');` 
 
-    textSelect = (selector, index, target) => `await ${target}.evaluate( () => { ${this.tabIndex(-1)}const range${index} = document.createRange(); ${this.tabIndex(-1)}const referenceNode${index} = document.querySelector('${selector}'); ${this.tabIndex(-1)}range${index}.selectNode(referenceNode${index}); ${this.tabIndex(-1)}const currentSelection${index} = window.getSelection(); ${this.tabIndex(-1)}currentSelection${index}.removeAllRanges(); ${this.tabIndex(-1)}currentSelection${index}.addRange(range${index}); ${this.tabIndex(index)} });`
+    textSelect = (selector, index, target) => `await ${target}.evaluate( () => { const range${index} = document.createRange(); const referenceNode${index} = document.querySelector('${selector}'); range${index}.selectNode(referenceNode${index}); const currentSelection${index} = window.getSelection(); currentSelection${index}.removeAllRanges(); currentSelection${index}.addRange(range${index}); });`
 
 
     //ASSERTIONS HELPERS, we need to have the index of each item in the Rx.js flow so we can have unique assertions
@@ -146,21 +146,21 @@ class PuppeteerTranslator {
 
     getPageTitle = () => `await page.title();`
 
-    getElementText = (selector) => `await page.$eval('${selector}', element => element.textContent);`
+    getElementText = (selector, target) => `await ${target}.$eval('${selector}', element => element.textContent);`
 
-    getVisibleElement = (selector) => `await page.waitForSelector('${selector}', { visible: true, timeout: 100 });`
+    getVisibleElement = (selector, target) => `await ${target}.waitForSelector('${selector}', { visible: true, timeout: 100 });`
 
-    querySelector = (selector) => `await page.$('${selector}');` 
+    querySelector = (selector, target) => `await ${target}.$('${selector}');` 
 
-    querySelectorAll = (selector) => `await page.$$('${selector}');` 
+    querySelectorAll = (selector, target) => `await ${target}.$$('${selector}');` 
 
-    countElements = (selector) => `await page.$$eval('${selector}', elements => elements.length);`
+    countElements = (selector, target) => `await ${target}.$$eval('${selector}', elements => elements.length);`
 
-    getElementAttribute = (selector, attribute) => `await page.$eval('${selector}', element => element[${attribute}]);`
+    getElementAttribute = (selector, attribute, target) => `await ${target}.$eval('${selector}', element => element[${attribute}]);`
 
-    getElementAttributeValue = (selector, attribute) => `await page.$eval('${selector}', element => element.getAttribute('${attribute}');`
+    getElementAttributeValue = (selector, attribute, target) => `await ${target}.$eval('${selector}', element => element.getAttribute('${attribute}');`
 
-    getElementAttributesAsArray = (selector) => `await page.$eval('${selector}', element => Array.prototype.slice.call(element.attributes);`
+    getElementAttributesAsArray = (selector, target) => `await ${target}.$eval('${selector}', element => Array.prototype.slice.call(element.attributes);`
 
 
     //COMMAND GENERATION FUNCTIONS
@@ -223,7 +223,7 @@ class PuppeteerTranslator {
                         break;
                     case "recaptcha":
                         //recaptcha is different in recording terms as the event we listen to is not the event we replay - click to replay 
-                        outputStringArray.push(this.recaptcha(this.getMostValidSelector(recordingEvent), target));
+                        outputStringArray.push(this.recaptcha(this.getMostValidSelector(recordingEvent), index, target));
                         break;
                     default:
                         //then we have the default, which handles all the standard clicks, including 'click', 'dblclick' and 'contextmenu'
@@ -278,13 +278,13 @@ class PuppeteerTranslator {
         //add the standard browser warning
         outputString += this.standardOpeningComment;
         //add the open page function
-        outputString += this.openPage();
+        outputString += `${this.tabIndex(0)}${this.openPage()}`;
         //open a connection to Chrome DevTools Protocol
-        outputString += this.connectToChromeDevtools();
+        outputString += `${this.tabIndex(0)}${this.connectToChromeDevtools()}`;
         //set the network conditions
-        outputString += this.emulateNetworkConditions(false, recording.recordingTestBandwidthValue, recording.recordingTestBandwidthValue, recording.recordingTestLatencyValue)
+        outputString += `${this.tabIndex(0)}${this.emulateNetworkConditions(false, recording.recordingTestBandwidthValue, recording.recordingTestBandwidthValue, recording.recordingTestLatencyValue)}`;
         //add the navigate to page function
-        outputString += this.navigateToUrl(recording.recordingTestStartUrl);
+        outputString += `${this.tabIndex(0)}${this.navigateToUrl(recording.recordingTestStartUrl)}`;
         //then we loop through the array
         for (let recordingEventIndex in recording.recordingEventArray) { 
             //make sure we have a recording event with defaults
@@ -305,7 +305,7 @@ class PuppeteerTranslator {
             }
         }
         //add the close page function
-        outputString += this.closePage();
+        outputString += `${this.tabIndex(0)}${this.closePage()}`;
         //add the standard async closing function
         outputString += this.closeAnonAsyncFunction();
         //return the string

@@ -35,26 +35,26 @@ class SeleniumTranslator {
     tabIndex = index => {
         switch(index) {
             //for the first element in any recording event array, we do not need the timing so we don't need the indentation
-            case 0: return '\n\t';
+            case 0: return '\n\t\t';
             //for one extra tab, we use -1
             case -1: return '\n\t\t\t';
             //for two extra tabs we use -2
             case -2: return '\n\t\t\t\t';
             //for any element above zero, we use normal tabbing
-            default: return '\n\t\t';
+            default: return '\n\t\t\t';
         }
     }
 
 
     //BROWSER CONTROL ACTIONS
 
-    openPage = () => `${this.tabIndex(0)}const driver = await new Builder().forBrowser('chrome').build();\n`
+    openPage = () => `const driver = await new Builder().forBrowser('chrome').build();\n`
 
-    navigateToUrl = url => `${this.tabIndex(0)}await driver.get('${url}');\n`
+    navigateToUrl = url => `await driver.get('${url}');\n`
 
-    returnScreenshot = () => `${this.tabIndex(0)}await driver.takeScreenshot();\n` 
+    returnScreenshot = () => `await driver.takeScreenshot();\n` 
 
-    closePage = () => `${this.tabIndex(0)}await driver.quit();\n`
+    closePage = () => `await driver.quit();\n`
 
 
     //ACTION FUNCTIONS
@@ -71,14 +71,24 @@ class SeleniumTranslator {
 
     mouseClick = (selector, clicktype, index) => {
         switch(clicktype) {
-            case 'click': return `const target${index} = await driver.findElement(by.css('${selector}')); await driver.actions().click(target${index}).perform();`
-            case 'dblclick': return `const target${index} = await driver.findElement(by.css('${selector}')); await driver.actions().doubleClick(target${index}).perform();`
-            case 'contextmenu': return `const target${index} = await driver.findElement(by.css('${selector}')); await driver.actions().contextClick(target${index}).perform();`
-            default: return `${this.tabIndex(index)}//No Click Action Available For Action ${clicktype}`
+            case 'click': return `const target${index} = await driver.findElement(by.css('${selector}')); ${this.tabIndex(1)}await driver.actions().click(target${index}).perform();`
+            case 'dblclick': return `const target${index} = await driver.findElement(by.css('${selector}'));  ${this.tabIndex(1)}await driver.actions().doubleClick(target${index}).perform();`
+            case 'contextmenu': return `const target${index} = await driver.findElement(by.css('${selector}'));  ${this.tabIndex(1)}await driver.actions().contextClick(target${index}).perform();`
+            default: return `${this.tabIndex(-1)}//No Click Action Available For Action ${clicktype}`
         }
     }
 
-    recaptcha = (selector) => `const target${index} = await driver.findElement(by.css('${selector}')); await driver.actions().click(target${index}).perform();`
+    recaptcha = (selector, index) => `const target${index} = await driver.findElement(by.css('${selector}')); await driver.actions().click(target${index}).perform();`
+
+
+    //TO DO - SELENIUM INPUT FUNCTIONS
+
+    typeText = (text) => ``
+
+    inputContentEditable = (selector, text) => ``
+
+    nonInputTyping = (selector, replayEvent, index) => ``
+
 
     scrollTo = (xPosition, yPosition) => `await driver.executeScript("document.documentElement.scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' });");`
 
@@ -86,7 +96,7 @@ class SeleniumTranslator {
 
     focus = (selector) => `await driver.executeScript("document.querySelector('${selector}').focus({ preventScroll: false });");`
 
-    hover = (selector) => `const hoverTarget${index} = await driver.findElement(by.css('${selector}')); await driver.actions().move(target${index}).perform();`
+    hover = (selector, index) => `const hoverTarget${index} = await driver.findElement(by.css('${selector}'));  ${this.tabIndex(index)}await driver.actions().move(hoverTarget${index}).perform();`
 
     textSelect = (selector, index) => `await driver.executeScript("const range${index} = document.createRange(); const referenceNode${index} = document.querySelector('${selector}'); range${index}.selectNode(referenceNode${index}); const currentSelection${index} = window.getSelection(); currentSelection${index}.removeAllRanges(); currentSelection${index}.addRange(range${index});");`
 

@@ -294,16 +294,13 @@ function updateReplayEventsTableCodeReports(replay) {
     //add listeners for the clicks in the show replay replay events table
     addShowReplayReplayEventsTableButtonListeners();
 
-
-    //TO DO - CODE FOR JEST AND PUPPETEER
-    //UPDATE CODE
-
-
+    //UPDATE CODE FOR JEST AND PUPPETEER BY DEFAULT
+    const toJestPuppeteer = new JestTranslator({translator: "Puppeteer"}); 
+    $('.ui.fluid.showReplay.container .codeOutputTextArea').val(toJestPuppeteer.buildReplayStringFromEvents(replay));
 
     //make sure the code text area is the same height as the table, to indicate the number of events
     $('.ui.fluid.showReplay.container .codeOutputTextArea').css("max-height", "none");
     $('.ui.fluid.showReplay.container .codeOutputTextArea').height($('.ui.fluid.showReplay.container .showReplayReplayEventsTable ').height());
-
 
     //UPDATE EXECUTION HISTORY
 
@@ -810,7 +807,6 @@ $(document).ready (function(){
                     $('.ui.showReplayReplayEventsTable.table .informationMessageRow').css('display', 'none');
                     break;
                 case 'replayCode':
-                    $('.ui.fluid.showReplay.container .codeOutputTextArea').val(`TO D0 - JEST / PUPPETEER CODE FOR REPLAY`);
                     //init the checkbox, with Javascript checked as default
                     $('.ui.showReplay.container .ui.radio.checkbox input[value="jest+puppeteer"]').prop('checked', true);
                     break;
@@ -855,19 +851,19 @@ $(document).ready (function(){
             .then(replay => {
                 switch(true) {
                     case event.target.value == "jest+puppeteer":
-                    
-                        $('.ui.fluid.showReplay.container .codeOutputTextArea').val(`TO D0 - JEST / PUPPETEER CODE FOR REPLAY ${replay.id}`);
+                        const toJestPuppeteer = new JestTranslator({translator: "Puppeteer"}); 
+                        $('.ui.fluid.showReplay.container .codeOutputTextArea').val(toJestPuppeteer.buildReplayStringFromEvents(replay));
                         break;
                     case event.target.value == "cypress":
                         const toCypress = new CypressTranslator({}); 
                         $('.ui.fluid.showReplay.container .codeOutputTextArea').val(toCypress.buildReplayStringFromEvents(replay));
                         break;
                     case event.target.value == "jest+selenium":
-
-                        $('.ui.fluid.showReplay.container .codeOutputTextArea').val(`TO D0 - SELENIUM CODE FOR REPLAY ${replay.id}`);
+                        const toJestSelenium = new JestTranslator({translator: "Selenium"}); 
+                        $('.ui.fluid.showReplay.container .codeOutputTextArea').val(toJestSelenium.buildReplayStringFromEvents(replay));
                         break;
                     default:
-                        $('.ui.fluid.showReplay.container .codeOutputTextArea').val("UNRECOGNISED");
+                        $('.ui.fluid.showReplay.container .codeOutputTextArea').val("UNRECOGNISED CODE FORMAT");
                 }
             });
     });
