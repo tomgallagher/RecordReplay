@@ -77,6 +77,22 @@ function populateBulkReplayTabs(replayStorageArray) {
         let errorListNode = tempNode.querySelector('.error.list');
         errorListNode.setAttribute('data-replay-id', replayStorageArray[replay].id);                                   
 
+        //<div class="ui basic visualChanges segment" data-replay-id="" style="display: none;">
+        let visualChangesNode = tempNode.querySelector('.ui.basic.visualChanges.segment');
+        visualChangesNode.setAttribute('data-replay-id', replayStorageArray[replay].id);
+
+        //<img class="previousRunImage" data-replay-id="" src="">
+        let previousRunImageNode = tempNode.querySelector('.previousRunImage');
+        previousRunImageNode.setAttribute('data-replay-id', replayStorageArray[replay].id);
+
+        //<img class="currentRunImage" data-replay-id="" src="">
+        let currentRunImageNode = tempNode.querySelector('.currentRunImage');
+        currentRunImageNode.setAttribute('data-replay-id', replayStorageArray[replay].id);
+
+        //<img class="visualRegressionImage" data-replay-id="" src="">
+        let regressionImageNode = tempNode.querySelector('.visualRegressionImage');
+        regressionImageNode.setAttribute('data-replay-id', replayStorageArray[replay].id);
+
         //then we need to attach the clone of the template node to our container fragment
         docFrag.appendChild(tempNode);
     }
