@@ -1,6 +1,7 @@
 # WHAT DOES RECORD/REPLAY DO?
 
 As you develop your new site or application, and definitely before you deploy to production, you want to know that all the key functionality really works.
+
 You don’t want your users to find the bugs before you do — your users will not stick around for long if that happens.
 Our automated tests give you this quick feedback on whether your application has broken after making changes to the existing code base. 
 As our tests are performed on the actual website, Record/Replay works no matter how you develop your site, be it React, Angular, Vue or some other framework.
