@@ -79,7 +79,7 @@ class jQueryTranslator {
         //then we want to know if the action happened on the main html document or not
         let prependForTarget = '';
         //if the target was not the html, we need to focus on the right element using the selector
-        if (recordingEvent.recordingEventHTMLTag == "HTML") { prependForTarget = `document.querySelector('${selector}').focus({ preventScroll: false });${this.tabIndex(index)}` }
+        if (recordingEvent.recordingEventHTMLTag != "HTML") { prependForTarget = `document.querySelector('${selector}').focus({ preventScroll: false });${this.tabIndex(index)}` }
         //then we just need to return the string
         return `${prependForTarget}const event${index} = new KeyboardEvent('keypress', { key: ${dispatchEvent.key}, code: ${dispatchEvent.code}, location: ${dispatchEvent.location}, repeat: ${dispatchEvent.autoRepeat}, ctrlKey: ${ctrlKey}, shiftKey: ${shiftKey}, altKey: ${altKey}, metaKey: ${metaKey}}); ${this.tabIndex(index)}document.dispatchEvent( event${index} );`
 

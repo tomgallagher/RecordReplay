@@ -211,10 +211,14 @@ class JestTranslator {
 
         //start with an empty string
         var outputString = "";
-        //add the standard Cypress opening function
+        //add the standard Jest opening function
         outputString += this.openJestTest(replay);
-        //add the standard browser warning
+        //then add the standard opening comment
+        outputString += this.chosenTranslator.standardOpeningComment;
+        //add the standard Jest test function
         outputString += this.openJestReplay(replay);
+        //if we are in puppeteer then we need to open the page
+        if(this.chosenTranslator instanceof PuppeteerTranslator) outputString += `${this.tabIndex(0)}${this.chosenTranslator.openPage()}`;
         //add the open page function
         outputString += `${this.tabIndex(0)}${this.chosenTranslator.navigateToUrl(replay.recordingTestStartUrl)}`;
         //then we determine if we are working with a replay that has been run or not, we start with the replay event array by default
@@ -230,9 +234,11 @@ class JestTranslator {
             //close the async timeout function
             outputString += this.closeTimedFunction(eventsArray[event].recordingTimeSincePrevious);
         }
-        //add the close page function
+        //if we are in puppeteer then we need to close the page
+        if(this.chosenTranslator instanceof PuppeteerTranslator) outputString += `${this.tabIndex(0)}${this.chosenTranslator.closePage()}`;
+        //add the close test function
         outputString += this.closeJestReplay();
-        //add the standard async closing function
+        //add the standard close Jest function
         outputString += this.closeJestTest();
         //return the string
         return outputString;

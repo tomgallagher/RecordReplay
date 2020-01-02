@@ -11,6 +11,12 @@ class SeleniumTranslator {
             replayTestID: 0,
             //need a keycode dictionary 
             keyCodeDictionary: new KeyCodeDictionary,
+            //messaging for code
+            standardOpeningComment: "\n\t/*\n" 
+            + "\t\t Your options for launching Selenium Webdriver will depend upon your system setup and preferences. \n"
+            + "\t\t The following code depends upon you having successfully launched Selenium Webdriver with the reference 'driver'.\n"
+            + "\t\t Don't forget to call 'driver.close()' at the end of your tests.\n"
+            + "\t*/\n",
 
         }
         // create a new object with the defaults over-ridden by the options passed in
@@ -83,12 +89,30 @@ class SeleniumTranslator {
 
     //TO DO - SELENIUM INPUT FUNCTIONS
 
-    typeText = (text) => ``
+    typeText = (text) => `await driver.findElement(By.css('${selector}')).sendKeys('${text}', Key.RETURN);`
 
-    inputContentEditable = (selector, text) => ``
+    inputContentEditable = (selector, text) => `await driver.executeScript("document.querySelector('${selector}').textContent = '${text}';");` 
 
-    nonInputTyping = (selector, replayEvent, index) => ``
+    nonInputTyping = (selector, replayEvent, index) => {
 
+        //first we need a shorthand of our event
+        const dispatchEvent = replayEvent.recordingEventDispatchKeyEvent;
+        //then we need each of the modifier keys
+        const ctrlKey = (dispatchEvent.modifiers == 2 ? 'true' : 'false');
+        const shiftKey = (dispatchEvent.modifiers == 8 ? 'true' : 'false');
+        const altKey = (dispatchEvent.modifiers == 1 ? 'true' : 'false');
+        const metaKey = (dispatchEvent.modifiers == 4 ? 'true' : 'false');
+        //then we need to know if the target was the main document or not
+        //then we want to know if the action happened on the main html document or not
+        let prependForTarget = '';
+        //if the target was not the html, we need to focus on the right element using the selector
+        if (recordingEvent.recordingEventHTMLTag != "HTML") { prependForTarget = `document.querySelector('${selector}').focus({ preventScroll: false });` }
+        //then we just need to create the whole string
+        const simulateKey = `${prependForTarget} const event${index} = new KeyboardEvent('keypress', { key: ${dispatchEvent.key}, code: ${dispatchEvent.code}, location: ${dispatchEvent.location}, repeat: ${dispatchEvent.autoRepeat}, ctrlKey: ${ctrlKey}, shiftKey: ${shiftKey}, altKey: ${altKey}, metaKey: ${metaKey}}); document.dispatchEvent( event${index} );`
+        //and return the string wrapped in the function
+        return `await driver.executeScript("${simulateKey}");`
+
+    }
 
     scrollTo = (xPosition, yPosition) => `await driver.executeScript("document.documentElement.scrollTo({ left: ${xPosition}, top: ${yPosition}, behavior: 'smooth' });");`
 
