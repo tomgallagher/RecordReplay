@@ -1,12 +1,12 @@
 # WHAT DOES RECORD/REPLAY DO?
 
-Record/Replay lets you run end-to-end functional tests on your web site / application.
+* Record/Replay lets you run end-to-end functional tests on your web site / application.
 
-Our automated tests give you quick feedback on whether your application works as intended. 
+* Our automated tests give you quick feedback on whether your application works as intended. 
 
-Tests run in your Chrome browser so Record/Replay works no matter how you develop your site, be it React, Angular, Vue or some other framework.
+* Tests run in your Chrome browser so Record/Replay works no matter how you develop your site, be it React, Angular, Vue or some other framework.
 
-We aim to serve all website developers, from those with no programming experience to those with experience of multiple testing frameworks. 
+* We aim to serve all website developers, from those with no programming experience to those with experience of multiple testing frameworks. 
 
 # HOW DOES RECORD/REPLAY WORK? 
 
@@ -49,3 +49,5 @@ If you have wide experience of existing testing frameworks, you know that automa
 Compared to Puppeteer, Record/Replay benefits from using the Chrome browser itself, rather than the headless version, and supports extensions like Flash.
 Compared to Cypress, Record/Replay supports the use of the tab key in user interface testing, allows bandwidth / latency throttling and supports iframe interaction by default.
 Compared to Selenium Webdriver, Record/Replay is less flaky (prone to erroneous fails), faster to complete tests and provides better reporting.
+
+Of course, this is only our opinion. Just install and give it a try, then make your own mind up!
