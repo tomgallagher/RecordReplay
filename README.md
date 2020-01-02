@@ -18,7 +18,7 @@ __REPORT__ - Provides feedback on the execution of user interface interactions, 
 
 # WHY SHOULD YOU INSTALL RECORD/REPLAY?
 
-As you develop, and definitely before you deploy to production, you want to know that all the key functionality really works.
+As you develop, and definitely before you deploy to production, you want to know that all the key functionality of your site really works.
 You don’t want your users to find the bugs before you do. Your users will not stick around for long if that happens. 
 
 Yet manual end-to-end functional testing is time-consuming and tedious. It is a prime candidate for automation. 
@@ -37,42 +37,15 @@ Install from this repo or head to the [Chrome Web Store](http://example.com) to 
 
 # WHY IS IT BETTER THAN OTHER TESTING FRAMEWORKS?
 
-Record/Replay is __free and open-source__, which distinguishes it from many other frameworks.
-In addition, Record/Replay requires __zero configuration__. High set-up costs can act as a barrier to setting up proper testing.
-You can start testing your site in minutes, with no previous experience of Record/Replay or even testing websites in general.
+Record/Replay is __free and open-source__, which distinguishes it from many other frameworks. We can offer this as there are no cloud-based services attached. 
+All test information is saved in local storage and can be passed from one machine to another via export and import of JSON data files.
 
-Beginners?
+Record/Replay requires __zero configuration__. High set-up costs can act as a barrier to setting up proper testing, especially for start-ups and those 
+that are looking to deliver proof-of-concept skeleton sites quickly to clients. You can start testing your site in minutes, with no previous experience of 
+Record/Replay or even testing websites in general.
 
-1. No special installation or setup required, no testing expertise or even programming skills required, no third party plugins, no dependent libraries, it just works.
-
-Experts?
-
+Record/Replay performs well when __compared with other frameworks__. 
 If you have wide experience of existing testing frameworks, you know that automated functional testing can be a tricky process to configure and to maintain. 
 Compared to Puppeteer, Record/Replay benefits from using the Chrome browser itself, rather than the headless version, and supports extensions like Flash.
 Compared to Cypress, Record/Replay supports the use of the tab key in user interface testing, allows bandwidth / latency throttling and supports iframe interaction by default.
 Compared to Selenium Webdriver, Record/Replay is less flaky (prone to erroneous fails), faster to complete tests and provides better reporting.
-
-
-
-
-
-
-
-
-vs Selenium webdriver
-
-
-
-It’s much faster than Selenium and avoids a lot of the messy configuration and flakiness that comes with trying to launch a real browser. 
-No steps in the beginning asking you to download specific versions of the selenium server jar, geckodriver, chromedriver etc which is both fiddly and error prone. 
-DOCUMENTATION IS AWFUL!!!
-
-One really awesome thing about testcafe is that it automatically detects JS errors that happened when the test page was executing. I suppose this is the kind of awesome you can 
-attain when you reach outside of the Selenium box! I also noted that the terminal output when tests failed where quite readable/clean.
-
-
-Who is non-code web-service-based automated testing best for?
-Startup founders like my friend Matt, who want to save the time they normally have to spend before/after a production deploy to avoid hearing embarrassing support issues day later. 🙇
-Sites that change infrequently. Teams which manually deploy their code (whether via a git push heroku master, cap production deploy, or `ssh my-production-server` and `rsync`). 💪
-Websites where some breakage is OK 💁, and not catastrophic. Marketing sites, blogs—sites without a “Buy Now” button and shopping cart flow. A bug on production 
-might distract one person for an hour or two, but won’t block content creators or folks depending on your service to complete their daily tasks
