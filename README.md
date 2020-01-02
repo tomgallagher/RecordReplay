@@ -1,126 +1,79 @@
-# GIT WORKFLOW FOR RECORD/REPLAY
+# WHAT DOES RECORD/REPLAY DO?
+
+As you develop your new site or application, and definitely before you deploy to production, you want to know that all the key functionality really works.
+You don’t want your users to find the bugs before you do — your users will not stick around for long if that happens.
+Our automated tests give you this quick feedback on whether your application has broken after making changes to the existing code base. 
+As our tests are performed on the actual website, Record/Replay works no matter how you develop your site, be it React, Angular, Vue or some other framework.
+We aim to serve all website developers, from those with no programming experience to those with experience of multiple testing frameworks. 
+
+# HOW DOES RECORD/REPLAY WORK? 
+
+__RECORD__ - Listens for all user interface interactions through keyboard and mouse, including steps required for key functionality, such as signup, login, add purchase to cart etc.
+
+__REPLAY__ - Simulates all recorded user interface interactions (clicking, typing, scrolling etc.), ensuring that these scenarios actually work from the point of view of an end user.
+
+__REPORT__ - Provides feedback on the execution of user interface interactions, including detailed logging of user interface interaction fails and visual regression analysis of screenshots.
+
+# WHY SHOULD YOU INSTALL IT?
+
+Everyone?
+
+Manual end-to-end functionality testing is time-consuming and tedious. 
+Record/Replay delivers easy automation testing to everyone, speeding up delivery of production code you can trust.
+This allows the continuous delivery process to run smoothly at your organization with a quality selection of functional tests.
+
+Beginners?
+
+Ready-To-Go- Comes with everything you need to start functional testing.
+Ease of use - no installs required, no knowledge of Node.js or Puppeteer required everything runs in the browser, tests saved locally in storage
+4. Transparent - watch all the recordings replayed in real time in dedicated browser tab
+
+Experts?
+
+Multiple CSS and Xpath selector generators for redundancy and continued performance as the site structure changes
+2. Generates short unique selectors for all element targets
+Record/Replay generates code for Jest, Puppeteer, Cypress and Selenium Webdriver that you can copy and paste into your testing suites.
+So testing logic can be exported from the Record/Replay environment to multiple different browsers, on your machine or in the cloud.
+
+# WHY IS IT BETTER THAN OTHER TESTING FRAMEWORKS?
+
+Everyone?
+
+In contrast to all existing testing frameworks, Record/Replay requires ZERO CONFIGURATION and its user interface is simple and intuitive.
+You can start testing your site in minutes, with no previous experience of Record/Replay or even testing websites in general.
+
+Beginners?
+
+1. No special installation or setup required, no testing expertise or even programming skills required, no third party plugins, no dependent libraries, it just works.
+
+Experts?
+
+If you have wide experience of existing testing frameworks, you know that automated functional testing can be a tricky process to configure and to maintain. 
+Compared to Puppeteer, Record/Replay benefits from using the Chrome browser itself, rather than the headless version, and supports extensions like Flash.
+Compared to Cypress, Record/Replay supports the use of the tab key in user interface testing, allows bandwidth / latency throttling and supports iframe interaction by default.
+Compared to Selenium Webdriver, Record/Replay is less flaky (prone to erroneous fails), faster to complete tests and provides better reporting.
 
 
-__*3 RESTRICTED TYPES OF BRANCH*__
-
-**MASTER** - ACCESS RESTRICTED, all minified and unminified code, infinite lifetime, reflects a "__production-ready state__"
-
-**HOTFIX** - ACCESS RESTRICTED, quickly fix production bugs, all minified and unminified code, always __limited life time__
-
-**PRODUCTION** - ACCESS RESTRICTED, minified code, infinite lifetime
-
-__*2+ OPEN BRANCHES*__
-
-**DEVELOP** BRANCH, all minified and unminified code, infinite lifetime, latest delivered development changes for the next release, an "__integration branch__" for all developers
-
-**RELEASE** BRANCH, all minified and unminified code, develop new features for the upcoming or a distant future release, always __limited life time__
-
-**FEATURE** BRANCHES, all minified and unminified code, always __limited life time__
-
-__*APPROACH*__
-
-BASIC RULE - AS LITTLE CODING AS POSSIBLE on the DEVELOP BRANCH - ALWAYS ADD A FEATURE BRANCH WHEN MAKING CHANGES TO CODE BASE - can just be your name and a date
-
-ALL FEATURE BRANCHES are merged back into develop (to definitely add the new feature to the upcoming release) or discarded __$ git branch -d myfeature__
-
-# MAKING THE DEVELOP BRANCH
-
-Must branch off from : __master__
-
-Must merge back into: __master__
-
-Branch naming convention: develop
-
-To set up the develop branch for the first time, switch the repo to the master branch, pull the latest commits from master and reset the repo's local copy of master to match the latest version. 
-
-__$ git checkout master__, __$ git fetch origin__, __$ git reset --hard origin/master__
-
-Then create the new develop branch locally and push it to the server
-
-__$ git branch develop__, __$ git push -u origin develop__
-
-To update master with changes from develop
-
-__$ git checkout master__, __$ git merge develop__
-
-# MAKING A FEATURE BRANCH
-
-May branch off from: __develop__
-
-Must merge back into: __develop__
-
-Branch naming convention: anything except master, develop, release-\*, hotfix-\* or production
 
 
-Creating a feature branch: __$ git checkout -b myfeature develop__
-
-Saving your work on a feature branch: __$ git add -A__, __$ git commit -m "some piece of work"__, then to save it remotely so others can see it __$ git push -u origin myfeature__
-
-Incorporating a finished feature on develop: __$ git checkout develop__, __$ git merge --no-ff myfeature__, __$ git branch -d myfeature__, __$ git push origin develop__
-
-The --no-ff flag causes the merge to always create a new commit object, even if the merge could be performed with a fast-forward. This avoids losing information about the historical existence of a feature branch
-
-If the develop branch has been changed since you checked it out, you can also incorporate the third party changes using __$ git pull --rebase origin develop__
-
-# MAKING A RELEASE BRANCH
-
-May branch off from: __develop__
-
-Must merge back into: __develop__ and __master__
-
-Branch naming convention: release-*
 
 
-The key moment to branch off a new release branch from develop is when develop (almost) reflects the desired state of the new release. 
-
-It is exactly at the start of a release branch that the upcoming release gets assigned a version number � not any earlier. So this is when the manifest version number is changed
-
-Creating a release branch: __$ git checkout -b release-1.2 develop__, then make the changes to the manifest etc., then __$ git commit -a -m "Bumped version number to 1.2"__
-
-Once the release branch has been created, bug fixes may be applied in this branch (rather than on the develop branch). Adding large new features here is strictly prohibited.
 
 
-Finishing a release branch: __MASTER__ FIRST: __$ git checkout master__, __$ git merge --no-ff release-1.2__, __$ git tag -a 1.2__
-
-Finishing a release branch: __DEVELOP__ SECOND: __$ git checkout develop__, __$ git merge --no-ff release-1.2__, which will lead to merge conflict as we have changed the manifest version number. fix it and commit, then delete the branch __$ git branch -d release-1.2__
-
-# MAKING A HOTFIX BRANCH
-
-May branch off from: __master__
-
-Must merge back into: __develop__ and __master__
-
-Branch naming convention: hotfix-*
+vs Selenium webdriver
 
 
-The essence is that work of team members (on the develop branch) can continue, while another person is preparing a quick production fix.
+
+It’s much faster than Selenium and avoids a lot of the messy configuration and flakiness that comes with trying to launch a real browser. 
+No steps in the beginning asking you to download specific versions of the selenium server jar, geckodriver, chromedriver etc which is both fiddly and error prone. 
+DOCUMENTATION IS AWFUL!!!
+
+One really awesome thing about testcafe is that it automatically detects JS errors that happened when the test page was executing. I suppose this is the kind of awesome you can 
+attain when you reach outside of the Selenium box! I also noted that the terminal output when tests failed where quite readable/clean.
 
 
-Creating the hotfix branch: __$ git checkout -b hotfix-1.2.1 master__, don't forget to bump the version number after branching off!, __$ git commit -a -m "Bumped version number to 1.2.1"__, then fix the production bug as quickly as we can, __git commit -m "Fixed severe production problem"__
-
-Finishing a hotfix branch: __MASTER__ FIRST: __$ git checkout master__, __$ git merge --no-ff hotfix-1.2.1__, __$ git tag -a 1.2.1__
-
-Finishing a hotfix branch: __DEVELOP__ SECOND: __$ git checkout develop__, __$ git merge --no-ff hotfix-1.2.1__, then delete the branch __$ git branch -d hotfix-1.2.1__
-
-The one exception to the rule here is that, when a release branch currently exists, the hotfix changes need to be merged into that release branch, instead of develop. 
-
-# MAKING A PRODUCTION BRANCH
-
-Must branch off from: __master__
-
-Branch naming convention: __production__
-
-Preparing the production branch, __$ git checkout master__, then make all the changes according to the list
-
-Checklist for production ready changes to extension
-
-1) Change any manifest.json content scripts to minified versions
-2) Change all manifest.json background scripts to minified versions
-3) Make sure index.html user interface references minified javascript files
-4) Delete all the non-minified scripts from models, recordingScripts, replayingScripts, utils folders
-5) Delete all the non-minified scripts from background folder
-6) Delete all the non-minified user interface scripts
-
-The essence here is that the production version should be as lean as possible, so only minified code and no comments
-
-then __$ git push origin production__
+Who is non-code web-service-based automated testing best for?
+Startup founders like my friend Matt, who want to save the time they normally have to spend before/after a production deploy to avoid hearing embarrassing support issues day later. 🙇
+Sites that change infrequently. Teams which manually deploy their code (whether via a git push heroku master, cap production deploy, or `ssh my-production-server` and `rsync`). 💪
+Websites where some breakage is OK 💁, and not catastrophic. Marketing sites, blogs—sites without a “Buy Now” button and shopping cart flow. A bug on production 
+might distract one person for an hour or two, but won’t block content creators or folks depending on your service to complete their daily tasks
