@@ -44,10 +44,10 @@ Record/Replay requires __zero configuration__. High set-up costs can act as a ba
 that are looking to deliver proof-of-concept skeleton sites quickly to clients. You can start testing your site in minutes, with no previous experience of 
 Record/Replay or even testing websites in general.
 
-Record/Replay performs well when __compared with other frameworks__. 
+Record/Replay performs well when __compared with other frameworks__.[^1] 
 If you have wide experience of existing testing frameworks, you know that automated functional testing can be a tricky process to configure and to maintain. 
 Compared to Puppeteer, Record/Replay benefits from using the Chrome browser itself, rather than the headless version, and supports extensions like Flash.
 Compared to Cypress, Record/Replay supports the use of the tab key in user interface testing, allows bandwidth / latency throttling and supports iframe interaction by default.
 Compared to Selenium Webdriver, Record/Replay is less flaky (prone to erroneous fails), faster to complete tests and provides better reporting.
 
-Of course, this is only our opinion. Just install and give it a try, then make your own mind up!
+[^1]: Of course, this is only our opinion. Just install and give it a try, then make your own mind up!
