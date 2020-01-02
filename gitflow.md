@@ -114,12 +114,13 @@ Preparing the production branch, __$ git checkout master__, then make all the ch
 
 Checklist for production ready changes to extension
 
-1) Change any manifest.json content scripts to minified versions
-2) Change all manifest.json background scripts to minified versions
-3) Make sure index.html user interface references minified javascript files
+1) Change all manifest.json background scripts references to minified versions
+2) Make sure index.html user interface references minified javascript files
+3) Make sure active recording and replay models refer to minified javascript files
 4) Delete all the non-minified scripts from models, recordingScripts, replayingScripts, utils folders
 5) Delete all the non-minified scripts from background folder
 6) Delete all the non-minified user interface scripts
+7) Test all functionality!
 
 The essence here is that the production version should be as lean as possible, so only minified code and no comments
 

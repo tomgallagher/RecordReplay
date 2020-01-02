@@ -27,7 +27,7 @@ This allows the continuous delivery process to run smoothly at your organization
 
 Beginners benefit from Record/Replay being ready-to-go as installed. __No coding skills are required to record and to replay tests__. 
 Everything you need to start functional testing is included as part of the intuitive user interface.
-You can also gain an introductiont to different testing frameworks by using our code export functions.
+You can also gain an introduction to different testing frameworks by using our code export functions.
 
 Experienced testers can use Record/Replay to __generate short, unique selectors for all element targets__, using our built-in CSS and Xpath selector generators.
 In addition, our code generators __produce code for Jest, Puppeteer, Cypress and Selenium Webdriver__ that you can copy and paste into your testing suites.
