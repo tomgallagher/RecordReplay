@@ -2,15 +2,9 @@
 
 Record/Replay lets you run end-to-end functional tests on your web site / application.
 
-As you develop, and definitely before you deploy to production, you want to know that all the key functionality really works.
+Our automated tests give you quick feedback on whether your application works as intended. 
 
-You don’t want your users to find the bugs before you do — your users will not stick around for long if that happens.
-
-Our automated tests give you this quick feedback on whether your application has broken after making changes to the existing code base. 
-
-As our tests are performed on the actual website, Record/Replay works no matter how you develop your site, be it React, Angular, Vue or some other framework.
-
-Tests run in your Chrome browser and all testing info is saved locally in storage, with the option to export and import saved info. 
+Tests run in your Chrome browser so Record/Replay works no matter how you develop your site, be it React, Angular, Vue or some other framework.
 
 We aim to serve all website developers, from those with no programming experience to those with experience of multiple testing frameworks. 
 
@@ -24,7 +18,10 @@ __REPORT__ - Provides feedback on the execution of user interface interactions, 
 
 # WHY SHOULD YOU INSTALL RECORD/REPLAY?
 
-Manual end-to-end functionality testing is time-consuming and tedious. 
+As you develop, and definitely before you deploy to production, you want to know that all the key functionality really works.
+You don’t want your users to find the bugs before you do. Your users will not stick around for long if that happens. 
+
+Yet manual end-to-end functional testing is time-consuming and tedious. It is a prime candidate for automation. 
 Record/Replay delivers easy automation testing to everyone, __speeding up delivery of production code__ you can trust.
 This allows the continuous delivery process to run smoothly at your organization with a quality selection of functional tests.
 
@@ -33,8 +30,10 @@ Everything you need to start functional testing is included as part of the intui
 You can also gain an introductiont to different testing frameworks by using our code export functions.
 
 Experienced testers can use Record/Replay to __generate short, unique selectors for all element targets__, using our built-in CSS and Xpath selector generators.
-In addition, our code generators produce code for Jest, Puppeteer, Cypress and Selenium Webdriver that you can copy and paste into your testing suites.
+In addition, our code generators __produce code for Jest, Puppeteer, Cypress and Selenium Webdriver__ that you can copy and paste into your testing suites.
 This can reduce the amount of time taken to create a full-coverage functional testing suite suitable for multiple different browsers, on your machine or in the cloud.
+
+Install from this repo or head to the [Chrome Web Store](http://example.com) to install a version that benefits from automatic updates.
 
 # WHY IS IT BETTER THAN OTHER TESTING FRAMEWORKS?
 
