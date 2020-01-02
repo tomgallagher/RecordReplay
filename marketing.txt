@@ -1,86 +1,71 @@
 WHAT DOES IT DO?
 
-3 THINGS- focus on the three things that it does: RECORD - REPLAY - REPORT
+As you develop your new site or application, before you deploy to production, you want to know that all the key functionality really works.
+You don’t want your users to find the bugs before you do — your users will not stick around for long if that happens.
+Our automated tests give you this quick feedback on whether your application has broken after making changes to the existing code base. 
+As our tests are performed on the actual website, Record/Replay works no matter how you develop your site, be it React, Angular, Vue or some other framework.
+We aim to serve all website developers, from those with no programming experience to those with experience of multiple testing suites. 
+
+3 THINGS- focus on the three things that it does: 
+
+RECORD - Listen for all the user interface steps that are required for key functionality to operate, such as signup, login, add purchase to cart etc.
+
+REPLAY - Simulate user behavior (clicking, typing, scrolling etc.) and make sure these scenarios actually work from the point of view of an end user.
+
+REPORT - Generates and displays test progress and results, including visual regression tools to compare your screenshots with previous ones
+
 
 WHY SHOULD YOU INSTALL IT?
 
 Everyone?
+
+Manual end-to-end functionality testing is time-consuming and tedious. 
+Record/Replay delivers easy automation testing to everyone, speeding up delivery of production code you can trust.
+This allows the continuous delivery process to run smoothly at your organization with a quality selection of functional tests.
+
 Beginners?
+
+Ready-To-Go- Comes with everything you need to start functional testing.
+Ease of use - no installs required, no knowledge of Node.js or Puppeteer required everything runs in the browser, tests saved locally in storage
+4. Transparent - watch all the recordings replayed in real time in dedicated browser tab
+
 Experts?
+
+Multiple CSS and Xpath selector generators for redundancy and continued performance as the site structure changes
+2. Generates short unique selectors for all element targets
+Record/Replay generates code for Jest, Puppeteer, Cypress and Selenium Webdriver that you can copy and paste into your testing suites.
+So testing logic can be exported from the Record/Replay environment to multiple different browsers, on your machine or in the cloud.
+
 
 WHY IS IT BETTER THAN THE COMPETITION?
 
 Everyone?
+
+In contrast to all existing testing frameworks, Record/Replay requires ZERO CONFIGURATION and its user interface is simple and intuitive.
+You can start testing your site in minutes, with no previous experience of Record/Replay or even testing websites in general.
+
 Beginners?
-Experts?
-
-
-'Click-through' or manual quality assurance testing demands that someone should click through the finished website to make sure that it really works, before shipping it to customers.
-
-To go from where we are to where we want to be, which is not blocked by manual QA runs and releasing multiple times a day, we need to invest into automated testing as well 
-as into building trust within the organization that our code does what it’s supposed to.
-
-We will be able to test any website using this approach because no matter how you develop your site, be it React, Angular, Vue or some other flavor of the year framework, 
-in the end, you will get a plain old website. And using this approach we can test them all.
-
-AUTOMATED TESTS OF GRAPHICAL USER INTERFACE
-
-functional or end-to-end testing - Testing how scenarios function on the product itself, by controlling the browser or the website. 
-
-Many front-end developers and programmers also want to create their own automated tests to get quick feedback on whether or not they’ve broken a code in their application 
-while checking in new code or make changes to the existing code base.
-
-Functional tests control browsers (7) and simulate user behavior on these environments (clicking, typing, scrolling etc…) and make sure these scenarios actually work from the 
-point of view of an end user.
-
-Functional tests ensure that the app works as expected from the user’s perspective. Assertions primarily test the user interface.
-Functional tests typically have thorough tests for “happy paths” — ensuring the critical app capabilities, such as user logins, signups, purchase work flows, and all the critical 
-user workflows all behave as expected.
-
-After you deploy a new release to production, it’s important to find out right away whether or not it’s working as expected in the production environment. You don’t want your 
-users to find the bugs before you do — it could chase them away!
-
-click through parts of the application that are not current being changed/developed to guard against regressions when shared components changes
-
-What does it do:
-
-1) Record and replay your tests in the Chrome browser
-2) Assertion functions check if the results of the test are as expected
-3) Generates and displays test progress and results
-4) visual regression tools to compare your screenshots with previous ones
-5) Bulk replays to ensure that ALL happy paths are working before release and then in production
-
-Selling points:
-
-1. Multiple CSS and Xpath selector generators for redundancy and continued performance as the site structure changes
-2. Generates short unique selectors for all element targets
-3. Ease of use - no installs required, no knowledge of Node.js or Puppeteer required everything runs in the browser, tests saved locally in storage
-4. Transparent - watch all the recordings replayed in real time in dedicated browser tab
-5. Bulk testing - automated click-through testing of all functions on your page
-6. It is an end to end automation testing framework dedicated for testing your website or application in a real browser, making automated interaction just like a real user.
-7. Chrome only not a problem - functional tests will only ever catch a specific class of bug that is mostly logic related, these bugs will be caught in Chrome and if you want the 
-real cross-browser experience, export the code
-
-vs Cypress
-
-1. We support the use of tab key?
-2. We support bandwidth throttling and latency testing, as well as mobile emulation
-3. We support iframes by default, no ifs and no buts
-
-vs Jest / Puppeteer
 
 1. No special installation or setup required, no testing expertise or even programming skills required, no third party plugins, no dependent libraries, it just works.
-2. If you have programming experience and currently use a testing framework, you can use Record/Replay to generate code for your testing framework automatically.
-3. We only support Chrome, but export to Selenium Web Driver code where you can run many different browsers
-3. No resource limitations
-Ready-To-Go- Comes with everything you need to start functional testing.
-One major drawback of Headless Chrome (thus of Puppeteer as well) is that it doesn’t supports extensions like Flash and probably won’t in the near future.
+
+Experts?
+
+If you have wide experience of existing testing frameworks, you know that automated functional testing can be a tricky process to configure and to maintain. 
+Compared to Puppeteer, Record/Replay benefits from using the Chrome browser itself, rather than the headless version, and supports extensions like Flash.
+Compared to Cypress, Record/Replay supports the use of the tab key in user interface testing, allows bandwidth / latency throttling and supports iframe interaction by default.
+Compared to Selenium Webdriver, Record/Replay is less flaky (prone to erroneous fails), faster to complete tests and provides better reporting.
+
+
+
+
+
+
+
 
 vs Selenium webdriver
 
-1. Flaky tests: they often fail erroneously.
-2. Complicated setup: it takes a long time to configure the Selenium driver on any given environment.
-3. Slow: Selenium runs very slowly because it has to spin up a browser for each test.
+
+
 It’s much faster than Selenium and avoids a lot of the messy configuration and flakiness that comes with trying to launch a real browser. 
 No steps in the beginning asking you to download specific versions of the selenium server jar, geckodriver, chromedriver etc which is both fiddly and error prone. 
 DOCUMENTATION IS AWFUL!!!
@@ -88,8 +73,6 @@ DOCUMENTATION IS AWFUL!!!
 One really awesome thing about testcafe is that it automatically detects JS errors that happened when the test page was executing. I suppose this is the kind of awesome you can 
 attain when you reach outside of the Selenium box! I also noted that the terminal output when tests failed where quite readable/clean.
 
-In contrast to the waterfall method, I’ve seen the continuous delivery process running smoothly at dozens of organizations — but I’ve never seen it work anywhere without a 
-quality array of test suites that includes both unit tests and functional tests, and frequently includes integration tests, as well.
 
 Who is non-code web-service-based automated testing best for?
 Startup founders like my friend Matt, who want to save the time they normally have to spend before/after a production deploy to avoid hearing embarrassing support issues day later. 🙇
