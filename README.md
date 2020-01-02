@@ -1,12 +1,16 @@
 # WHAT DOES RECORD/REPLAY DO?
 
-As you develop your new site or application, and definitely before you deploy to production, you want to know that all the key functionality really works.
+Record/Replay lets you run end-to-end functional tests on your web site / application.
+
+As you develop, and definitely before you deploy to production, you want to know that all the key functionality really works.
 
 You don’t want your users to find the bugs before you do — your users will not stick around for long if that happens.
 
 Our automated tests give you this quick feedback on whether your application has broken after making changes to the existing code base. 
 
 As our tests are performed on the actual website, Record/Replay works no matter how you develop your site, be it React, Angular, Vue or some other framework.
+
+Tests run in your Chrome browser and all testing info is saved locally in storage, with the option to export and import saved info. 
 
 We aim to serve all website developers, from those with no programming experience to those with experience of multiple testing frameworks. 
 
@@ -18,32 +22,24 @@ __REPLAY__ - Simulates all recorded user interface interactions (clicking, typin
 
 __REPORT__ - Provides feedback on the execution of user interface interactions, including detailed logging of user interface interaction fails and visual regression analysis of screenshots.
 
-# WHY SHOULD YOU INSTALL IT?
-
-Everyone?
+# WHY SHOULD YOU INSTALL RECORD/REPLAY?
 
 Manual end-to-end functionality testing is time-consuming and tedious. 
-Record/Replay delivers easy automation testing to everyone, speeding up delivery of production code you can trust.
+Record/Replay delivers easy automation testing to everyone, __speeding up delivery of production code__ you can trust.
 This allows the continuous delivery process to run smoothly at your organization with a quality selection of functional tests.
 
-Beginners?
+Beginners benefit from Record/Replay being ready-to-go as installed. __No coding skills are required to record and to replay tests__. 
+Everything you need to start functional testing is included as part of the intuitive user interface.
+You can also gain an introductiont to different testing frameworks by using our code export functions.
 
-Ready-To-Go- Comes with everything you need to start functional testing.
-Ease of use - no installs required, no knowledge of Node.js or Puppeteer required everything runs in the browser, tests saved locally in storage
-4. Transparent - watch all the recordings replayed in real time in dedicated browser tab
-
-Experts?
-
-Multiple CSS and Xpath selector generators for redundancy and continued performance as the site structure changes
-2. Generates short unique selectors for all element targets
-Record/Replay generates code for Jest, Puppeteer, Cypress and Selenium Webdriver that you can copy and paste into your testing suites.
-So testing logic can be exported from the Record/Replay environment to multiple different browsers, on your machine or in the cloud.
+Experienced testers can use Record/Replay to __generate short, unique selectors for all element targets__, using our built-in CSS and Xpath selector generators.
+In addition, our code generators produce code for Jest, Puppeteer, Cypress and Selenium Webdriver that you can copy and paste into your testing suites.
+This can reduce the amount of time taken to create a full-coverage functional testing suite suitable for multiple different browsers, on your machine or in the cloud.
 
 # WHY IS IT BETTER THAN OTHER TESTING FRAMEWORKS?
 
-Everyone?
-
-In contrast to all existing testing frameworks, Record/Replay requires ZERO CONFIGURATION and its user interface is simple and intuitive.
+Record/Replay is __free and open-source__, which distinguishes it from many other frameworks.
+In addition, Record/Replay requires __zero configuration__. High set-up costs can act as a barrier to setting up proper testing.
 You can start testing your site in minutes, with no previous experience of Record/Replay or even testing websites in general.
 
 Beginners?
