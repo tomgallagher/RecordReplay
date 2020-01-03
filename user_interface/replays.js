@@ -797,11 +797,13 @@ function loadReplayCodeStringIntoTargetContainer(replayKey, selector, translator
         .then(replay => translator.buildReplayStringFromEvents(replay) )
         //then load the string into the code mirror
         .then(string => {
+            const inverted = localStorage.getItem("ThemeInverted");
             window.replayCodeMirror = CodeMirror(
                 document.querySelector('.replayCodeOutputTextArea'), 
                 {   
                     value: string,
                     mode: 'javascript',
+                    theme: inverted == "true" ? "darcula" : "default",
                     lineNumbers: true,
                     readOnly: true
                 }

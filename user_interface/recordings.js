@@ -409,11 +409,13 @@ function loadRecordingCodeStringIntoTargetContainer(recordingKey, selector, tran
         .then(recording => translator instanceof PuppeteerTranslator ? translator.buildRecordingStringFromEvents(recording) : translator.buildRecordingStringFromEvents(recording.recordingEventArray) )
         //then load the string into the code mirror
         .then(string => {
+            const inverted = localStorage.getItem("ThemeInverted");
             window.recordingCodeMirror = CodeMirror(
                 document.querySelector('.recordingCodeOutputTextArea'), 
                 {   
                     value: string,
                     mode: 'javascript',
+                    theme: inverted == "true" ? "darcula" : "default",
                     lineNumbers: true,
                     readOnly: true
                 }
