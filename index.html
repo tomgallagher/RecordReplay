@@ -7,6 +7,7 @@
         <title>Record/Replay</title>
         <link href="css/semantic.min.css" rel="stylesheet" type="text/css">
         <link href="css/userInterface.css" rel="stylesheet" type="text/css">
+        <link href="css/codemirror.css" rel="stylesheet" type="text/css">
         <script src="third_party/jquery-3.1.1.min.js"></script>
         <script src="third_party/dexie.min.js"></script>
         <script src="third_party/Rx.min.js"></script>
@@ -14,6 +15,8 @@
         <script src="third_party/fontawesome-all.min.js"></script>
         <script src="third_party/Chart.min.js"></script>
         <script src="third_party/resemble.js"></script>
+        <script src="third_party/codemirror.js"></script>
+        <script src="third_party/codemirrorJavascript.js"></script>
         <script src="utils/storage.js"></script>
         <script src="utils/recordReplayMessenger.js"></script>
         <script src="utils/javascriptTranslator.js"></script>
@@ -1481,7 +1484,7 @@
 
                                     <div class="field">
                                         
-                                        <textarea class="codeOutputTextArea" spellcheck="false"></textarea>
+                                        <div class="recordingCodeOutputTextArea" data-recording-id=""></div>
                                     
                                     </div>
                                     
@@ -2080,7 +2083,7 @@
 
                                     <div class="field">
                                         
-                                        <textarea class="codeOutputTextArea" spellcheck="false"></textarea>
+                                        <div class="replayCodeOutputTextArea" data-replay-id=""></div>
                                     
                                     </div>
                                     

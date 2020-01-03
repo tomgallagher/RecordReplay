@@ -392,16 +392,34 @@ function updateRecordingEventsTableAndCodeText(recording) {
         //then borrow the function from newRecording.js
         addNewRecordingEventToTable(recording, recording.recordingEventArray[recordingEvent], table);
     }
-    //make sure the code text area is the same height as the table, to indicate the number of events
-    $('.ui.fluid.showRecording.container .codeOutputTextArea').css("max-height", "none");
-    $('.ui.fluid.showRecording.container .codeOutputTextArea').height($('.ui.fluid.showRecording.container .editRecordingRecordingEventsTable ').height());
-
-    //for code, we use Javascript as default
-    const toJavascript = new JavascriptTranslator({});
-    $('.ui.fluid.showRecording.container .codeOutputTextArea').val(toJavascript.buildRecordingStringFromEvents(recording.recordingEventArray));
+    //then add the replay id to the code area so we can retrieve later
+    $('.ui.fluid.showRecording.container .recordingCodeOutputTextArea').attr('data-recording-id', recording.id);
     //add recording events table button listeners
     addRecordingEventTableButtonListeners();
 
+}
+
+function loadRecordingCodeStringIntoTargetContainer(recordingKey, selector, translator) {
+
+    //empty the target div
+    $(`${selector}`).empty();
+    //the replay key will be in string format - StorageUtils handles conversion
+    StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', recordingKey, 'recordings')
+        //then build the string 
+        .then(recording => translator instanceof PuppeteerTranslator ? translator.buildRecordingStringFromEvents(recording) : translator.buildRecordingStringFromEvents(recording.recordingEventArray) )
+        //then load the string into the code mirror
+        .then(string => {
+            window.recordingCodeMirror = CodeMirror(
+                document.querySelector('.recordingCodeOutputTextArea'), 
+                {   
+                    value: string,
+                    mode: 'javascript',
+                    lineNumbers: true,
+                    readOnly: true
+                }
+            );
+        });
+        
 }
 
 $(document).ready (function(){
@@ -416,6 +434,12 @@ $(document).ready (function(){
                     $('.ui.editRecordingRecordingEventsTable .viewDetailedTableEventsFooter').css("display", "none");
                     //init the checkbox, with Javascript checked as default
                     $('.ui.showRecording.container .ui.radio.checkbox input[value=javascript]').prop('checked', true);
+                    //UPDATE CODE FOR JAVASCRIPT BY DEFAULT
+                    loadRecordingCodeStringIntoTargetContainer(
+                        document.querySelector('.recordingCodeOutputTextArea').getAttribute("data-recording-id"),
+                        '.recordingCodeOutputTextArea',
+                        new JavascriptTranslator({})
+                    );
                     break;
                 case 'recordingEvents':
                     //nothing to do here at the moment
@@ -426,7 +450,7 @@ $(document).ready (function(){
     //activate the copy to clipboard button
     $('.ui.showRecording.container .ui.copyCodeToClipBoard.icon.button').on('click', function() {
         //get the text from the text area
-        const textToCopy = $('.ui.showRecording.container .codeOutputTextArea').val();
+        const textToCopy = window.recordingCodeMirror.getDoc().getValue();
         //then paste that into the clipboard
         navigator.clipboard.writeText(textToCopy);
         //then report
@@ -438,7 +462,7 @@ $(document).ready (function(){
         //make sure the submit button does not perform its usual reload function
         event.preventDefault();
         //get the text from the text area
-        const textToCopy = $('.ui.showRecording.container .codeOutputTextArea').val();
+        const textToCopy = window.recordingCodeMirror.getDoc().getValue();
         //create a blob from the text - maybe set this to "text/plain" when we no longer want to use vscode to check formatting of emitted code
         var blob = new Blob([textToCopy], {type: "text/javascript"});
         //create a local temporary url - the object URL can be used as download URL
@@ -454,27 +478,30 @@ $(document).ready (function(){
 
     //respond to requested code language changes, which requires getting the recording from the server and processing it
     $('.ui.showRecording.container .ui.code.form .ui.radio.checkbox').change(event => {
-        //get the recording from the database using the key
-        const recordingKey = event.target.getAttribute("data-recording-id");
-        //the recording key will be in string format - StorageUtils handles conversion
-        StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', recordingKey, 'recordings')
-            //then depending up the recording, fill the code text
-            .then(recording => {
-                switch(true) {
-                    case event.target.value == "javascript":
-                        const toJavascript = new JavascriptTranslator({});
-                        $('.ui.showRecording.container .codeOutputTextArea').val(toJavascript.buildRecordingStringFromEvents(recording.recordingEventArray));
-                        break;
-                    case event.target.value == "jquery":
-                        const toJquery = new jQueryTranslator({}); 
-                        $('.ui.showRecording.container .codeOutputTextArea').val(toJquery.buildRecordingStringFromEvents(recording.recordingEventArray));
-                        break;
-                    case event.target.value == "puppeteer":
-                        const toPuppeteer = new PuppeteerTranslator({});
-                        //we pass the whole recording to Puppeteer as it needs other values for set up
-                        $('.ui.showRecording.container .codeOutputTextArea').val(toPuppeteer.buildRecordingStringFromEvents(recording));
-                }
-            });
+       
+        switch(true) {
+            case event.target.value == "javascript":
+                loadRecordingCodeStringIntoTargetContainer(
+                    document.querySelector('.recordingCodeOutputTextArea').getAttribute("data-recording-id"),
+                    '.recordingCodeOutputTextArea',
+                    new JavascriptTranslator({})
+                );
+                break;
+            case event.target.value == "jquery":
+                loadRecordingCodeStringIntoTargetContainer(
+                    document.querySelector('.recordingCodeOutputTextArea').getAttribute("data-recording-id"),
+                    '.recordingCodeOutputTextArea',
+                    new jQueryTranslator({})
+                );
+                break;
+            case event.target.value == "puppeteer":
+                loadRecordingCodeStringIntoTargetContainer(
+                    document.querySelector('.recordingCodeOutputTextArea').getAttribute("data-recording-id"),
+                    '.recordingCodeOutputTextArea',
+                    new PuppeteerTranslator({})
+                );
+        }
+            
     });
 
     //activate the form and validations

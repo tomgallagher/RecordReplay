@@ -235,31 +235,35 @@ class CypressTranslator {
 
     buildReplayStringFromEvents = replay => {
 
-        //start with an empty string
-        var outputString = "";
-        //add the standard Cypress opening function
-        outputString += this.openCypressTest(replay);
-        //add the standard browser warning
-        outputString += this.openCypressReplay(replay);
-        //add the open page function
-        outputString += this.navigateToUrl(replay);
-        //then we determine if we are working with a replay that has been run or not, we start with the replay event array by default
-        var eventsArray = replay.replayEventArray;
-        //then if we have a good replay
-        if (replay.replayStatus) { eventsArray = replay.mutatedReplayEventArray }
-        //then we loop through the array
-        for (let event in eventsArray) { 
-            //then add the iframe warning if required
-            eventsArray[event].recordingEventIsIframe ? outputString += this.warnOnIframe(eventsArray[event].recordingEventLocationHref) : null;
-            //then add the string using the action mapped to function
-            outputString += `${this.mapActionTypeToFunction(eventsArray[event], event)}\n`;
-        }
-        //add the close page function
-        outputString += this.closeCypressReplay();
-        //add the standard async closing function
-        outputString += this.closeCypressTest();
-        //return the string
-        return outputString;
+        return new Promise(resolve => {
+
+            //start with an empty string
+            var outputString = "";
+            //add the standard Cypress opening function
+            outputString += this.openCypressTest(replay);
+            //add the standard browser warning
+            outputString += this.openCypressReplay(replay);
+            //add the open page function
+            outputString += this.navigateToUrl(replay);
+            //then we determine if we are working with a replay that has been run or not, we start with the replay event array by default
+            var eventsArray = replay.replayEventArray;
+            //then if we have a good replay
+            if (replay.replayStatus) { eventsArray = replay.mutatedReplayEventArray }
+            //then we loop through the array
+            for (let event in eventsArray) { 
+                //then add the iframe warning if required
+                eventsArray[event].recordingEventIsIframe ? outputString += this.warnOnIframe(eventsArray[event].recordingEventLocationHref) : null;
+                //then add the string using the action mapped to function
+                outputString += `${this.mapActionTypeToFunction(eventsArray[event], event)}\n`;
+            }
+            //add the close page function
+            outputString += this.closeCypressReplay();
+            //add the standard async closing function
+            outputString += this.closeCypressTest();
+            //return the string
+            resolve(outputString);
+        
+        });
 
     }
 

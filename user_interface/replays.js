@@ -268,7 +268,6 @@ function updateReplayEventsTableCodeReports(replay) {
 
     console.log(replay);
 
-
     //RESET VIEW
     //empty the table body first
     $('.ui.showReplayReplayEventsTable.table tbody').empty();
@@ -278,8 +277,9 @@ function updateReplayEventsTableCodeReports(replay) {
     $('.ui.execution.positive.placeholder.segment').hide();
     //then remove any charts
     $('.ui.basic.performance.segment').remove('.resourceLoadsChart');
+    //then add the replay id to the code area so we can retrieve later
+    $('.replayCodeOutputTextArea').attr('data-replay-id', replay.id);
     
-
     //UPDATE TABLE
 
     //get a reference to the table
@@ -293,15 +293,7 @@ function updateReplayEventsTableCodeReports(replay) {
     $('.ui.showReplayReplayEventsTable.table td[data-label="replay_timestamp_executed"]').css('display', 'none');
     //add listeners for the clicks in the show replay replay events table
     addShowReplayReplayEventsTableButtonListeners();
-
-    //UPDATE CODE FOR JEST AND PUPPETEER BY DEFAULT
-    const toJestPuppeteer = new JestTranslator({translator: "Puppeteer"}); 
-    $('.ui.fluid.showReplay.container .codeOutputTextArea').val(toJestPuppeteer.buildReplayStringFromEvents(replay));
-
-    //make sure the code text area is the same height as the table, to indicate the number of events
-    $('.ui.fluid.showReplay.container .codeOutputTextArea').css("max-height", "none");
-    $('.ui.fluid.showReplay.container .codeOutputTextArea').height($('.ui.fluid.showReplay.container .showReplayReplayEventsTable ').height());
-
+     
     //UPDATE EXECUTION HISTORY
 
     if (replay.mutatedReplayEventArray && replay.mutatedReplayEventArray.length > 0) {
@@ -795,6 +787,29 @@ function addReplayEventsTableStartReplayHandler() {
         
 }
 
+function loadReplayCodeStringIntoTargetContainer(replayKey, selector, translator) {
+
+    //empty the target div
+    $(`${selector}`).empty();
+    //the replay key will be in string format - StorageUtils handles conversion
+    StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
+        //then build the string 
+        .then(replay => translator.buildReplayStringFromEvents(replay) )
+        //then load the string into the code mirror
+        .then(string => {
+            window.replayCodeMirror = CodeMirror(
+                document.querySelector('.replayCodeOutputTextArea'), 
+                {   
+                    value: string,
+                    mode: 'javascript',
+                    lineNumbers: true,
+                    readOnly: true
+                }
+            );
+        });
+        
+}
+
 $(document).ready (function(){
 
     //add the listener for the run replay button
@@ -811,6 +826,12 @@ $(document).ready (function(){
                 case 'replayCode':
                     //init the checkbox, with Javascript checked as default
                     $('.ui.showReplay.container .ui.radio.checkbox input[value="jest+puppeteer"]').prop('checked', true);
+                    //UPDATE CODE FOR JEST AND PUPPETEER BY DEFAULT
+                    loadReplayCodeStringIntoTargetContainer(
+                        document.querySelector('.replayCodeOutputTextArea').getAttribute("data-replay-id"),
+                        '.replayCodeOutputTextArea',
+                        new JestTranslator({translator: "Puppeteer"})
+                    );
                     break;
                 case 'replayReports':
                 
@@ -821,7 +842,7 @@ $(document).ready (function(){
     //activate the copy to clipboard button
     $('.ui.fluid.showReplay.container .ui.copyCodeToClipBoard.icon.button').on('click', function() {
         //get the text from the text area
-        const textToCopy = $('.ui.showReplay.container .codeOutputTextArea').val();
+        const textToCopy = window.replayCodeMirror.getDoc().getValue();
         //then paste that into the clipboard
         navigator.clipboard.writeText(textToCopy);
         //then report
@@ -833,7 +854,7 @@ $(document).ready (function(){
         //make sure the submit button does not perform its usual reload function
         event.preventDefault();
         //get the text from the text area
-        const textToCopy = $('.ui.showReplay.container .codeOutputTextArea').val();
+        const textToCopy = window.replayCodeMirror.getDoc().getValue();
         //create a blob from the text - maybe set this to "text/plain" when we no longer want to use vscode to check formatting of emitted code
         var blob = new Blob([textToCopy], {type: "text/javascript"});
         //create a local temporary url - the object URL can be used as download URL
@@ -849,29 +870,33 @@ $(document).ready (function(){
 
     //respond to requested code language changes, which requires getting the replay from the server and processing it
     $('.ui.fluid.showReplay.container .ui.code.form .ui.radio.checkbox').change(event => {
-        //get the replay from the database using the key
-        const replayKey = event.target.getAttribute("data-replay-id");
-        //the recording key will be in string format - StorageUtils handles conversion
-        StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
-            //then depending up the recording, fill the code text
-            .then(replay => {
-                switch(true) {
-                    case event.target.value == "jest+puppeteer":
-                        const toJestPuppeteer = new JestTranslator({translator: "Puppeteer"}); 
-                        $('.ui.fluid.showReplay.container .codeOutputTextArea').val(toJestPuppeteer.buildReplayStringFromEvents(replay));
-                        break;
-                    case event.target.value == "cypress":
-                        const toCypress = new CypressTranslator({}); 
-                        $('.ui.fluid.showReplay.container .codeOutputTextArea').val(toCypress.buildReplayStringFromEvents(replay));
-                        break;
-                    case event.target.value == "jest+selenium":
-                        const toJestSelenium = new JestTranslator({translator: "Selenium"}); 
-                        $('.ui.fluid.showReplay.container .codeOutputTextArea').val(toJestSelenium.buildReplayStringFromEvents(replay));
-                        break;
-                    default:
-                        $('.ui.fluid.showReplay.container .codeOutputTextArea').val("UNRECOGNISED CODE FORMAT");
-                }
-            });
+       
+        switch(true) {
+            case event.target.value == "jest+puppeteer":
+                loadReplayCodeStringIntoTargetContainer(
+                    event.target.getAttribute("data-replay-id"),
+                    '.replayCodeOutputTextArea',
+                    new JestTranslator({translator: "Puppeteer"})
+                );
+                break;
+            case event.target.value == "cypress":
+                loadReplayCodeStringIntoTargetContainer(
+                    event.target.getAttribute("data-replay-id"),
+                    '.replayCodeOutputTextArea',
+                    new CypressTranslator({})
+                );
+                break;
+            case event.target.value == "jest+selenium":
+                loadReplayCodeStringIntoTargetContainer(
+                    event.target.getAttribute("data-replay-id"),
+                    '.replayCodeOutputTextArea',
+                    new JestTranslator({translator: "Selenium"})
+                );
+                break;
+            default:
+                $('.ui.fluid.showReplay.container .codeOutputTextArea').val("UNRECOGNISED CODE FORMAT");
+        }
+            
     });
 
 });
