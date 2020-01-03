@@ -429,6 +429,8 @@ $(document).ready (function(){
         const textToCopy = $('.ui.showRecording.container .codeOutputTextArea').val();
         //then paste that into the clipboard
         navigator.clipboard.writeText(textToCopy);
+        //then report
+        ga('send', { hitType: 'event', eventCategory: 'RecordingCodeExport', eventAction: 'Clipboard', eventLabel: 'Clipboard'});
     });
 
     //activate the download code as js file button
@@ -446,6 +448,8 @@ $(document).ready (function(){
             url: url,
             filename: "RecordReplayRecording.js"
         });
+        //then report
+        ga('send', { hitType: 'event', eventCategory: 'RecordingCodeExport', eventAction: 'Download', eventLabel: 'Download'});
     });
 
     //respond to requested code language changes, which requires getting the recording from the server and processing it

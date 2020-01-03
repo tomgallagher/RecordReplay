@@ -824,6 +824,8 @@ $(document).ready (function(){
         const textToCopy = $('.ui.showReplay.container .codeOutputTextArea').val();
         //then paste that into the clipboard
         navigator.clipboard.writeText(textToCopy);
+        //then report
+        ga('send', { hitType: 'event', eventCategory: 'ReplayCodeExport', eventAction: 'Clipboard', eventLabel: 'Clipboard'});
     });
 
     //activate the download code as js file button
@@ -841,6 +843,8 @@ $(document).ready (function(){
             url: url,
             filename: "RecordReplay.js"
         });
+        //then report
+        ga('send', { hitType: 'event', eventCategory: 'ReplayCodeExport', eventAction: 'Download', eventLabel: 'Download'});
     });
 
     //respond to requested code language changes, which requires getting the replay from the server and processing it
