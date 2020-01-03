@@ -6,7 +6,7 @@
 
 * Tests run in your Chrome browser so Record/Replay works no matter how you develop your site, be it React, Angular, Vue or some other framework.
 
-* We aim to serve all website developers, from those with no programming experience to those with experience of multiple testing frameworks. 
+* We aim to serve all developers, from those with no programming experience to those with experience of multiple testing frameworks. 
 
 # HOW DOES RECORD/REPLAY WORK? 
 
@@ -18,8 +18,8 @@ __REPORT__ - Provides feedback on the execution of user interface interactions, 
 
 # WHY SHOULD YOU INSTALL RECORD/REPLAY?
 
-As you develop, and definitely before you deploy to production, you want to know that all the key functionality of your site really works.
-You don’t want your users to find the bugs before you do. Your users will not stick around for long if that happens. 
+As you develop, and definitely before you deploy to production, you want to know that all the key functionality of your application really works.
+You don’t want your users to find the bugs before you do.
 
 Yet manual end-to-end functional testing is time-consuming and tedious. It is a prime candidate for automation. 
 Record/Replay delivers easy automation testing to everyone, __speeding up delivery of production code__ you can trust.
