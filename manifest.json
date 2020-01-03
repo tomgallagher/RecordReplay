@@ -2,7 +2,7 @@
   "manifest_version": 2,
 
   "name": "Record/Replay",
-  "description": "Automated functional testing via the Chrome DevTools Protocol. Easy to use and open source. Generates unique CSS and Xpath selectors. Outputs code for multiple testing frameworks.",
+  "description": "Automated functional testing via Chrome DevTools Protocol. Easy to use and open source. Popular testing framework code output.",
   "author": "Tom Gallagher",
   "version": "1.0.0.1",
   
