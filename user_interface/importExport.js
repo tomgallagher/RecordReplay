@@ -36,6 +36,8 @@ $(document).ready (function(){
             //then signal done
             $('.ui.file.segment .ui.import.form').removeClass('loading');
             $('#ImportData textarea').val('Record/Replay File - Import Complete');
+            //then report
+            ga('send', { hitType: 'event', eventCategory: 'JSONImport', eventAction: 'Drop', eventLabel: 'JSONData'});
             //activate menu buttons according to record counts
             enableVerticalMenuButtonsWhenDataAllows();
 
@@ -48,6 +50,7 @@ $(document).ready (function(){
 
         // Prevent default behavior (Submit form)
         event.preventDefault();
+        ga('send', { hitType: 'event', eventCategory: 'JSONExport', eventAction: 'Click', eventLabel: 'JSONData'});
         //get a copy of the database
         const blob = await StorageUtils.getExportedDatabase('importExport.js');
         //create a local temporary url - the object URL can be used as download URL

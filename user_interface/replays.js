@@ -722,6 +722,8 @@ function addReplayEventsTableStartReplayHandler() {
             //and the various logging messages
             $('.ui.runReplayReplayEventsTable.table .ui.info.logging.message').css('display', 'none');
             $('.ui.runReplayReplayEventsTable.table .ui.negative.error.message').css('display', 'none');
+            //then report to Google analytics so we can see how often replays happen 
+            ga('send', { hitType: 'event', eventCategory: 'ExistingReplayRun', eventAction: `Click`, eventLabel: 'ReplayData'});
         })
         //get the replay from storage using the data id from the button
         .switchMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('replays.js', event.target.getAttribute('data-replay-id') , 'replays')) )

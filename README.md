@@ -33,7 +33,7 @@ Experienced testers can use Record/Replay to __generate short, unique selectors 
 In addition, our code generators __produce code for Jest, Puppeteer, Cypress and Selenium Webdriver__ that you can copy and paste into your testing suites.
 This can reduce the amount of time taken to create a full-coverage functional testing suite suitable for multiple different browsers, on your machine or in the cloud.
 
-Install from this repo or head to the [Chrome Web Store](http://example.com) to install a version that benefits from automatic updates.
+Install from this repo master / production branches, or head to the [Chrome Web Store](http://example.com) to install a version that benefits from automatic updates.
 
 # WHY IS IT BETTER THAN OTHER TESTING FRAMEWORKS?
 

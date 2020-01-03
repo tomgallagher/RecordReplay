@@ -136,6 +136,8 @@ function addStartRecordingHandler() {
             $('.ui.text.small.recording.loader').addClass('active');
             //then empty the table
             $('.ui.newRecordingRecordingEventsTable.table tbody').empty();
+            //then report to Google analytics so we can see how often recordings happen 
+            ga('send', { hitType: 'event', eventCategory: 'NewRecording', eventAction: `Click`, eventLabel: 'RecordingData'});
         })
         //map the event to the recording that has started by querying storage using the data id from the button
         .flatMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('newRecording.js', event.target.getAttribute('data-recording-id') , 'recordings')))
@@ -295,12 +297,16 @@ $(document).ready (function(){
     //then we need to add the start recording handler
     addStartRecordingHandler();
 
-    //just need a simple handler for the check box to state computer or mobile emulation
-    $('.ui.newRecordingForm.form .ui.radio.device.checkbox').change(function(event){
-        if (event.target.value == "mobile") {
-            $('.ui.newRecordingForm.form .orientation.field').removeClass('disabled');
-        } else { 
-            $('.ui.newRecordingForm.form .orientation.field').addClass('disabled'); 
+    $('.ui.newRecordingForm.form .ui.radio.device.checkbox').checkbox({
+        onChecked: function() {
+            //send data to google analytics so we know how popular the mobile options are
+            ga('send', { hitType: 'event', eventCategory: 'RecordingParams', eventAction: `${$(this).attr('value')}`, eventLabel: 'RadioCheckboxData'});
+            //enable or disable the other inputs according to mobile or not
+            if ($(this).attr('value') == "mobile") {
+                $('.ui.newRecordingForm.form .orientation.field').removeClass('disabled');
+            } else { 
+                $('.ui.newRecordingForm.form .orientation.field').addClass('disabled'); 
+            }
         }
     });
 

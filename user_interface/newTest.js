@@ -29,7 +29,12 @@ function refreshNewTestProjectDropdown() {
 $(document).ready (function(){
 
     //make all the checkboxes for the new test form ready
-    $('.ui.newTestForm.form .ui.checkbox').checkbox();
+    $('.ui.newTestForm.form .ui.checkbox').checkbox({
+        onChecked: function() {
+            //send data to google analytics so we know how popular the options are
+            ga('send', { hitType: 'event', eventCategory: 'TestParams', eventAction: `${$(this).attr('name')}`, eventLabel: 'CheckboxData'});
+        }
+    });
 
     //ready the new form bandwidth and latency dropdowns
     $('.ui.newTestForm.form .ui.fluid.selection.bandwidth.dropdown').dropdown();

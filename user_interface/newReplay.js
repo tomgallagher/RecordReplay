@@ -185,6 +185,8 @@ function addAssertionCheckboxListener(recording) {
             hiddenAssertionsCollectionArray.push(assertion);
             //then put in the new value
             $('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val(JSON.stringify(hiddenAssertionsCollectionArray));
+            //then report to Google analytics so we can see how often assertions happen 
+            ga('send', { hitType: 'event', eventCategory: 'Assertion', eventAction: `Add`, eventLabel: 'AssertionData'});
         })
         //then we report
         .subscribe(
@@ -784,6 +786,8 @@ function addNewReplayEventsTableStartReplayHandler() {
             //and the various logging messages
             $('.ui.newReplayReplayEventsTable.table .ui.info.logging.message').css('display', 'none');
             $('.ui.newReplayReplayEventsTable.table .ui.negative.error.message').css('display', 'none');
+            //then report to Google analytics so we can see how often replays happen 
+            ga('send', { hitType: 'event', eventCategory: 'NewReplayRun', eventAction: `Click`, eventLabel: 'ReplayData'});
         })
         //get the replay from storage using the data id from the button
         .switchMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('replays.js', event.target.getAttribute('data-replay-id') , 'replays')) )

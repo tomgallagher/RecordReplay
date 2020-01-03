@@ -22,6 +22,8 @@
       "default_title": "Click to open Record/Replay user interface"
   },
   
+  "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
+
   "options_page": "options.html",
   
   "options_ui": {

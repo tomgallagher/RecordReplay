@@ -9,6 +9,9 @@ $(document).ready (function(){
         delay: { show: 300, hide: 800}
     });
 
+    //github link reporting
+    $('.ui.flowing.popup a').on('click', () => ga('send', { hitType: 'event', eventCategory: 'GitHubLink', eventAction: 'Click', eventLabel: 'Github'}));
+
     //menu operations are not handled automatically by semantic - we handle it ourselves
     $('.ui.compact.horizontal.menu .item').on('click', function() {
         //then get the classes of the active item as a list
@@ -53,12 +56,13 @@ $(document).ready (function(){
                 break;
             case classArray.includes('emailIcon'):
                 const emailUrl = "mailto:turbobrowser.contact@gmail.com?Subject=Record/Replay Query";
+                ga('send', { hitType: 'event', eventCategory: 'EmailLink', eventAction: 'Click', eventLabel: 'Email'});
                 chrome.tabs.create({ url: emailUrl }, function(tab) {
                     setTimeout(function() { chrome.tabs.remove(tab.id); }, 500);
                 });
                 break;
             case classArray.includes('giveIcon'):
-                
+                ga('send', { hitType: 'event', eventCategory: 'DonateLink', eventAction: 'Click', eventLabel: 'Donate'});
                 break;
         }
     });
