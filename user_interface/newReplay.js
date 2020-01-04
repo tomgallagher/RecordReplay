@@ -569,7 +569,7 @@ function runExecutionMessageWithFailover(replayEvent) {
 
 }
 
-//THIS FUNCTION IS SHARED BY REPLAYS.JS
+//THIS FUNCTION IS SHARED BY REPLAYS.JS AND BULKREPLAY.JS
 //CHECK BOTH FILES BEFORE MAKING CHANGES
 function processReplayEvents(replay, tableSelector, containerSelector) {
 
@@ -674,8 +674,8 @@ function processReplayEvents(replay, tableSelector, containerSelector) {
             .takeUntil(
                 //merge the two sources of potential recording stop commands, either will do
                 Rx.Observable.merge(
-                    //obviously the stop button is a source of finalisation
-                    Rx.Observable.fromEvent(document.querySelector(`${containerSelector} .ui.stopReplay.negative.button`), 'click')
+                    //obviously the stop button is a source of finalisation - generalised to negative button so we can use this routine for bulk replays
+                    Rx.Observable.fromEvent(document.querySelector(`${containerSelector} .ui.negative.button`), 'click')
                         //we need to send the message to the background script here 
                         .do(event => new RecordReplayMessenger({}).sendMessage({stopReplay: event.target.getAttribute('data-replay-id')})),
                     //less obviously, the user might choose to stop the replay by closing the tab window
@@ -739,7 +739,7 @@ function runVisualRegressionAnalysis(containerSelector, previousRunImage, curren
             //just treat all differences the same
             errorType: "flat",
             //then produce an image that is slightly transparent to highlight differences
-            transparency: 0.7,
+            transparency: 0.8,
             //useCrossOrigin is true by default, you might need to set it to false if you're using Data URIs.
             useCrossOrigin: false,
             //then produce output image

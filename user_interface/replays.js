@@ -704,7 +704,7 @@ function addReplayEventsTableStartReplayHandler() {
             event.target.className += " disabled";
             //show the stop replay button as enabled
             $('.ui.runReplay.container .ui.stopReplay.negative.button').removeClass('disabled');
-            //remove all the indicators from the table rows, apart from disabled and assertion rwo
+            //remove all the indicators from the table rows, apart from disabled and assertion row
             $(`.ui.runReplayReplayEventsTable.table tr`).removeClass('positive');
             $(`.ui.runReplayReplayEventsTable.table tr`).removeClass('negative');
             //show the replay loader
