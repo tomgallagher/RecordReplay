@@ -158,7 +158,7 @@ class PuppeteerTranslator {
 
     getElementAttribute = (selector, attribute, target) => `await ${target}.$eval('${selector}', element => element[${attribute}]);`
 
-    getElementAttributeValue = (selector, attribute, target) => `await ${target}.$eval('${selector}', element => element.getAttribute('${attribute}');`
+    getElementAttributeValue = (selector, attribute, target) => `await ${target}.$eval('${selector}', element => element.getAttribute('${attribute}'));`
 
     getElementAttributesAsArray = (selector, target) => `await ${target}.$eval('${selector}', element => Array.prototype.slice.call(element.attributes);`
 
