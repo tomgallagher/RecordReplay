@@ -108,7 +108,7 @@ class PuppeteerTranslator {
     //Note you should always focus before you type
     typeText = (text, target) => `await ${target}.keyboard.type('${text}');`
 
-    inputContentEditable = (selector, text, target) => `await ${target}.evaluate( () => { ${this.tabIndex(-1)} document.querySelector('${selector}').textContent = '${text}'; ${this.tabIndex(index)} });` 
+    inputContentEditable = (selector, text, target) => `await ${target}.evaluate( () => { document.querySelector('${selector}').textContent = '${text}'; });` 
 
     //Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
     nonInputTyping = (selector, replayEvent, index) => {
@@ -219,7 +219,7 @@ class PuppeteerTranslator {
                 switch(recordingEvent.recordingEventActionType) {
                     case "hover":
                         //in the case of hover, we get the most valid selector and then push the string result of the hover selctor into the array 
-                        outputStringArray.push(this.hover(this.getMostValidSelector(recordingEvent), target));
+                        outputStringArray.push(this.hover(this.getMostValidSelector(recordingEvent), index, target));
                         break;
                     case "recaptcha":
                         //recaptcha is different in recording terms as the event we listen to is not the event we replay - click to replay 
