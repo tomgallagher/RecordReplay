@@ -2,7 +2,7 @@
   "manifest_version": 2,
 
   "name": "Record/Replay",
-  "description": "Browser automation package. Easy to use and open source. Complete functional testing framework.",
+  "description": "Browser automation package. Easy to use and open source. Integrated functional testing framework.",
   "author": "Tom Gallagher",
   "version": "1.0.0.2",
   
