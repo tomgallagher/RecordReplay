@@ -162,7 +162,6 @@ function refreshBulkReplayTestDropdown() {
 
 function runBulkReplay(testID) {
 
-    console.log(testID)
     //we need to have the testID as a number
     const testIDAsNumber = StorageUtils.standardiseKey(testID)
     //first we need to get all the replays from storage, delivered as an array
