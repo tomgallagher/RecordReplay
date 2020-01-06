@@ -71,12 +71,13 @@ class ReplayTabRunner {
             8: `TabRunner: Script Package Injected into sub_frame ${message}`,
             9: "TabRunner: Cleared Browser Cache",
             10: "TabRunner: Saved Screenshot",
-            11: "TabRunner: DOM Domain Enabled",
-            12: "TabRunner:: Returned Root DOM node",
-            13: `TabRunner:: Executed QuerySelector: ${message}`,
-            14: `TabRunner:: Focused Element With Id: ${message}`,
-            15: `TabRunner:: Dispatched Key Event: ${message}`,
-            16: `TabRunner:: Dispatched Key Event: ${message}`,
+            11: "TabRunner: Runtime Enabled",
+            12: "TabRunner: Returned Root DOM node",
+            13: `TabRunner: Executed QuerySelector: ${message}`,
+            14: `TabRunner: Focused Element: ${message}`,
+            15: `TabRunner: Dispatched Key Event: ${message}`,
+            16: `TabRunner: Dispatched Key Event: ${message}`,
+            17: `TabRunner Error: ${message}`
         };
         //gives the opportunity to switch off tab runner logging
         if (this.withLogging) { console.log(logStatements[index]); }
@@ -141,7 +142,7 @@ class ReplayTabRunner {
         //RESOURCE LOADS OBSERVABLE CONSTRUCTION
 
         //LISTEN TO ALL DEBUGGER EVENTS
-        const networkEventObservable = Rx.Observable.fromEventPattern(
+        const debuggerEventObservable = Rx.Observable.fromEventPattern(
             //add the handler to listen for debugger events
             handler => chrome.debugger.onEvent.addListener(handler),
             //remove the handler
@@ -151,7 +152,7 @@ class ReplayTabRunner {
         );
         
         //LISTEN TO Network.responseReceived EVENTS AS THESE PROVIDE THE RESOURCE TYPE
-        const resourceTypeObservable = networkEventObservable
+        const resourceTypeObservable = debuggerEventObservable
             //to get at the data we use loading finished event
             .filter(networkObject =>  networkObject.message == "Network.responseReceived")
             //then down stream we only need the following params
@@ -166,7 +167,7 @@ class ReplayTabRunner {
             }, {});
         
         //LISTEN TO Network.loadingFinished EVENTS AS THESE PROVIDE THE RESOURCE LOADS
-        const dataUsageObservable = networkEventObservable
+        const dataUsageObservable = debuggerEventObservable
             //to get at the data we use loading finished event
             .filter(networkObject =>  networkObject.message == "Network.loadingFinished")
             //then down stream we only need the following params
@@ -279,12 +280,31 @@ class ReplayTabRunner {
                 
             });
         
+        //the dom selector reports and focus operations use runtime.evaluate so we need a list of all executions contexts
+        const executionContextObservable = debuggerEventObservable
+            //to get all the execution contexts 
+            .filter(networkObject =>  networkObject.message == "Runtime.executionContextCreated")
+            //then we do not want to get the execution contexts from the content script isolated worlds
+            .filter(networkObject => networkObject.infoObject.context.auxData.type == "default")
+            //then get only the execution context id, which is part of the infoobject's context
+            .map(executionContextDescription => executionContextDescription.infoObject.context.id)
+            //then scan into an array
+            .scan((contextIdArray, id) => { 
+                //just push the execution context id into the arra
+                contextIdArray.push(id); 
+                //return the array for the next scan
+                return contextIdArray; 
+            //seed with the initial array 
+            }, []);
+
         //HANDLE THE SPECIFIC REQUESTS FROM THE USER INTERFACE TO EXECUTE KEYBOARD ACTIONS
         const keyboardObservable = this.messengerService.chromeOnMessageObservable
             //firstly we only care about messages that contain a replay event
             .filter(messageObject => messageObject.request.hasOwnProperty('replayEvent'))
             //then we only want messages that are specifically keyboard messages
             .filter(messageObject => messageObject.request.replayEvent.recordingEventOrigin == 'User' && messageObject.request.replayEvent.recordingEventAction == 'Keyboard')
+            //then report the processing of keyboard event
+            .do(messageObject => console.log(`Tab Runner Processing Keyboard ${messageObject.request.replayEvent.recordingEventActionType} Event`) )
             //if we have a replay event, then map the message object to the replay event only and attach the sendResponse so we can return feedback as soon as we get it
             .map(messageObject => {
                 //we need to extract the replay event coming in from the message object
@@ -297,12 +317,20 @@ class ReplayTabRunner {
                 //then return the replay event
                 return replayEvent;
             })
+            //add the execution context array to the replay event so we can evaluate javascript in all the execution contexts
+            .withLatestFrom(
+                executionContextObservable,
+                (replayEvent, contextArray) => {
+                    replayEvent.executionContextArray = contextArray;
+                    return replayEvent;
+                }
+            )
             //then we want to run the DomSelectorReports, which return a CDP nodeId for searching the document
             .flatMap(replayEvent =>
                 Promise.all([
-                    DomSelectorReport({key: "CssSelector", selectorString: replayEvent.recordingEventCssSelectorPath, targetHtmlTag: replayEvent.recordingEventHTMLTag, browserTabId: this.browserTabId}),
-                    DomSelectorReport({key: "DomPathSelector", selectorString: replayEvent.recordingEventCssDomPath, targetHtmlTag: replayEvent.recordingEventHTMLTag, browserTabId: this.browserTabId}),
-                    DomSelectorReport({key: "FinderSelector", selectorString: replayEvent.recordingEventCssFinderPath, targetHtmlTag: replayEvent.recordingEventHTMLTag, browserTabId: this.browserTabId})
+                    new DomSelectorReport({key: "CssSelector", replayEvent: replayEvent, browserTabId: this.browserTabId}),
+                    new DomSelectorReport({key: "DomPathSelector", replayEvent: replayEvent, browserTabId: this.browserTabId}),
+                    new DomSelectorReport({key: "FinderSelector", replayEvent: replayEvent, browserTabId: this.browserTabId})
                 ]),
                 (replayEvent, selectorResultsArray) => {
   
@@ -321,8 +349,10 @@ class ReplayTabRunner {
 
                     //then we need to have an outcome
                     if (replayEvent.replaySelectorReports.length > 0) {
-                        //select the first report that has provided a positive response, this will have a nodeId property we need to use again
-                        replayEvent.chosenSelectorReport = replayEvent.replaySelectorReports[0];
+                        //select the first report that has provided a positive response and has the shortest selector
+                        replayEvent.chosenSelectorReport = replayEvent.replaySelectorReports.sort((reportA, reportB) => reportA.selectorString.length - reportB.selectorString.length)[0];
+                        //then mark as a good replay
+                        replayEvent.replayEventStatus = true;
                     } else {
                         //then we need to push an error message to the logs
                         replayEvent.replayErrorMessages.push(`No Valid Target On Page`);
@@ -360,7 +390,7 @@ class ReplayTabRunner {
                 //and we set the status to true to indicate a successful replay
                 replayEvent.replayEventStatus = true;
                 //then report to the log messages array
-                replayEvent.replayLogMessages.push(`${replayEvent.actionType.toUpperCase()} Event Playback Confirmed`);
+                replayEvent.replayLogMessages.push(`${replayEvent.recordingEventActionType.toUpperCase()} Event Playback Confirmed`);
                 //then send the response
                 if (replayEvent.sendResponse != null) {
                     //first we make a clone of this 
@@ -384,7 +414,7 @@ class ReplayTabRunner {
         //then we need to have the ability to send page commands
         await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Page.enable", {}, () => { this.log(2); resolve(); } ));
         //then we need to have the ability to send DOM commands
-        await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "DOM.enable", {}, () => { this.log(11); resolve(); } ));
+        await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Runtime.enable", {}, () => { this.log(11); resolve(); } ));
         //then we need to set any throttling / latency that may be needed
         await new Promise(resolve => chrome.debugger.sendCommand(
             { tabId: this.browserTabId }, 
@@ -437,10 +467,44 @@ class ReplayTabRunner {
 
     focus = async (replayEvent) => {
 
-        //when we ran the dom selector reports, this generated a nodeId on success
-        const targetNodeId = replayEvent.chosenSelectorReport.nodeId;
-        //then we need to focus on the element which will allow us to start sending key commands
-        await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "DOM.focus", { nodeId: targetNodeId }, () => { this.log(14, targetNodeId); resolve(); } ));
+        if (!replayEvent.recordingEventIsIframe) {
+
+            //then we need to focus on the element which will allow us to start sending key commands
+            await new Promise(resolve => chrome.debugger.sendCommand(
+                { tabId: this.browserTabId }, 
+                "Runtime.evaluate", 
+                { expression: `document.querySelector('${replayEvent.chosenSelectorReport.selectorString}').focus({ preventScroll: false });`}, 
+                () => { 
+                    if (chrome.runtime.lastError) {
+                        //report to the console
+                        this.log(17, chrome.runtime.lastError.message);
+                        // we report the time of the fail
+                        replayEvent.replayEventReplayed = Date.now();
+                        //and we set the status to false to indicate a failed replay
+                        replayEvent.replayEventStatus = false;
+                        //and we need to provide information on why the replay failed
+                        replayEvent.replayLogMessages.push(`DOM FOCUS: ${chrome.runtime.lastError.message}`);
+                        //then send the response if we have the facility
+                        if (replayEvent.sendResponse != null) {
+                            //first we make a clone of this 
+                            var replayExecution = Object.assign({}, replayEvent);
+                            //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
+                            delete replayExecution.sendResponse;
+                            //then we send the clean clone
+                            replayEvent.sendResponse({replayExecution: replayExecution});
+                        }   
+                        return;
+                    }
+                    this.log(14, replayEvent.recordingEventHTMLElement); 
+                    resolve(); 
+                } 
+            ));
+
+        } else {
+
+            //for iframes its a bit more complicated
+
+        }
         //then return the replay event for further processing 
         return replayEvent;
 
@@ -451,7 +515,34 @@ class ReplayTabRunner {
         //when we recorded the event, we created an event object matching the CDP required params
         const event = replayEvent.recordingEventDispatchKeyEvent;
         //essentially here it is a choice between "keyDown" or "rawKeyDown" for type in replayEvent.recordingEventDispatchKeyEvent
-        await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Input.dispatchKeyEvent", event, () => { this.log(15, event.type); resolve(); } ));
+        await new Promise(resolve => chrome.debugger.sendCommand(
+            { tabId: this.browserTabId }, 
+            "Input.dispatchKeyEvent", 
+            event, () => { 
+                if (chrome.runtime.lastError) {
+                    //report to the console
+                    this.log(17, chrome.runtime.lastError.message);
+                    // we report the time of the fail
+                    replayEvent.replayEventReplayed = Date.now();
+                    //and we set the status to false to indicate a failed replay
+                    replayEvent.replayEventStatus = false;
+                    //and we need to provide information on why the replay failed
+                    replayEvent.replayLogMessages.push(`KEY DOWN: ${chrome.runtime.lastError.message}`);
+                    //then send the response if we have the facility
+                    if (replayEvent.sendResponse != null) {
+                        //first we make a clone of this 
+                        var replayExecution = Object.assign({}, replayEvent);
+                        //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
+                        delete replayExecution.sendResponse;
+                        //then we send the clean clone
+                        replayEvent.sendResponse({replayExecution: replayExecution});
+                    }   
+                    return;
+                }
+                this.log(15, event.type); 
+                resolve(); 
+            } 
+        ));
         //then return the replay event for further processing 
         return replayEvent;
 
@@ -463,7 +554,34 @@ class ReplayTabRunner {
         let event = replayEvent.recordingEventDispatchKeyEvent;
         //the type needs to be changed from "keyDown" or "rawKeyDown" to "keyup"
         event.type = "keyUp";
-        await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Input.dispatchKeyEvent", event, () => { this.log(16, event.type); resolve(); } ));
+        await new Promise(resolve => chrome.debugger.sendCommand(
+            { tabId: this.browserTabId }, 
+            "Input.dispatchKeyEvent", 
+            event, () => { 
+                if (chrome.runtime.lastError) {
+                    //report to the console
+                    this.log(17, chrome.runtime.lastError.message);
+                    // we report the time of the fail
+                    replayEvent.replayEventReplayed = Date.now();
+                    //and we set the status to false to indicate a failed replay
+                    replayEvent.replayEventStatus = false;
+                    //and we need to provide information on why the replay failed
+                    replayEvent.replayLogMessages.push(`KEY DOWN: ${chrome.runtime.lastError.message}`);
+                    //then send the response if we have the facility
+                    if (replayEvent.sendResponse != null) {
+                        //first we make a clone of this 
+                        var replayExecution = Object.assign({}, replayEvent);
+                        //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
+                        delete replayExecution.sendResponse;
+                        //then we send the clean clone
+                        replayEvent.sendResponse({replayExecution: replayExecution});
+                    }   
+                    return;
+                }
+                this.log(16, event.type); 
+                resolve(); 
+            } 
+        ));
         //then return the replay event for further processing 
         return replayEvent;
 

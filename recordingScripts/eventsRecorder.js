@@ -81,7 +81,9 @@ var EventRecorder = {
         //then we are interested in only certain types of attention events
         .filter(item => item == "selectstart" || item == "focus")
         //we map each string array item to an observable
-        .map(eventName => Rx.Observable.fromEvent(document, eventName)),
+        //attach a document-level listener with a third parameter of true to capture the focus events on all elements
+        //tells the browser to capture the event on dispatch, even if that event does not normally bubble
+        .map(eventName => Rx.Observable.fromEvent(document, eventName, true)),
 
     //SELECT SCROLL EVENTS FOR CONVERSION TO OBSERVABLEs
     scrollActionEventObservables: EventRecorderEvents.attentionEvents
@@ -522,7 +524,8 @@ EventRecorder.startRecordingEvents = () => {
                 return false;
             }
             //there is no point in recording text navigation in HTMLInputElement, HTMLTextAreaElement and isContentEditable elements - we use the input change event for that
-            if ((descriptor == "ArrowLeft" || descriptor == "ArrowUp" || descriptor == "ArrowRight" || descriptor == "ArrowDown") && EventRecorder.elementIsInput(actionEvent.target)) {
+            //at the moment we only assume ArrowLeft and ArrowRight as text navigation - up and down can be used to select dropdown elements
+            if ((descriptor == "ArrowLeft" || descriptor == "ArrowRight") && EventRecorder.elementIsInput(actionEvent.target)) {
                 console.log(`Keyboard: Not Recording Text Navigation Key "${descriptor}" on HTMLInputElement, HTMLTextAreaElement or isContentEditable Element`);
                 //just return an empty observable as a placeholder which we can easily filter out
                 return false;
