@@ -28,6 +28,50 @@ class DomSelectorReport {
             }
             //then we need to know if we are operating in an iframe or not 
             this.isIframe = options.replayEvent.recordingEventIsIframe;
+            //this is the standard query selector - we cannot serialize the dom node itself so we get shorthand constructor name
+            //we can test for constructor name
+            this.executeQuerySelector = () => {
+                return new Promise(resolve => 
+                    chrome.tabs.executeScript(this.browserTabId, 
+                        //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
+                        { code: `document.querySelector('${this.selectorString}').constructor.name;`, runAt: "document_idle" },
+                        //log the script injection so we can see what's happening and resolve the promise  
+                        (array) => { 
+                            //console.log(`Executed Query Selector in Main Document`); 
+                            resolve(array[0]); 
+                        } 
+                    )
+                )
+            }
+            //this is the standard query selector all - we cannot serialize the nodelist of dom nodes itself so we get shorthand length
+            //we can test for constructor name
+            this.executeQuerySelectorAll = () => {
+                return new Promise(resolve => 
+                    chrome.tabs.executeScript(this.browserTabId, 
+                        //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
+                        { code: `document.querySelectorAll('${this.selectorString}').length;`, runAt: "document_idle" },
+                        //log the script injection so we can see what's happening and resolve the promise  
+                        (array) => { 
+                            //console.log(`Executed Query Selector in Main Document`); 
+                            resolve(array[0]); 
+                        } 
+                    )
+                )
+            }
+            //then we need to have a promise that executes the query selector for iframes - we cannot serialize the dom node itself so we get shorthand constructor name
+            this.executeIframeQuerySelector = (navObject) => {
+                return new Promise(resolve => 
+                    chrome.tabs.executeScript(this.browserTabId, 
+                        //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
+                        { code: `document.querySelector('${this.selectorString}').constructor.name;`, frameId: navObject.frameId, runAt: "document_idle" },
+                        //log the script injection so we can see what's happening and resolve the promise  
+                        (array) => { 
+                            //console.log(`Executed Query Selector in Iframe: ${navObject.url}`); 
+                            resolve(array[0]); 
+                        } 
+                    )
+                )
+            }
             //then the class needs to provide log messages
             this.logMessages = [];
             //then the class needs to provide warning messages
@@ -35,19 +79,11 @@ class DomSelectorReport {
             
             if (!this.isIframe) {
 
-                this.selectedItem = await new Promise(resolve => chrome.debugger.sendCommand(
-                    { tabId: this.browserTabId }, 
-                    "Runtime.evaluate",
-                    {expression: `document.querySelector('${this.selectorString}');`},
-                    value => {
-                        //report to the console if error
-                        if (chrome.runtime.lastError) { console.log("QUERY SELECTOR ERROR", chrome.runtime.lastError.message); }
-                        console.log(`QUERY SELECTOR RESULT ${JSON.stringify(value.result)}`);
-                        resolve(value.result);
-                    }
-                ));
+                //this delivers the constructor name if we find something - null if not
+                this.selectedItem = await this.executeQuerySelector();
+                //report the constructor name
+                console.log(this.selectedItem);
 
-                //if the item is null, it cannot be found in the document
                 if (this.selectedItem == null) {
                     //so we need to report an invalid selector and return the object
                     this.invalidSelector = true;
@@ -56,19 +92,28 @@ class DomSelectorReport {
                     //this is an early exit as there's nothing more to do
                     return this;
                 }
-
-                //if the item does not have the same tagname we need to return
-                if (this.selectedItem.className != this.targetHtmlElement) {
-                    //so the CSS selector has found an element but it does not match by tag name
+                //if the item is not the same html element we need to return, unless we are dealing with the HTML document, as CSS selectors return constructor name as HTMLHtmlElement
+                if (this.targetHtmlElement != "HTMLDocument" && this.selectedItem != this.targetHtmlElement) {
+                    //so the CSS selector has found an element but it does not match by constrcutor name
                     this.invalidSelector = true;
                     //then give some feedback
-                    this.warningMessages.push(`${this.selectorKey} Unmatched Html Element ${this.selectedItem.className}`);
+                    this.warningMessages.push(`${this.selectorKey} Unmatched Constructor Name ${this.selectedItem.constructor.name}`);
                     //this is an early exit as there's nothing more to do
                     return this;
                 }
-
-                //so we have a good selector, lets just get the outerhtml so we can inspect reports
-                this.selectedItem = this.selectedItem.className;
+        
+                //then we need to warn on multiple matches, as we can start to have problems with targeting
+                this.selectedItemLength = await this.executeQuerySelectorAll();
+                //we cannot afford to use a selector that generates multiple matches
+                if (this.selectedItemLength > 1) {
+                    //so the CSS selector has found too many elements
+                    this.invalidSelector = true;
+                    //then give some feedback
+                    this.warningMessages.push(`${this.selectorKey} Multiple Selector Matches`);
+                    //this is an early exit as there's nothing more to do
+                    return this;
+                }
+                
                 //then we report good finish
                 this.logMessages.push(`${this.selectorKey} Found in Document`);
                 //and we're done - always remember to return this to the constructor in an async function or the whole thing is pointless
@@ -76,7 +121,42 @@ class DomSelectorReport {
 
             } else {
 
-                //for iframes its a bit more complicated
+                //so for iframes we need to work with the iframeContextArray that we created in the replay tab runner
+                //this is created in the replay tab runner and has objects with {frameId: <string> and url: <string>}
+                const iframeQuerySelectorExecutionArray = options.replayEvent.iframeContextArray
+                    //then we need to map each navobject to the promise that uses chrome.tabs execute script to get results 
+                    .map(navObject => this.executeIframeQuerySelector(navObject));
+
+                //so we then run all the promises at the same time
+                const resultArray = await Promise.all(iframeQuerySelectorExecutionArray);
+
+                //then we need to see if we have anything other than null values use Array.prototype.filter for truthy value check
+                var outputArray = resultArray.filter(e => { return e; });
+                //then if we have an empty array we return zip
+                if (outputArray.length == 0) {
+                    //so we need to report an invalid selector and return the object
+                    this.invalidSelector = true;
+                    //then give some feedback
+                    this.warningMessages.push(`${this.selectorKey} Selector Not Found in Iframe`);
+                    //this is an early exit as there's nothing more to do
+                    return this;
+                } else {
+                    //get the first match
+                    this.selectedItem = outputArray[0];
+                    //if the item is not the same html element we need to return, unless we are dealing with the HTML document, as CSS selectors return constructor name as HTMLHtmlElement
+                    if (this.targetHtmlElement != "HTMLDocument" && this.selectedItem != this.targetHtmlElement) {
+                        //so the CSS selector has found an element but it does not match by constrcutor name
+                        this.invalidSelector = true;
+                        //then give some feedback
+                        this.warningMessages.push(`${this.selectorKey} Unmatched Constructor Name ${this.selectedItem.constructor.name}`);
+                        //this is an early exit as there's nothing more to do
+                        return this;
+                    }
+                    //then we report good finish
+                    this.logMessages.push(`${this.selectorKey} Found in Iframe`);
+                    //and we're done - always remember to return this to the constructor in an async function or the whole thing is pointless
+                    return this; 
+                }          
 
             }
 

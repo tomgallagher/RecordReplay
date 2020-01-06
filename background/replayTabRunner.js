@@ -280,20 +280,24 @@ class ReplayTabRunner {
                 
             });
         
-        //the dom selector reports and focus operations use runtime.evaluate so we need a list of all executions contexts
-        const executionContextObservable = debuggerEventObservable
-            //to get all the execution contexts 
-            .filter(networkObject =>  networkObject.message == "Runtime.executionContextCreated")
-            //then we do not want to get the execution contexts from the content script isolated worlds
-            .filter(networkObject => networkObject.infoObject.context.auxData.type == "default")
-            //then get only the execution context id, which is part of the infoobject's context
-            .map(executionContextDescription => executionContextDescription.infoObject.context.id)
+        //the dom selector reports and focus operations need a record of all the frames to search as well
+        const executionContextObservable = this.webNavigator.navigationEventsObservable
+            //then we only care about the onCommitted Event
+            .filter(navObject => navObject.recordReplayWebNavigationEvent == 'onDOMContentLoaded')
+            //then we only care about events happening in our curated tab
+            .filter(navObject => navObject.tabId == this.browserTabId)
+            //then we only care about any iframes 
+            .filter(navObject => navObject.frameId > 0)
+            //then we don't care about blank iframes
+            .filter(navObject => navObject.url != "about:blank")
+            //then get only the frame id
+            .map(navObject => ({frameId: navObject.frameId, url: navObject.url}))
             //then scan into an array
-            .scan((contextIdArray, id) => { 
+            .scan((frameIdArray, navObject) => { 
                 //just push the execution context id into the arra
-                contextIdArray.push(id); 
+                frameIdArray.push(navObject); 
                 //return the array for the next scan
-                return contextIdArray; 
+                return frameIdArray; 
             //seed with the initial array 
             }, []);
 
@@ -321,7 +325,7 @@ class ReplayTabRunner {
             .withLatestFrom(
                 executionContextObservable,
                 (replayEvent, contextArray) => {
-                    replayEvent.executionContextArray = contextArray;
+                    replayEvent.iframeContextArray = contextArray;
                     return replayEvent;
                 }
             )
@@ -413,8 +417,6 @@ class ReplayTabRunner {
         if (this.saveResourceLoads) { chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Network.clearBrowserCache", {}, () => { this.log(9); }); }
         //then we need to have the ability to send page commands
         await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Page.enable", {}, () => { this.log(2); resolve(); } ));
-        //then we need to have the ability to send DOM commands
-        await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Runtime.enable", {}, () => { this.log(11); resolve(); } ));
         //then we need to set any throttling / latency that may be needed
         await new Promise(resolve => chrome.debugger.sendCommand(
             { tabId: this.browserTabId }, 
@@ -470,39 +472,23 @@ class ReplayTabRunner {
         if (!replayEvent.recordingEventIsIframe) {
 
             //then we need to focus on the element which will allow us to start sending key commands
-            await new Promise(resolve => chrome.debugger.sendCommand(
-                { tabId: this.browserTabId }, 
-                "Runtime.evaluate", 
-                { expression: `document.querySelector('${replayEvent.chosenSelectorReport.selectorString}').focus({ preventScroll: false });`}, 
-                () => { 
-                    if (chrome.runtime.lastError) {
-                        //report to the console
-                        this.log(17, chrome.runtime.lastError.message);
-                        // we report the time of the fail
-                        replayEvent.replayEventReplayed = Date.now();
-                        //and we set the status to false to indicate a failed replay
-                        replayEvent.replayEventStatus = false;
-                        //and we need to provide information on why the replay failed
-                        replayEvent.replayLogMessages.push(`DOM FOCUS: ${chrome.runtime.lastError.message}`);
-                        //then send the response if we have the facility
-                        if (replayEvent.sendResponse != null) {
-                            //first we make a clone of this 
-                            var replayExecution = Object.assign({}, replayEvent);
-                            //then we delete the sendResponse function from the clone, just to avoid any confusion as it passes through messaging system
-                            delete replayExecution.sendResponse;
-                            //then we send the clean clone
-                            replayEvent.sendResponse({replayExecution: replayExecution});
-                        }   
-                        return;
-                    }
-                    this.log(14, replayEvent.recordingEventHTMLElement); 
-                    resolve(); 
-                } 
-            ));
+            await new Promise(resolve => 
+                chrome.tabs.executeScript(this.browserTabId, 
+                    //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
+                    { code: `document.querySelector('${replayEvent.chosenSelectorReport.selectorString}').focus({ preventScroll: false });`, runAt: "document_idle" },
+                    //log the script injection so we can see what's happening and resolve the promise  
+                    () => { 
+                        this.log(14, replayEvent.recordingEventHTMLElement); 
+                        resolve(); 
+                    } 
+                )
+            )
 
         } else {
 
             //for iframes its a bit more complicated
+            //first we need to find out which iframe the element is in
+            //then once we have found it, we need to focus
 
         }
         //then return the replay event for further processing 
