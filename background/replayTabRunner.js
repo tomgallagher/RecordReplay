@@ -77,7 +77,8 @@ class ReplayTabRunner {
             14: `TabRunner: Focused Element: ${message}`,
             15: `TabRunner: Dispatched Key Event: ${message}`,
             16: `TabRunner: Dispatched Key Event: ${message}`,
-            17: `TabRunner Error: ${message}`
+            17: `TabRunner Error: ${message}`,
+            18: `TabRunner: Focused Element in Iframe: ${message}`,
         };
         //gives the opportunity to switch off tab runner logging
         if (this.withLogging) { console.log(logStatements[index]); }
@@ -486,9 +487,22 @@ class ReplayTabRunner {
 
         } else {
 
-            //for iframes its a bit more complicated
-            //first we need to find out which iframe the element is in
-            //then once we have found it, we need to focus
+            //then we need to focus on the element which will allow us to start sending key commands
+            await new Promise(resolve => 
+                chrome.tabs.executeScript(this.browserTabId, 
+                    //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
+                    { 
+                        code: `document.querySelector('${replayEvent.chosenSelectorReport.selectorString}').focus({ preventScroll: false });`,
+                        frameId: replayEvent.chosenSelectorReport.successFrameId,
+                        runAt: "document_idle" 
+                    },
+                    //log the script injection so we can see what's happening and resolve the promise  
+                    () => { 
+                        this.log(18, replayEvent.recordingEventHTMLElement); 
+                        resolve(); 
+                    } 
+                )
+            )
 
         }
         //then return the replay event for further processing 

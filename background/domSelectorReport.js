@@ -28,6 +28,12 @@ class DomSelectorReport {
             }
             //then we need to know if we are operating in an iframe or not 
             this.isIframe = options.replayEvent.recordingEventIsIframe;
+            //then we need to remember successful iframe searches frame id
+            this.successFrameId = null;
+            //then the class needs to provide log messages
+            this.logMessages = [];
+            //then the class needs to provide warning messages
+            this.warningMessages = [];
             //this is the standard query selector - we cannot serialize the dom node itself so we get shorthand constructor name
             //we can test for constructor name
             this.executeQuerySelector = () => {
@@ -67,15 +73,11 @@ class DomSelectorReport {
                         //log the script injection so we can see what's happening and resolve the promise  
                         (array) => { 
                             //console.log(`Executed Query Selector in Iframe: ${navObject.url}`); 
-                            resolve(array[0]); 
+                            resolve({element: array[0], frameId: navObject.frameId}); 
                         } 
                     )
                 )
             }
-            //then the class needs to provide log messages
-            this.logMessages = [];
-            //then the class needs to provide warning messages
-            this.warningMessages = [];
             
             if (!this.isIframe) {
 
@@ -130,8 +132,8 @@ class DomSelectorReport {
                 //so we then run all the promises at the same time
                 const resultArray = await Promise.all(iframeQuerySelectorExecutionArray);
 
-                //then we need to see if we have anything other than null values use Array.prototype.filter for truthy value check
-                var outputArray = resultArray.filter(e => { return e; });
+                //then we need to see if we have anything other than null values as the object element property
+                var outputArray = resultArray.filter(object => object.element);
                 //then if we have an empty array we return zip
                 if (outputArray.length == 0) {
                     //so we need to report an invalid selector and return the object
@@ -142,7 +144,11 @@ class DomSelectorReport {
                     return this;
                 } else {
                     //get the first match
-                    this.selectedItem = outputArray[0];
+                    this.selectedItem = outputArray[0].element;
+                    //save the frame id so we can use that for focus
+                    this.successFrameId = outputArray[0].frameId;
+                    //report the constructor name
+                    console.log(this.selectedItem);
                     //if the item is not the same html element we need to return, unless we are dealing with the HTML document, as CSS selectors return constructor name as HTMLHtmlElement
                     if (this.targetHtmlElement != "HTMLDocument" && this.selectedItem != this.targetHtmlElement) {
                         //so the CSS selector has found an element but it does not match by constrcutor name
