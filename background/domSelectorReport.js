@@ -12,9 +12,9 @@ class DomSelectorReport {
             this.selectorKey = options.key;
             //we need to have the browser tab id for the commands
             this.browserTabId = options.browserTabId;
-            //we need to have the target tag
+            //we need to have the target tag for double checking
             this.targetHtmlElement = options.replayEvent.recordingEventHTMLElement;
-            //then we need to get the correct selector
+            //then we need to get the correct selector, according to the key
             switch(this.selectorKey) {
                 case "CssSelector":
                     this.selectorString = options.replayEvent.recordingEventCssSelectorPath;
@@ -35,13 +35,13 @@ class DomSelectorReport {
             //then the class needs to provide warning messages
             this.warningMessages = [];
             //this is the standard query selector - we cannot serialize the dom node itself so we get shorthand constructor name
-            //we can test for constructor name
+            //we can test for constructor name for double checking
             this.executeQuerySelector = () => {
                 return new Promise(resolve => 
                     chrome.tabs.executeScript(this.browserTabId, 
-                        //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
+                        //with no frameId set, then the code is inserted into main frame by default when possible.
                         { code: `document.querySelector('${this.selectorString}').constructor.name;`, runAt: "document_idle" },
-                        //log the script injection so we can see what's happening and resolve the promise  
+                        //log the script injection so we can see what's happening and resolve the promise with the first, and only, element in array as only main frame injection
                         (array) => { 
                             //console.log(`Executed Query Selector in Main Document`); 
                             resolve(array[0]); 
@@ -50,11 +50,11 @@ class DomSelectorReport {
                 )
             }
             //this is the standard query selector all - we cannot serialize the nodelist of dom nodes itself so we get shorthand length
-            //we can test for constructor name
+            //we can test for array length to disqualify non-unique selectors
             this.executeQuerySelectorAll = () => {
                 return new Promise(resolve => 
                     chrome.tabs.executeScript(this.browserTabId, 
-                        //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
+                        //with no frameId set, then the code is inserted into main frame by default when possible.
                         { code: `document.querySelectorAll('${this.selectorString}').length;`, runAt: "document_idle" },
                         //log the script injection so we can see what's happening and resolve the promise  
                         (array) => { 
@@ -68,7 +68,7 @@ class DomSelectorReport {
             this.executeIframeQuerySelector = (navObject) => {
                 return new Promise(resolve => 
                     chrome.tabs.executeScript(this.browserTabId, 
-                        //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
+                        //frameId is set, so the code is inserted in the selected frame
                         { code: `document.querySelector('${this.selectorString}').constructor.name;`, frameId: navObject.frameId, runAt: "document_idle" },
                         //log the script injection so we can see what's happening and resolve the promise  
                         (array) => { 
@@ -91,9 +91,10 @@ class DomSelectorReport {
                     this.invalidSelector = true;
                     //then give some feedback
                     this.warningMessages.push(`${this.selectorKey} Selector Returned Null`);
-                    //this is an early exit as there's nothing more to do
+                    //this is an early exit as there's nothing more to do -actions are taken by the function that collates all the selectoreReports
                     return this;
                 }
+
                 //if the item is not the same html element we need to return, unless we are dealing with the HTML document, as CSS selectors return constructor name as HTMLHtmlElement
                 if (this.targetHtmlElement != "HTMLDocument" && this.selectedItem != this.targetHtmlElement) {
                     //so the CSS selector has found an element but it does not match by constrcutor name
@@ -103,7 +104,7 @@ class DomSelectorReport {
                     //this is an early exit as there's nothing more to do
                     return this;
                 }
-        
+
                 //then we need to warn on multiple matches, as we can start to have problems with targeting
                 this.selectedItemLength = await this.executeQuerySelectorAll();
                 //we cannot afford to use a selector that generates multiple matches
@@ -126,7 +127,7 @@ class DomSelectorReport {
                 //so for iframes we need to work with the iframeContextArray that we created in the replay tab runner
                 //this is created in the replay tab runner and has objects with {frameId: <string> and url: <string>}
                 const iframeQuerySelectorExecutionArray = options.replayEvent.iframeContextArray
-                    //then we need to map each navobject to the promise that uses chrome.tabs execute script to get results 
+                    //then we need to map each navobject to the promise that uses chrome.tabs executeScript to get results 
                     .map(navObject => this.executeIframeQuerySelector(navObject));
 
                 //so we then run all the promises at the same time

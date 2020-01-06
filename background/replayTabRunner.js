@@ -1,7 +1,7 @@
 class ReplayTabRunner {
 
-    //so we can have incoming active replays, named here as activeItem
-    constructor(activeItem, withLogging) {
+    //so we can have incoming replays, named here as activeReplay
+    constructor(activeReplay, withLogging) {
 
         //the use of the anonymous async function in constructor enables us to set up the tab runner with any callback functions and receive responses
         //see https://stackoverflow.com/questions/43431550/async-await-class-constructor
@@ -10,21 +10,21 @@ class ReplayTabRunner {
 
             //the first thing we need to do is set the default tab id to zero 
             this.browserTabId = 0;
-            //then we need to have tab state
+            //then we need to have tab state, so we can close the tab if required and also to prevent operations errors on closed tabs
             this.openState = false;
             //then we need to save the params for the debugger commands from the active replay
             //we need to know the desired latency value
-            this.recordingTestLatencyValue = activeItem.recordingTestLatencyValue;
+            this.recordingTestLatencyValue = activeReplay.recordingTestLatencyValue;
             //we need to know the desired bandwidth value 
-            this.recordingTestBandwidthValue = activeItem.recordingTestBandwidthValue;
+            this.recordingTestBandwidthValue = activeReplay.recordingTestBandwidthValue;
             //we need to know if the replay is for mobile 
-            this.recordingIsMobile = activeItem.recordingIsMobile;
+            this.recordingIsMobile = activeReplay.recordingIsMobile;
             //if so, we need to know mobile orientation
-            this.recordingMobileOrientation = activeItem.recordingMobileOrientation;
+            this.recordingMobileOrientation = activeReplay.recordingMobileOrientation;
             //we need the scripts string for injection
-            this.injectedScriptString = activeItem.replayScriptsString;
+            this.injectedScriptString = activeReplay.replayScriptsString;
             //we need to know if the user is saving resource loads
-            this.saveResourceLoads = activeItem.recordingTestResourceLoads;
+            this.saveResourceLoads = activeReplay.recordingTestResourceLoads;
             //then we see if we're logging or not
             this.withLogging = withLogging;
             //then we need an instance of the webNavigator class
@@ -40,10 +40,11 @@ class ReplayTabRunner {
             this.screenShot = "";
             //THIS IS THE MOST IMPORTANT PIECE OF CODE AND THE REASON FOR THE ASYNC CONSTRUCTOR
             //we need to have the browser tab id in the constructor
-            this.browserTabId = await new Promise(resolve => chrome.tabs.create({ url: activeItem.recordingTestStartUrl }, tab => { this.openState = true; resolve(tab.id); } ));
-            //then we keep track of the time we opened the tab
+            this.browserTabId = await new Promise(resolve => chrome.tabs.create({ url: activeReplay.recordingTestStartUrl }, tab => { this.openState = true; resolve(tab.id); } ));
+            //then we keep track of the time we opened the tab, as a shorthand for page committed which we can miss, for performance timing measurements
             this.openTabTime = Date.now();
             //and we also want the tab runner to be able to tell the active recording when its tab has closed and also change its own tab state
+            //no subscriptions here but used by the instantiator of the class 
             this.tabClosedObservable = Rx.Observable.fromEventPattern(
                 handler => chrome.tabs.onRemoved.addListener(handler),
                 handler => chrome.tabs.onRemoved.removeListener(handler)
@@ -218,7 +219,7 @@ class ReplayTabRunner {
             //then we take the screenshot in case we need it
             .switchMap(() =>
                 //this is a promise that sends the message and resolves with a response
-                Rx.Observable.fromPromise( this.takeScreenshot()),
+                Rx.Observable.fromPromise(this.takeScreenshot()),
                 //then just return the active recording
                 (messageObject) => messageObject 
             )
@@ -234,6 +235,7 @@ class ReplayTabRunner {
 
         //HANDLE THE SPECIFIC REQUESTS FROM THE USER INTERFACE TO CONFIRM PAGE LOAD
         //WE PAIR THE PAGE REPLAY EVENT MESSAGE WITH THE NAVIGATOR OBSERVABLE
+        //BY USING COMBINE LATEST, WE ASSESS ON EACH MESSAGE AND EACH PAGE LOAD, MEANING THAT WE ARE AGNOSTIC ABOUT WHICH COMES FIRST
         const navigationConfirmationObservable = Rx.Observable.combineLatest(
                 //first we want to listen for all navigation event onComplete events
                 this.webNavigator.navigationEventsObservable
@@ -261,7 +263,6 @@ class ReplayTabRunner {
             )
             //then we just need to send the response if we have matching events
             .do(([navigationEvent, replayEvent]) => {
-                
                 //if we have a match, we need to return the following properties to stay uniform with the main replayer
                 //replayExecution.replayEventReplayed, replayExecution.replayEventStatus, replayExecution.replayLogMessages, replayExecution.replayErrorMessages
                 if (navigationEvent.url == replayEvent.recordingEventLocationHref) {
@@ -278,11 +279,11 @@ class ReplayTabRunner {
                     //then we send the clean clone
                     replayEvent.sendResponse({replayExecution: replayExecution});
                 }
-                
             });
         
         //the dom selector reports and focus operations need a record of all the frames to search as well
-        const executionContextObservable = this.webNavigator.navigationEventsObservable
+        //THIS ESSENTIALLY PROVIDES AN EARLY STORE OF ALL THE FRAMES, COULD BE TIMING ISSUES IF FRAME LOADS VERY LATE
+        const frameContextObservable = this.webNavigator.navigationEventsObservable
             //then we only care about the onCommitted Event
             .filter(navObject => navObject.recordReplayWebNavigationEvent == 'onDOMContentLoaded')
             //then we only care about events happening in our curated tab
@@ -308,7 +309,7 @@ class ReplayTabRunner {
             .filter(messageObject => messageObject.request.hasOwnProperty('replayEvent'))
             //then we only want messages that are specifically keyboard messages
             .filter(messageObject => messageObject.request.replayEvent.recordingEventOrigin == 'User' && messageObject.request.replayEvent.recordingEventAction == 'Keyboard')
-            //then report the processing of keyboard event
+            //then report the processing of keyboard event here rather than via the content script
             .do(messageObject => console.log(`Tab Runner Processing Keyboard ${messageObject.request.replayEvent.recordingEventActionType} Event`) )
             //if we have a replay event, then map the message object to the replay event only and attach the sendResponse so we can return feedback as soon as we get it
             .map(messageObject => {
@@ -322,10 +323,11 @@ class ReplayTabRunner {
                 //then return the replay event
                 return replayEvent;
             })
-            //add the execution context array to the replay event so we can evaluate javascript in all the execution contexts
+            //add the iframe context array, an array containing all the active frames, to the replay event so selector reports can be injected into iframes if required
             .withLatestFrom(
-                executionContextObservable,
+                frameContextObservable,
                 (replayEvent, contextArray) => {
+                    //just mutate the replay event and return
                     replayEvent.iframeContextArray = contextArray;
                     return replayEvent;
                 }
@@ -356,8 +358,6 @@ class ReplayTabRunner {
                     if (replayEvent.replaySelectorReports.length > 0) {
                         //select the first report that has provided a positive response and has the shortest selector
                         replayEvent.chosenSelectorReport = replayEvent.replaySelectorReports.sort((reportA, reportB) => reportA.selectorString.length - reportB.selectorString.length)[0];
-                        //then mark as a good replay
-                        replayEvent.replayEventStatus = true;
                     } else {
                         //then we need to push an error message to the logs
                         replayEvent.replayErrorMessages.push(`No Valid Target On Page`);
@@ -493,6 +493,7 @@ class ReplayTabRunner {
                     //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
                     { 
                         code: `document.querySelector('${replayEvent.chosenSelectorReport.selectorString}').focus({ preventScroll: false });`,
+                        //the successful frame id is saved as part of the chosenSelectorReport
                         frameId: replayEvent.chosenSelectorReport.successFrameId,
                         runAt: "document_idle" 
                     },
@@ -625,6 +626,7 @@ class ReplayTabRunner {
         if (this.openState) await new Promise(resolve => chrome.debugger.detach({ tabId: this.browserTabId }, () => { this.log(5); resolve(); } ));
         //then we need to close our curated tab
         if (this.openState) await new Promise(resolve => chrome.tabs.remove(this.browserTabId, () => { this.log(6); resolve(); } ));
+        //and kill all the merged observables at one stroke to enable clean shut down
         this.startSubscription.unsubscribe();
         //return so the synthetic promise is resolved
         return;
