@@ -158,7 +158,7 @@ class JestTranslator {
                     outputStringArray.push(this.chosenTranslator.textSelect(this.getMostValidSelector(replayEvent), index, target));
                     break;
                 case "Keyboard": 
-                    outputStringArray.push(this.chosenTranslator.nonInputTyping(this.getMostValidSelector(replayEvent), replayEvent, target));
+                    outputStringArray.push(this.chosenTranslator.nonInputTyping(this.getMostValidSelector(replayEvent), replayEvent, index, target));
                     break;
                 case 'Input':
                     outputStringArray.push(this.chosenTranslator.focus(this.getMostValidSelector(replayEvent), target) += this.tabIndex(index) + this.chosenTranslator.typeText(replayEvent.recordingEventInputValue, target));

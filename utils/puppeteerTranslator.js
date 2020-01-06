@@ -111,7 +111,7 @@ class PuppeteerTranslator {
     inputContentEditable = (selector, text, target) => `await ${target}.evaluate( () => { document.querySelector('${selector}').textContent = '${text}'; });` 
 
     //Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
-    nonInputTyping = (selector, replayEvent, index) => {
+    nonInputTyping = (selector, replayEvent, index, target) => {
         //so there is some complexity in handling the different types of typing
         //first we need to know if the typing event contains characters or not
         const dictionaryEntry = this.keyCodeDictionary[replayEvent.recordingEventDispatchKeyEvent.windowsVirtualKeyCode];
@@ -120,12 +120,12 @@ class PuppeteerTranslator {
         //then we want to know if the action happened on the main html document or not
         let prependForTarget = '';
         //if the target was not the html, we need to focus
-        if (replayEvent.recordingEventHTMLTag == "HTML") { prependForTarget = `await ${target}.focus('${selector}');${this.tabIndex(index)}` }
+        if (replayEvent.recordingEventHTMLTag != "HTML") { prependForTarget = `await ${target}.focus('${selector}');` }
         //then we need to work on the modifier, if present
         if (modifiers.length > 0) {
-            return `${prependForTarget}await page.keyboard.down('${modifiers}');${this.tabIndex(index)}await page.keyboard.press('${dictionaryEntry.descriptor}');${this.tabIndex(index)}await page.keyboard.up('${modifiers}');`
+            return `${prependForTarget} await page.keyboard.down('${modifiers}'); await page.keyboard.press('${dictionaryEntry.descriptor}'); await page.keyboard.up('${modifiers}');`
         } else {
-            return `${prependForTarget}await page.keyboard.press('${dictionaryEntry.descriptor}');`
+            return `${prependForTarget} await page.keyboard.press('${dictionaryEntry.descriptor}');`
         }
     }
 
@@ -242,7 +242,7 @@ class PuppeteerTranslator {
                 outputStringArray.push(this.textSelect(this.getMostValidSelector(recordingEvent), index, target));
                 break;
             case "Keyboard": 
-                outputStringArray.push(this.nonInputTyping(this.getMostValidSelector(recordingEvent), recordingEvent, index));
+                outputStringArray.push(this.nonInputTyping(this.getMostValidSelector(recordingEvent), recordingEvent, index, target));
                 break;
             case 'Input':
                 if (recordingEvent.recordingEventInputType == "contentEditable") {
