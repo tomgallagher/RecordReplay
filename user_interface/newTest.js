@@ -32,7 +32,7 @@ $(document).ready (function(){
     $('.ui.newTestForm.form .ui.checkbox').checkbox({
         onChecked: function() {
             //send data to google analytics so we know how popular the options are
-            ga('send', { hitType: 'event', eventCategory: 'TestParams', eventAction: `${$(this).attr('name')}`, eventLabel: 'CheckboxData'});
+            ga('send', { hitType: 'event', eventCategory: 'TestParams', eventAction: `${$(this).attr('name')}`, eventLabel: 'TestCreationData'});
         }
     });
 

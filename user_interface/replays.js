@@ -189,6 +189,8 @@ function addReplayTableButtonListeners() {
                 updateReplayEventsTableCodeReports(replay);
                 //then remove the loading indicator
                 $('.ui.fluid.showReplay.container .ui.bottom.attached.active.tab.segment ').removeClass('loading');
+                //then report
+                ga('send', { hitType: 'event', eventCategory: 'ReplayDetailsView', eventAction: 'Click', eventLabel: 'ReplayUseData'});
             })
             //the get single object function will reject if object is not in database
             .catch(error => console.error(error));   
@@ -715,7 +717,7 @@ function addReplayEventsTableStartReplayHandler() {
             $('.ui.runReplayReplayEventsTable.table .ui.info.logging.message').css('display', 'none');
             $('.ui.runReplayReplayEventsTable.table .ui.negative.error.message').css('display', 'none');
             //then report to Google analytics so we can see how often replays happen 
-            ga('send', { hitType: 'event', eventCategory: 'ExistingReplayRun', eventAction: `Click`, eventLabel: 'ReplayData'});
+            ga('send', { hitType: 'event', eventCategory: 'ExistingReplayRun', eventAction: `Click`, eventLabel: 'ReplayUseData'});
         })
         //get the replay from storage using the data id from the button
         .switchMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('replays.js', event.target.getAttribute('data-replay-id') , 'replays')) )
@@ -808,6 +810,8 @@ function loadReplayCodeStringIntoTargetContainer(replayKey, selector, translator
                     readOnly: true
                 }
             );
+            //then report
+            ga('send', { hitType: 'event', eventCategory: 'ReplayCodeView', eventAction: 'Click', eventLabel: 'ReplayUseData'});
         });
         
 }
@@ -824,6 +828,8 @@ $(document).ready (function(){
                 case 'replayEvents':
                     //hide the warning message about events with no information by default
                     $('.ui.showReplayReplayEventsTable.table .informationMessageRow').css('display', 'none');
+                    //then report
+                    ga('send', { hitType: 'event', eventCategory: 'ReplayEventsView', eventAction: 'TabClick', eventLabel: 'ReplayUseData'});
                     break;
                 case 'replayCode':
                     //init the checkbox, with Javascript checked as default
@@ -834,8 +840,12 @@ $(document).ready (function(){
                         '.replayCodeOutputTextArea',
                         new JestTranslator({translator: "Puppeteer"})
                     );
+                    //then report
+                    ga('send', { hitType: 'event', eventCategory: 'ReplayCodeView', eventAction: 'TabClick', eventLabel: 'ReplayUseData'});
                     break;
                 case 'replayReports':
+                    //then report
+                    ga('send', { hitType: 'event', eventCategory: 'ReplayReportView', eventAction: 'TabClick', eventLabel: 'ReplayUseData'});
                 
             }
         }
@@ -848,7 +858,7 @@ $(document).ready (function(){
         //then paste that into the clipboard
         navigator.clipboard.writeText(textToCopy);
         //then report
-        ga('send', { hitType: 'event', eventCategory: 'ReplayCodeExport', eventAction: 'Clipboard', eventLabel: 'Clipboard'});
+        ga('send', { hitType: 'event', eventCategory: 'ReplayCodeCopy', eventAction: 'Clipboard', eventLabel: 'ReplayUseData'});
     });
 
     //activate the download code as js file button
@@ -867,7 +877,7 @@ $(document).ready (function(){
             filename: "RecordReplay.js"
         });
         //then report
-        ga('send', { hitType: 'event', eventCategory: 'ReplayCodeExport', eventAction: 'Download', eventLabel: 'Download'});
+        ga('send', { hitType: 'event', eventCategory: 'ReplayCodeDownload', eventAction: 'Download', eventLabel: 'ReplayUseData'});
     });
 
     //respond to requested code language changes, which requires getting the replay from the server and processing it
@@ -880,6 +890,8 @@ $(document).ready (function(){
                     '.replayCodeOutputTextArea',
                     new JestTranslator({translator: "Puppeteer"})
                 );
+                //then report
+                ga('send', { hitType: 'event', eventCategory: 'ReplayCodeLanguage', eventAction: 'TranslateJestPuppeteer', eventLabel: 'ReplayUseData'});
                 break;
             case event.target.value == "cypress":
                 loadReplayCodeStringIntoTargetContainer(
@@ -887,6 +899,8 @@ $(document).ready (function(){
                     '.replayCodeOutputTextArea',
                     new CypressTranslator({})
                 );
+                //then report
+                ga('send', { hitType: 'event', eventCategory: 'ReplayCodeLanguage', eventAction: 'TranslateCypress', eventLabel: 'ReplayUseData'});
                 break;
             case event.target.value == "jest+selenium":
                 loadReplayCodeStringIntoTargetContainer(
@@ -894,6 +908,8 @@ $(document).ready (function(){
                     '.replayCodeOutputTextArea',
                     new JestTranslator({translator: "Selenium"})
                 );
+                //then report
+                ga('send', { hitType: 'event', eventCategory: 'ReplayCodeLanguage', eventAction: 'TranslateJestSelenium', eventLabel: 'ReplayUseData'});
                 break;
             default:
                 $('.ui.fluid.showReplay.container .codeOutputTextArea').val("UNRECOGNISED CODE FORMAT");

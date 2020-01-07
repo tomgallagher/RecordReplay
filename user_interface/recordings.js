@@ -420,6 +420,8 @@ function loadRecordingCodeStringIntoTargetContainer(recordingKey, selector, tran
                     readOnly: true
                 }
             );
+            //then report
+            ga('send', { hitType: 'event', eventCategory: 'RecordingCodeView', eventAction: 'Click', eventLabel: 'RecordingUseData'});
         });
         
 }
@@ -442,9 +444,12 @@ $(document).ready (function(){
                         '.recordingCodeOutputTextArea',
                         new JavascriptTranslator({})
                     );
+                    //then report
+                    ga('send', { hitType: 'event', eventCategory: 'RecordingCodeView', eventAction: 'TabClick', eventLabel: 'RecordingUseData'});
                     break;
                 case 'recordingEvents':
-                    //nothing to do here at the moment
+                    //then report
+                    ga('send', { hitType: 'event', eventCategory: 'RecordingEventsView', eventAction: 'TabClick', eventLabel: 'RecordingUseData'});
             }
         }
     });
@@ -456,7 +461,7 @@ $(document).ready (function(){
         //then paste that into the clipboard
         navigator.clipboard.writeText(textToCopy);
         //then report
-        ga('send', { hitType: 'event', eventCategory: 'RecordingCodeExport', eventAction: 'Clipboard', eventLabel: 'Clipboard'});
+        ga('send', { hitType: 'event', eventCategory: 'RecordingCodeCopy', eventAction: 'Clipboard', eventLabel: 'RecordingUseData'});
     });
 
     //activate the download code as js file button
@@ -475,7 +480,7 @@ $(document).ready (function(){
             filename: "RecordReplayRecording.js"
         });
         //then report
-        ga('send', { hitType: 'event', eventCategory: 'RecordingCodeExport', eventAction: 'Download', eventLabel: 'Download'});
+        ga('send', { hitType: 'event', eventCategory: 'RecordingCodeDownload', eventAction: 'Download', eventLabel: 'RecordingUseData'});
     });
 
     //respond to requested code language changes, which requires getting the recording from the server and processing it
@@ -488,6 +493,8 @@ $(document).ready (function(){
                     '.recordingCodeOutputTextArea',
                     new JavascriptTranslator({})
                 );
+                //then report
+                ga('send', { hitType: 'event', eventCategory: 'RecordingCodeLanguage', eventAction: 'TranslateJavascript', eventLabel: 'RecordingUseData'});
                 break;
             case event.target.value == "jquery":
                 loadRecordingCodeStringIntoTargetContainer(
@@ -495,6 +502,8 @@ $(document).ready (function(){
                     '.recordingCodeOutputTextArea',
                     new jQueryTranslator({})
                 );
+                //then report
+                ga('send', { hitType: 'event', eventCategory: 'RecordingCodeLanguage', eventAction: 'TranslateJquery', eventLabel: 'RecordingUseData'});
                 break;
             case event.target.value == "puppeteer":
                 loadRecordingCodeStringIntoTargetContainer(
@@ -502,6 +511,8 @@ $(document).ready (function(){
                     '.recordingCodeOutputTextArea',
                     new PuppeteerTranslator({})
                 );
+                //then report
+                ga('send', { hitType: 'event', eventCategory: 'RecordingCodeLanguage', eventAction: 'TranslatePuppeteer', eventLabel: 'RecordingUseData'});
         }
             
     });

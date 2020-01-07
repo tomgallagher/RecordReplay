@@ -186,7 +186,7 @@ function addAssertionCheckboxListener(recording) {
             //then put in the new value
             $('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val(JSON.stringify(hiddenAssertionsCollectionArray));
             //then report to Google analytics so we can see how often assertions happen 
-            ga('send', { hitType: 'event', eventCategory: 'Assertion', eventAction: `Add`, eventLabel: 'AssertionData'});
+            ga('send', { hitType: 'event', eventCategory: 'ReplayAddAssertion', eventAction: `Click`, eventLabel: 'ReplayCreationData'});
         })
         //then we report
         .subscribe(
@@ -787,7 +787,7 @@ function addNewReplayEventsTableStartReplayHandler() {
             $('.ui.newReplayReplayEventsTable.table .ui.info.logging.message').css('display', 'none');
             $('.ui.newReplayReplayEventsTable.table .ui.negative.error.message').css('display', 'none');
             //then report to Google analytics so we can see how often replays happen 
-            ga('send', { hitType: 'event', eventCategory: 'NewReplayRun', eventAction: `Click`, eventLabel: 'ReplayData'});
+            ga('send', { hitType: 'event', eventCategory: 'NewReplayRun', eventAction: `Click`, eventLabel: 'ReplayCreationData'});
         })
         //get the replay from storage using the data id from the button
         .switchMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('replays.js', event.target.getAttribute('data-replay-id') , 'replays')) )
@@ -872,6 +872,8 @@ $(document).ready (function(){
         $('.ui.large.modal .visualCheckBlowUp').prop('src', src);
         //then we show the modal
         $('.large.modal').modal('show');
+        //then report to Google analytics so we can see how often replays happen 
+        ga('send', { hitType: 'event', eventCategory: 'ReplayVisualChange', eventAction: `Click`, eventLabel: 'ReplayUseData'});
     })
 
 
@@ -966,6 +968,8 @@ $(document).ready (function(){
                         $('.ui.replayEvents.segment .ui.startReplay.positive.button, .ui.replayEvents.segment .ui.stopReplay.negative.button').attr("data-replay-id", savedReplay.id);
                         //then we want to reset the hidden assertions collector
                         $('.ui.newReplayForm.form input[name="hiddenAssertionsCollector"]').val("[]");
+                        //then report to Google analytics so we can see how often replays happen 
+                        ga('send', { hitType: 'event', eventCategory: 'NewReplayCreate', eventAction: `Click`, eventLabel: 'ReplayCreationData'});
 
                     })
                     //the get single object function will reject if object is not in database
