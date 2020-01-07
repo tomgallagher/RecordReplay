@@ -184,7 +184,7 @@ function runBulkReplay(testID) {
                 //enable the start button
                 $('.ui.bulkReplay.form .ui.startBulkReplay.positive.button').removeClass('disabled');
                 //add the listeners for the images
-                $('.ui.bottom.attached.tab.previousRunImage, .ui.bottom.attached.tab.currentRunImage, .ui.bottom.attached.tab.visualRegressionImage').on('click', function() {
+                $('.ui.bottom.attached.tab .previousRunImage, .ui.bottom.attached.tab .currentRunImage, .ui.bottom.attached.tab .visualRegressionImage').on('click', function() {
                     //first we want to get the target src
                     const src = $(this).prop('src');
                     //then we set the modal src 
