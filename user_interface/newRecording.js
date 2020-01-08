@@ -297,15 +297,29 @@ $(document).ready (function(){
     //then we need to add the start recording handler
     addStartRecordingHandler();
 
+    //then we make sure the mobile device dropdown is populated
+    const mobileDevices = new MobileDeviceDictionary({});
+    //get a reference to the drop down in the new recording form
+    var mobileDeviceDropDownMenu = $('.ui.fluid.selection.newRecording.mobileDevice.dropdown .menu');
+    //then loop through the mobile devices and populate the drop down
+    for (const device in mobileDevices) {     
+        //we are not going to use templates here as we are not dealing with complex html structures
+        mobileDeviceDropDownMenu.append(`<div class="item" data-value=${device}>${mobileDevices[device].longName}</div>`);
+    }
+    //then initialise the dropdown
+    $('.ui.fluid.selection.newRecording.mobileDevice.dropdown').dropdown();
+
     $('.ui.newRecordingForm.form .ui.radio.device.checkbox').checkbox({
         onChecked: function() {
             //enable or disable the other inputs according to mobile or not
             if ($(this).attr('value') == "mobile") {
                 $('.ui.newRecordingForm.form .orientation.field').removeClass('disabled');
+                $('.ui.newRecordingForm.form .deviceSelection.field').removeClass('disabled');
                 //send data to google analytics so we know how popular the mobile options are
                 ga('send', { hitType: 'event', eventCategory: 'RecordingParams', eventAction: `${$(this).attr('value')}`, eventLabel: 'RecordingCreationData'});
             } else { 
                 $('.ui.newRecordingForm.form .orientation.field').addClass('disabled');
+                $('.ui.newRecordingForm.form .deviceSelection.field').addClass('disabled');
                 //send data to google analytics so we know how popular the mobile options are
                 ga('send', { hitType: 'event', eventCategory: 'RecordingParams', eventAction: `${$(this).attr('value')}`, eventLabel: 'RecordingCreationData'}); 
             }
@@ -355,6 +369,7 @@ $(document).ready (function(){
                             recordingAuthor: fields.recordingDescription || "N/A",
                             recordingIsMobile: fields.device == "computer" ? false : true,
                             recordingMobileOrientation: fields.orientation,
+                            recordingMobileDeviceId: Number(fields.mobileDeviceId),
                             recordingTestStartUrl: fields.recordingTestStartUrl,
                             //inherited defaults from storage table queried by string recordingTestId selection drop down
                             recordingProjectId: test.testProjectId,

@@ -12,6 +12,7 @@ class Recording {
             recordingCreated: Date.now(),
             recordingIsMobile: false,
             recordingMobileOrientation: 'portrait',
+            recordingMobileDeviceId: 0,
             //displayed defaults from selected test
             recordingTestStartUrl: 'N/A',
             //inherited defaults from test selection lookup in local storage

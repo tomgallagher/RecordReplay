@@ -28,6 +28,7 @@
         <script src="utils/cypressTranslator.js"></script>
         <script src="utils/nodeBuilder.js"></script>
         <script src="utils/pagination.js"></script>
+        <script src="utils/mobileDeviceDictionary.js"></script>
         <script src="models/projectModel.js"></script>
         <script src="models/testModel.js"></script>
         <script src="models/recordingModel.js"></script>
@@ -1180,9 +1181,9 @@
                         
                                             </div>
 
-                                            <div class="two fields">
+                                            <div class="fields">
         
-                                                <div class="required four wide field">
+                                                <div class="four wide required four wide field">
                                                 
                                                     <label>For Device</label>
                                                             
@@ -1216,7 +1217,7 @@
                                                             
                                                 </div>
                                 
-                                                <div class="disabled orientation field">
+                                                <div class="four wide disabled orientation field">
                                                             
                                                     <label>Device Orientation</label>
                                                             
@@ -1248,6 +1249,24 @@
                                                                 
                                                     </div>
                                                             
+                                                </div>
+
+                                                <div class="eight wide disabled deviceSelection field">
+
+                                                    <label>For Mobile Device</label>
+                
+                                                    <div class="ui fluid selection editRecording mobileDevice dropdown">
+                                                                
+                                                        <input type="hidden" name="mobileDeviceId">
+                                                                
+                                                        <div class="default text">Select Device</div>
+                                                                
+                                                        <i class="dropdown icon"></i>
+                                                                
+                                                        <div class="menu"></div>
+                                                            
+                                                    </div>
+                
                                                 </div>
                             
                                             </div>
@@ -1563,7 +1582,7 @@
         
                             </div>
 
-                            <div class="two fields">
+                            <div class="fields">
         
                                 <div class="four wide required field">
                                 
@@ -1598,8 +1617,8 @@
                                     </div>
                                             
                                 </div>
-            
-                                <div class="disabled orientation field">
+
+                                <div class="four wide disabled orientation field">
                                             
                                     <label>Device Orientation</label>
                                             
@@ -1631,6 +1650,24 @@
                                               
                                     </div>
                                             
+                                </div>
+
+                                <div class="eight wide disabled deviceSelection field">
+
+                                    <label>For Mobile Device</label>
+
+                                    <div class="ui fluid selection newRecording mobileDevice dropdown">
+                                                
+                                        <input type="hidden" name="mobileDeviceId">
+                                                
+                                        <div class="default text">Select Device</div>
+                                                
+                                        <i class="dropdown icon"></i>
+                                                
+                                        <div class="menu"></div>
+                                            
+                                    </div>
+
                                 </div>
             
                             </div>

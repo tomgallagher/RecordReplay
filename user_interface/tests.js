@@ -273,8 +273,8 @@ $(document).ready (function(){
     $('.ui.editTestForm.form .ui.checkbox').checkbox();
 
     //ready the edit form bandwidth and latency dropdowns
-    $('.ui.editTestForm.form .ui.fluid.selection.bandwidth.dropdown').dropdown();
-    $('.ui.editTestForm.form .ui.fluid.selection.latency.dropdown').dropdown();
+    $('.ui.editTestForm.form .ui.fluid.selection.bandwidth.dropdown').dropdown({direction: 'upward'});
+    $('.ui.editTestForm.form .ui.fluid.selection.latency.dropdown').dropdown({direction: 'upward'});
 
     //validation for the edit test form
     $('.ui.editTestForm.form')

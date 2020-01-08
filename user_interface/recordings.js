@@ -47,8 +47,12 @@ function addRecordingTableRowsFragment(recordingStorageArray) {
         
         //<td data-label="recordingAdditionalReporting"></td>
         let recordingAdditionalReportingNode = tempNode.querySelector('td[data-label="recordingAdditionalReporting"]');
+        //get a reference to the mobile dictionary
+        const mobileDevices = new MobileDeviceDictionary({});
+        //create the array in which to push our reporting strings
         var additionalReportsArray = [];
         recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push('Mobile') : additionalReportsArray.push('Computer');
+        recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push(mobileDevices[recordingStorageArray[recording].recordingMobileDeviceId].shortName) : null;
         recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push(recordingStorageArray[recording].recordingMobileOrientation) : null;
         recordingAdditionalReportingNode.textContent = additionalReportsArray.join(', ');
         
@@ -102,7 +106,7 @@ function refreshEditRecordingTestDropdown() {
                 editRecordingDropDownMenu.append(`<div class="item" data-value=${testStorageArray[test].id}>${testStorageArray[test].testName}</div>`);
             }
             //then after the entire loop has been executed we need to initialise the dropdown with the updated items
-            $('.ui.fluid.selection.editRecording.test.dropdown').dropdown();
+            $('.ui.fluid.selection.editRecording.test.dropdown').dropdown({direction: 'upward'});
 
         });  
 
@@ -205,14 +209,31 @@ function addRecordingTableButtonListeners() {
                 //then select the correct dropdown for the recordings related test
                 $('.ui.editRecordingForm .ui.test.dropdown').dropdown('set selected', recording.recordingTestId);
 
-                //RADIO BUTTONS
-                recording.recordingIsMobile == false ? $('.ui.editRecordingForm .ui.radio.device.checkbox input[value=computer]').prop('checked', true) : null;
-                recording.recordingIsMobile == false ? $('.ui.editRecordingForm.form .orientation.field').addClass('disabled') : null;
-                recording.recordingIsMobile == false ? $('.ui.editRecordingForm .ui.radio.checkbox input[value=portrait]').prop('checked', true) : null;
-
-                recording.recordingIsMobile == true ? $('.ui.editRecordingForm .ui.radio.device.checkbox input[value=mobile]').prop('checked', true) : null;
-                recording.recordingIsMobile == true ? $('.ui.editRecordingForm.form .orientation.field').removeClass('disabled') : null;
-                recording.recordingIsMobile == true && recording.recordingMobileOrientation == 'landscape' ? $('.ui.editRecordingForm .ui.radio.checkbox input[value=landscape]').prop('checked', true) : null;
+                //MAKE THE FORM'S RADIO BUTTONS AND DROPDOWN REFLECT RECORDING STATE
+                if (recording.recordingIsMobile == false) {
+                    //make sure the computer checkbox is checked
+                    $('.ui.editRecordingForm .ui.radio.device.checkbox input[value=computer]').prop('checked', true);
+                    //and the portrait selection should be set to the default
+                    $('.ui.editRecordingForm .ui.radio.checkbox input[value=portrait]').prop('checked', true);
+                    //the orientation field should be disabled
+                    $('.ui.editRecordingForm.form .orientation.field').addClass('disabled');
+                    //the mobile device selection field should be disabled
+                    $('.ui.editRecordingForm.form .deviceSelection.field').addClass('disabled');
+                    //and the dropdown set to default
+                    $('.ui.editRecordingForm .ui.editRecording.mobileDevice.dropdown').dropdown('clear');
+                } else {
+                    //we need to set it up with all the mobile params
+                    //make sure the mobile checkbox is checked
+                    $('.ui.editRecordingForm .ui.radio.device.checkbox input[value=mobile]').prop('checked', true);
+                    //make sure the landscape election is checked if required
+                    recording.recordingMobileOrientation == 'landscape' ? $('.ui.editRecordingForm .ui.radio.checkbox input[value=landscape]').prop('checked', true) : null;
+                    //then remove the disabled class from the orientation field
+                    $('.ui.editRecordingForm.form .orientation.field').removeClass('disabled');
+                    //then remove the mobile device selection field should be enabled
+                    $('.ui.editRecordingForm.form .deviceSelection.field').removeClass('disabled');
+                    //then the mobile device dropdown should show the saved value
+                    $('.ui.editRecordingForm .ui.editRecording.mobileDevice.dropdown').dropdown('set selected', recording.recordingMobileDeviceId);
+                }
 
                 //clear any success state from the form
                 $('.ui.editRecordingForm.form').removeClass('success');
@@ -483,6 +504,34 @@ $(document).ready (function(){
         ga('send', { hitType: 'event', eventCategory: 'RecordingCodeDownload', eventAction: 'Download', eventLabel: 'RecordingUseData'});
     });
 
+    //then we make sure the mobile device dropdown is populated
+    const mobileDevices = new MobileDeviceDictionary({});
+    //get a reference to the drop down in the new recording form
+    var mobileDeviceDropDownMenu = $('.ui.fluid.selection.editRecording.mobileDevice.dropdown .menu');
+    //then loop through the mobile devices and populate the drop down
+    for (const device in mobileDevices) {     
+        //we are not going to use templates here as we are not dealing with complex html structures
+        mobileDeviceDropDownMenu.append(`<div class="item" data-value=${device}>${mobileDevices[device].longName}</div>`);
+    }
+    //then initialise the dropdown
+    $('.ui.fluid.selection.editRecording.mobileDevice.dropdown').dropdown({direction: 'upward'});
+
+    //we need the computer/mobile checkbox listener to change disabled and dropdown state
+    $('.ui.editRecordingForm.form .ui.radio.device.checkbox').checkbox({
+        onChecked: function() {
+            //enable or disable the other inputs according to mobile or not
+            if ($(this).attr('value') == "mobile") {
+                $('.ui.editRecordingForm.form .orientation.field').removeClass('disabled');
+                $('.ui.editRecordingForm.form .deviceSelection.field').removeClass('disabled');
+            } else { 
+                $('.ui.editRecordingForm.form .orientation.field').addClass('disabled');
+                $('.ui.editRecordingForm.form .deviceSelection.field').addClass('disabled');
+                //and the dropdown set to default
+                $('.ui.editRecordingForm .ui.editRecording.mobileDevice.dropdown').dropdown('clear');
+            }
+        }
+    });
+
     //respond to requested code language changes, which requires getting the recording from the server and processing it
     $('.ui.showRecording.container .ui.code.form .ui.radio.checkbox').change(event => {
        
@@ -549,7 +598,14 @@ $(document).ready (function(){
                 //just keep track of field names - they must be the same as model attributes when we create a new class object
                 console.log(fields);
                 //lets create an object that has fields compatible with database, remember the creation of a new recording will remove any keys that are not acceptable
-                const adaptedFields = Object.assign({}, fields, { recordingIsMobile: fields.device == "mobile" ? true : false, recordingMobileOrientation: fields.orientation });
+                const adaptedFields = Object.assign(
+                    {}, 
+                    fields, 
+                    { 
+                        recordingIsMobile: fields.device == "mobile" ? true : false, 
+                        recordingMobileOrientation: fields.orientation,
+                        recordingMobileDeviceId: Number(fields.mobileDeviceId)
+                    });
                 //as we have lots of fields in a recording that are not displayed in the form, we need to get the recording from local storage, using the hidden field id
                 StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', fields.hiddenRecordingId, 'recordings')
                     //then map the object into a new object with the updated fields

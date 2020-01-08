@@ -431,19 +431,25 @@ class ReplayTabRunner {
             () => { this.log(3); resolve(); } 
         ));
         //any mobile emulation that might be required
-        if (this.recordingIsMobile) await new Promise(resolve => 
+        if (this.recordingIsMobile) await new Promise(resolve => {
+            //first we need to get a reference to the mobile device list
+            const mobileDevices = new MobileDeviceDictionary({});
+            //then we need to find our device
+            const device = mobileDevices[this.recordingMobileDeviceId];
+            //then send the command
             chrome.debugger.sendCommand({ 
                 tabId: this.browserTabId }, 
                 "Emulation.setDeviceMetricsOverride", 
                 { 
-                    width: 360, 
-                    height: 640, 
+                    width: device.width || 360, 
+                    height: device.height || 640, 
                     mobile: true, 
-                    screenOrientation: this.recordingMobileOrientation == 'portrait' ? "portraitPrimary" : "landscapePrimary" 
+                    deviceScaleFactor: 1, 
+                    screenOrientation: this.recordingMobileOrientation == 'portrait' ? { angle: 0, type: 'portraitPrimary' } : { angle: 90, type: 'landscapePrimary' } 
                 }, 
                 () => { this.log(4); resolve(); } 
-            ));
-
+            )
+        });
         //our observables need a start action as they are only defined in the handler
         this.startSubscription = Rx.Observable.merge(
             //we need to start the main frame script injection observable

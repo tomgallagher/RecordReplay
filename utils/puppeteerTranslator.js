@@ -81,6 +81,18 @@ class PuppeteerTranslator {
 
     }
 
+    emulateDevice = (recording) => {
+
+        //first we need to get a reference to the mobile device list
+        const mobileDevices = new MobileDeviceDictionary({});
+        //then we need to find our device
+        const device = mobileDevices[recording.recordingMobileDeviceId];
+        //then we create our orientation object string
+        const orientationString = recording.recordingMobileOrientation == 'portrait' ? "{ angle: 0, type: 'portraitPrimary' }" : "{ angle: 90, type: 'landscapePrimary' }";
+
+        return `await client.send('Emulation.setDeviceMetricsOverride', { width: ${device.width}, height: ${device.height}, mobile: true, deviceScaleFactor: 1, screenOrientation: ${orientationString} });\n`;
+
+    }
 
     //ACTION FUNCTIONS
 
@@ -283,6 +295,8 @@ class PuppeteerTranslator {
         outputString += `${this.tabIndex(0)}${this.connectToChromeDevtools()}`;
         //set the network conditions
         outputString += `${this.tabIndex(0)}${this.emulateNetworkConditions(false, recording.recordingTestBandwidthValue, recording.recordingTestBandwidthValue, recording.recordingTestLatencyValue)}`;
+        //if we have mobile emulation, we need to do that
+        if (recording.recordingIsMobile) { outputString += `${this.tabIndex(0)}${this.emulateDevice(recording)}`; }
         //add the navigate to page function
         outputString += `${this.tabIndex(0)}${this.navigateToUrl(recording.recordingTestStartUrl)}`;
         //then we loop through the array
