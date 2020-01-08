@@ -107,11 +107,11 @@ var EventRecorder = {
     cssSelectorClass: new CssSelectorGenerator,
     //then we need a function that returned the CSS selector path
     getCssSelectorPath: element => EventRecorder.cssSelectorClass.getSelector(element),
-    //then we get a function that returns the Dompath CSS selector
+    //then we get a function that returns the CSS optimal selector - again we relegate id here to last place
     getOptimalSelectPath: element => OptimalSelect.select(element, {priority: ['class', 'href', 'src', 'id']}),
     //then a function that returns the Finder CSS selector - without ID but using attributes, add a threshold to speed it up, the lower the faster
-    getCssFinderPath: element => window.recordReplaySelectorGenerator(element),
-    //then a fallback function for fails
+    getRecordReplayPath: element => window.recordReplaySelectorGenerator(element),
+    //then a fallback function for fails, using the very fast dompath
     getCssDomPath: element => { const path = new dompath(element); return path.toCSS(); },
     //then our own basic function that returns xpath of element
     getXPath: element => {
@@ -233,7 +233,7 @@ EventRecorder.startRecordingEvents = () => {
     //we only attach this to the mouselocator as that it going to be the heaviest load
     const cssSelectorTimed = EventRecorder.timed(EventRecorder.getCssSelectorPath)
     const optimalSelectTimed = EventRecorder.timed(EventRecorder.getOptimalSelectPath)
-    const finderTimed = EventRecorder.timed(EventRecorder.getCssFinderPath)
+    const recordReplayTimed = EventRecorder.timed(EventRecorder.getRecordReplayPath)
     const dompathTimed = EventRecorder.timed(EventRecorder.getCssDomPath)
     const xpathTimed = EventRecorder.timed(EventRecorder.getXPath)
 
@@ -256,8 +256,8 @@ EventRecorder.startRecordingEvents = () => {
             return {
                 eventTarget: event.target,
                 eventCssSelectorPath: cssSelectorTimed(event.target),
-                eventCssDomPath: optimalSelectTimed(event.target),
-                eventCssFinderPath: finderTimed(event.target) || dompathTimed(event.target),
+                eventCssOptimalPath: optimalSelectTimed(event.target),
+                eventRecordReplayPath: recordReplayTimed(event.target) || dompathTimed(event.target),
                 eventXPath: xpathTimed(event.target)
             }
         })
@@ -274,8 +274,8 @@ EventRecorder.startRecordingEvents = () => {
         .map(event => {
             return {
                 eventCssSelectorPath: EventRecorder.getCssSelectorPath(event.target),
-                eventCssDomPath: EventRecorder.getOptimalSelectPath(event.target),
-                eventCssFinderPath: EventRecorder.getCssFinderPath(event.target) || EventRecorder.getCssDomPath(event.target),
+                eventCssOptimalPath: EventRecorder.getOptimalSelectPath(event.target),
+                eventRecordReplayPath: EventRecorder.getRecordReplayPath(event.target) || EventRecorder.getCssDomPath(event.target),
                 eventXPath: EventRecorder.getXPath(event.target)
             }
         });
@@ -291,8 +291,8 @@ EventRecorder.startRecordingEvents = () => {
             return {
                 eventTarget: event.target,
                 eventCssSelectorPath: EventRecorder.getCssSelectorPath(event.target),
-                eventCssDomPath: EventRecorder.getOptimalSelectPath(event.target),
-                eventCssFinderPath: EventRecorder.getCssFinderPath(event.target) || EventRecorder.getCssDomPath(event.target),
+                eventCssOptimalPath: EventRecorder.getOptimalSelectPath(event.target),
+                eventRecordReplayPath: EventRecorder.getRecordReplayPath(event.target) || EventRecorder.getCssDomPath(event.target),
                 eventXPath: EventRecorder.getXPath(event.target)
             }
         });
@@ -332,7 +332,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventHTMLTag: selectEndObject.mouseEvent.target.tagName,
                 recordingEventCssSelectorPath: EventRecorder.getCssSelectorPath(selectEndObject.mouseEvent.target),
                 recordingEventCssDomPath: EventRecorder.getOptimalSelectPath(selectEndObject.mouseEvent.target),
-                recordingEventCssFinderPath: EventRecorder.getCssFinderPath(selectEndObject.mouseEvent.target) || EventRecorder.getCssDomPath(selectEndObject.mouseEvent.target),
+                recordingEventCssFinderPath: EventRecorder.getRecordReplayPath(selectEndObject.mouseEvent.target) || EventRecorder.getCssDomPath(selectEndObject.mouseEvent.target),
                 recordingEventXPath: EventRecorder.getXPath(selectEndObject.mouseEvent.target),
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
@@ -364,8 +364,8 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventHTMLElement: actionEvent.target.constructor.name,
                 recordingEventHTMLTag: actionEvent.target.tagName,
                 recordingEventCssSelectorPath: locationEvent.eventCssSelectorPath,
-                recordingEventCssDomPath: locationEvent.eventCssDomPath,
-                recordingEventCssFinderPath: locationEvent.eventCssFinderPath,
+                recordingEventCssDomPath: locationEvent.eventCssOptimalPath,
+                recordingEventCssFinderPath: locationEvent.eventRecordReplayPath,
                 recordingEventXPath: locationEvent.eventXPath,
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
@@ -406,8 +406,8 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventHTMLElement: mouseLocatorEvent.eventTarget.constructor.name,
                 recordingEventHTMLTag: mouseLocatorEvent.eventTarget.tagName,
                 recordingEventCssSelectorPath: mouseLocatorEvent.eventCssSelectorPath,
-                recordingEventCssDomPath: mouseLocatorEvent.eventCssDomPath,
-                recordingEventCssFinderPath: mouseLocatorEvent.eventCssFinderPath,
+                recordingEventCssDomPath: mouseLocatorEvent.eventCssOptimalPath,
+                recordingEventCssFinderPath: mouseLocatorEvent.eventRecordReplayPath,
                 recordingEventXPath: mouseLocatorEvent.eventXPath,
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
@@ -440,8 +440,8 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventHTMLElement: actionEvent.target.constructor.name,
                 recordingEventHTMLTag: actionEvent.target.tagName,
                 recordingEventCssSelectorPath: locationEvent.eventCssSelectorPath,
-                recordingEventCssDomPath: locationEvent.eventCssDomPath,
-                recordingEventCssFinderPath: locationEvent.eventCssFinderPath,
+                recordingEventCssDomPath: locationEvent.eventCssOptimalPath,
+                recordingEventCssFinderPath: locationEvent.eventRecordReplayPath,
                 recordingEventXPath: locationEvent.eventXPath,
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
@@ -488,8 +488,8 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventHTMLElement: actionEvent.target.constructor.name,
                 recordingEventHTMLTag: actionEvent.target.tagName,
                 recordingEventCssSelectorPath: locationEvent.eventCssSelectorPath,
-                recordingEventCssDomPath: locationEvent.eventCssDomPath,
-                recordingEventCssFinderPath: locationEvent.eventCssFinderPath,
+                recordingEventCssDomPath: locationEvent.eventCssOptimalPath,
+                recordingEventCssFinderPath: locationEvent.eventRecordReplayPath,
                 recordingEventXPath: locationEvent.eventXPath,
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
@@ -540,8 +540,8 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventHTMLElement: actionEvent.target.constructor.name,
                 recordingEventHTMLTag: actionEvent.target.tagName,
                 recordingEventCssSelectorPath: focusEvent.eventCssSelectorPath || EventRecorder.getCssSelectorPath(actionEvent.target),
-                recordingEventCssDomPath: focusEvent.eventCssDomPath || EventRecorder.getOptimalSelectPath(actionEvent.target),
-                recordingEventCssFinderPath: focusEvent.eventCssFinderPath || EventRecorder.getCssFinderPath(actionEvent.target) || EventRecorder.getCssDomPath(actionEvent.target),
+                recordingEventCssDomPath: focusEvent.eventCssOptimalPath || EventRecorder.getOptimalSelectPath(actionEvent.target),
+                recordingEventCssFinderPath: focusEvent.eventRecordReplayPath || EventRecorder.getRecordReplayPath(actionEvent.target) || EventRecorder.getCssDomPath(actionEvent.target),
                 recordingEventXPath: focusEvent.eventXPath || EventRecorder.getXPath(actionEvent.target),
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
@@ -574,8 +574,8 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventHTMLElement: actionEvent.target.constructor.name,
                 recordingEventHTMLTag: actionEvent.target.scrollingElement.tagName,
                 recordingEventCssSelectorPath: EventRecorder.getCssSelectorPath(actionEvent.target.scrollingElement),
-                recordingEventCssDomPath: EventRecorder.getOptimalSelectPath(actionEvent.target.scrollingElement),
-                recordingEventCssFinderPath: EventRecorder.getCssFinderPath(actionEvent.target.scrollingElement) || EventRecorder.getCssDomPath(actionEvent.target.scrollingElement),
+                recordingEventCssOptimalPath: EventRecorder.getOptimalSelectPath(actionEvent.target.scrollingElement),
+                recordingEventCssFinderPath: EventRecorder.getRecordReplayPath(actionEvent.target.scrollingElement) || EventRecorder.getCssDomPath(actionEvent.target.scrollingElement),
                 recordingEventXPath: EventRecorder.getXPath(actionEvent.target.scrollingElement),
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
@@ -605,7 +605,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventHTMLTag: actionEvent.target.tagName,
                 recordingEventCssSelectorPath: EventRecorder.getCssSelectorPath(actionEvent.target),
                 recordingEventCssDomPath: EventRecorder.getOptimalSelectPath(actionEvent.target),
-                recordingEventCssFinderPath: EventRecorder.getCssFinderPath(actionEvent.target) || EventRecorder.getCssDomPath(actionEvent.target),
+                recordingEventCssFinderPath: EventRecorder.getRecordReplayPath(actionEvent.target) || EventRecorder.getCssDomPath(actionEvent.target),
                 recordingEventXPath: EventRecorder.getXPath(actionEvent.target),
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,

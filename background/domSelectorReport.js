@@ -19,10 +19,10 @@ class DomSelectorReport {
                 case "CssSelector":
                     this.selectorString = options.replayEvent.recordingEventCssSelectorPath;
                     break;
-                case "DomPathSelector":
+                case "OptimalSelector":
                     this.selectorString = options.replayEvent.recordingEventCssDomPath;
                     break;
-                case "FinderSelector":
+                case "RecordReplaySelector":
                     this.selectorString = options.replayEvent.recordingEventCssFinderPath;
                     break;
             }

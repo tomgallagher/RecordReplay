@@ -338,8 +338,8 @@ class ReplayTabRunner {
             .flatMap(replayEvent =>
                 Promise.all([
                     new DomSelectorReport({key: "CssSelector", replayEvent: replayEvent, browserTabId: this.browserTabId}),
-                    new DomSelectorReport({key: "DomPathSelector", replayEvent: replayEvent, browserTabId: this.browserTabId}),
-                    new DomSelectorReport({key: "FinderSelector", replayEvent: replayEvent, browserTabId: this.browserTabId})
+                    new DomSelectorReport({key: "OptimalSelector", replayEvent: replayEvent, browserTabId: this.browserTabId}),
+                    new DomSelectorReport({key: "RecordReplaySelector", replayEvent: replayEvent, browserTabId: this.browserTabId})
                 ]),
                 (replayEvent, selectorResultsArray) => {
   
