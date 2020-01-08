@@ -13,6 +13,8 @@
 
         //to generate a CSS path we only need to check html elements
         if (!(element instanceof HTMLElement)) return;
+        //then we need the regex for valid classnames - the underlying assumption is that a valid class name contains only letters, digits, hyphens or underscores but can't start with a number
+        const validClassName = /^[a-z_-][a-z\d_-]*$/i
         //set up the variables we need to process the walk up the DOM tree
         //we need a variable to hold the base node descriptor 
         var baseNodeDescriptor;
@@ -27,8 +29,13 @@
             selectedArray.unshift(baseNodeDescriptor = currentElement.nodeName.toLowerCase());
             //then see if we can add specificity with the className, if present
             if (currentElement.className) {
-                //if there is a class name then we change the first item in the array to reflect the class, if many classes separated by spaces then we join with dots as per spec
-                selectedArray[0] = baseNodeDescriptor += '.' + currentElement.className.trim().replace(/ +/g, '.');
+                //we need to remove invalid classnames https://stackoverflow.com/questions/448981/which-characters-are-valid-in-css-class-names-selectors
+                //first we should split the classname using the standard function that removes all whitespace
+                var classNameArray = currentElement.className.split();
+                //then we need to filter the array for valid classnames
+                classNameArray = classNameArray.filter(item => validClassName.test(item));
+                //if there is a remaining class name then we add all the classes with a leading dot
+                selectedArray[0] = baseNodeDescriptor += (classNameArray.length > 0 ? `.${classNameArray.join('.')}` : '');
                 //then we test to see if that gives us a unique value and, if so, we return true - we're done
                 if (uniqueQuery()) return true;
             }
@@ -38,6 +45,9 @@
                 if (attributesArray[i] === 'data-*') {
                     // Build array of data attributes
                     var dataAttributesArray = Array.prototype.slice.call(currentElement.attributes).filter(attr => attr.name.indexOf('data-') === 0);
+                    //ignore data-reactid (reacts element identifier which depends on the current DOM structure)
+                    //ignore data-react-checksum (react string rendered markup which depends on the current DOM structure)
+                    dataAttributesArray = dataAttributesArray.filter(attr => attr.name !== 'data-reactid' && attr.name !== 'data-react-checksum');
                     //then nested loop to add each attribute to the element and test for uniqueness
                     for (let j = 0; j < dataAttributesArray.length; ++j) {
                         //if there is a data attribute then we change the first item in the array to reflect the attribute
@@ -78,7 +88,10 @@
             //at each stage in the process we need to know if we have a unique query
             function uniqueQuery() {
                 //so we make quite an expensive call to query selector all with our current array and see if we get just the one match - unique if so
-                return document.querySelectorAll(selectedArray.join('>') || null).length === 1;
+                try {
+                    const test = document.querySelectorAll(selectedArray.join('>') || null).length === 1;
+                    return test;
+                } catch(e) { return false; }
             };
 
         }
