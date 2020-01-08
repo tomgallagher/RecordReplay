@@ -21,6 +21,8 @@ class ReplayTabRunner {
             this.recordingIsMobile = activeReplay.recordingIsMobile;
             //if so, we need to know mobile orientation
             this.recordingMobileOrientation = activeReplay.recordingMobileOrientation;
+            //and also the device id
+            this.recordingMobileDeviceId = activeReplay.recordingMobileDeviceId;
             //we need the scripts string for injection
             this.injectedScriptString = activeReplay.replayScriptsString;
             //we need to know if the user is saving resource loads

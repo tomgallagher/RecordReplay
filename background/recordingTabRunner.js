@@ -1,7 +1,6 @@
 class RecordingTabRunner {
 
-    //so we can have incoming active recordings, named here as activeItem
-    constructor(activeItem, withLogging) {
+    constructor(activeRecording, withLogging) {
 
         //the use of the anonymous async function in constructor enables us to set up the tab runner with any callback functions and receive responses
         //see https://stackoverflow.com/questions/43431550/async-await-class-constructor
@@ -13,19 +12,19 @@ class RecordingTabRunner {
             //then we need to have tab state
             this.openState = false;
             //then we need to save the params for the debugger commands from the active recording
-            this.recordingTestLatencyValue = activeItem.recordingTestLatencyValue; 
-            this.recordingTestBandwidthValue = activeItem.recordingTestBandwidthValue; 
-            this.recordingIsMobile = activeItem.recordingIsMobile;
-            this.recordingMobileDeviceId = activeItem.recordingMobileDeviceId;
-            this.recordingMobileOrientation = activeItem.recordingMobileOrientation;
-            this.injectedScriptString = activeItem.recordingScriptsString;
+            this.recordingTestLatencyValue = activeRecording.recordingTestLatencyValue; 
+            this.recordingTestBandwidthValue = activeRecording.recordingTestBandwidthValue; 
+            this.recordingIsMobile = activeRecording.recordingIsMobile;
+            this.recordingMobileDeviceId = activeRecording.recordingMobileDeviceId;
+            this.recordingMobileOrientation = activeRecording.recordingMobileOrientation;
+            this.injectedScriptString = activeRecording.recordingScriptsString;
             //then we see if we're logging or not
             this.withLogging = withLogging;
             //then we need an instance of the webNavigator class
             this.webNavigator = new WebNavigator();
             //THIS IS THE MOST IMPORTANT PIECE OF CODE AND THE REASON FOR THE ASYNC CONSTRUCTOR
             //we need to have the browser tab id in the constructor
-            this.browserTabId = await new Promise(resolve => chrome.tabs.create({ url: activeItem.recordingTestStartUrl }, tab => { this.openState = true; resolve(tab.id); } ));
+            this.browserTabId = await new Promise(resolve => chrome.tabs.create({ url: activeRecording.recordingTestStartUrl }, tab => { this.openState = true; resolve(tab.id); } ));
             //and we also want the tab runner to be able to tell the active recording when its tab has closed and also change its own tab state
             this.tabClosedObservable = Rx.Observable.fromEventPattern(
                 handler => chrome.tabs.onRemoved.addListener(handler),
