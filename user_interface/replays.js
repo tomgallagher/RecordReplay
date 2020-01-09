@@ -723,6 +723,8 @@ function addReplayEventsTableStartReplayHandler() {
         .switchMap(event => Rx.Observable.fromPromise(StorageUtils.getSingleObjectFromDatabaseTable('replays.js', event.target.getAttribute('data-replay-id') , 'replays')) )
         //process the replay using the routine from newreplay.js
         .flatMap(replay =>  Rx.Observable.fromPromise(processReplayEvents(replay, '.ui.runReplayReplayEventsTable.table', '.ui.runReplay.container')) )
+        //report that the replay events have all completed
+        .do(replay => console.log(`ALL REPLAY EVENTS COMPLETED FOR REPLAY: ${replay.replayName}`))
         //then we need to collect any reports that may be required for this replay from the replay's tab runner
         .switchMap( () =>
             //send the message and wait for the response promise to be fulfilled

@@ -72,7 +72,7 @@ class ReplayTabRunner {
             6: "TabRunner: Curated Page Closed",
             7: `TabRunner: Script Package Injected into main_frame ${message}`,
             8: `TabRunner: Script Package Injected into sub_frame ${message}`,
-            9: "TabRunner: Cleared Browser Cache",
+            9: "TabRunner: Browser Cache Disabled",
             10: "TabRunner: Saved Screenshot",
             11: "TabRunner: Runtime Enabled",
             12: "TabRunner: Returned Root DOM node",
@@ -82,6 +82,7 @@ class ReplayTabRunner {
             16: `TabRunner: Dispatched Key Event: ${message}`,
             17: `TabRunner Error: ${message}`,
             18: `TabRunner: Focused Element in Iframe: ${message}`,
+            19: `TabRunner: Preparing Screenshot`,
         };
         //gives the opportunity to switch off tab runner logging
         if (this.withLogging) { console.log(logStatements[index]); }
@@ -417,7 +418,7 @@ class ReplayTabRunner {
         await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Network.enable", {}, () => { this.log(1); resolve(); } ));
         //then we need to clear the cache if we are looking for resource loads
         //this can take quite a long time on the first time it's cleared, so we don't wait for it
-        if (this.saveResourceLoads) { chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Network.clearBrowserCache", {}, () => { this.log(9); }); }
+        if (this.saveResourceLoads) { await chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Network.setCacheDisabled", {cacheDisabled: true}, () => { this.log(9); }); }
         //then we need to have the ability to send page commands
         await new Promise(resolve => chrome.debugger.sendCommand({ tabId: this.browserTabId }, "Page.enable", {}, () => { this.log(2); resolve(); } ));
         //then we need to set any throttling / latency that may be needed
@@ -602,24 +603,27 @@ class ReplayTabRunner {
         await new Promise(resolve => {
             //we will get an error if we try to take screenshot after tab closed
             if (this.openState) {
-                //send the command to the debugger
-                chrome.debugger.sendCommand(
-                    //always use our tab ID
-                    { tabId: this.browserTabId },
-                    //send the screenshot command 
-                    "Page.captureScreenshot", 
-                    //then the image params
-                    { format: "jpeg", quality: 100 },
-                    //this returns string of Base64-encoded image data
-                    data => { 
-                        //save the string to our class property
-                        this.screenShot = data;
-                        //log that the screenshot has been taken
-                        this.log(10); 
-                        //then resolve
-                        resolve(); 
-                    } 
-                );
+                //we need to have focus on the tab we are taking the screenshot from 
+                chrome.tabs.update(this.browserTabId, { highlighted: true }, () => {
+                    //send the command to the debugger
+                    chrome.debugger.sendCommand(
+                        //always use our tab ID
+                        { tabId: this.browserTabId },
+                        //send the screenshot command 
+                        "Page.captureScreenshot", 
+                        //then the image params
+                        { format: "jpeg", quality: 100 },
+                        //this returns string of Base64-encoded image data
+                        data => { 
+                            //save the string to our class property
+                            this.screenShot = data;
+                            //log that the screenshot has been taken
+                            this.log(10); 
+                            //then resolve
+                            resolve(); 
+                        } 
+                    );
+                });
             //if the tab is closed we just resolve and do not update the screenshot property
             } else { resolve(); }
         });
