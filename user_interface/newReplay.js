@@ -294,9 +294,9 @@ function addNewReplayEventToTable(replay, replayEvent, table) {
     //<td data-label="replay_recordingEventLocation" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
     let replayEventLocationNode = tempNode.querySelector('td[data-label="replay_recordingEventLocation"]');
     //same for both
-    replayEventLocationNode.textContent = replayEvent.recordingEventLocation;
+    replayEventLocationNode.textContent = replayEvent.recordingEventLocationHref;
     //any text-overflow elements should have a title with the whole string
-    replayEventLocationNode.title = replayEvent.recordingEventLocation;
+    replayEventLocationNode.title = replayEvent.recordingEventLocationHref;
 
     //<td data-label="replay_timestamp_created">Some time</td>
     let replayEventTimeCreatedNode = tempNode.querySelector('td[data-label="replay_timestamp_created"]');

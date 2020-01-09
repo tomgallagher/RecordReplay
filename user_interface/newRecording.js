@@ -51,9 +51,9 @@ function addNewRecordingEventToTable(recording, recordingEvent, table) {
     
     //<td data-field="recordingEventLocation" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
     let recordingEventLocationNode = tempNode.querySelector('td[data-label="recordingEventLocation"]');
-    recordingEventLocationNode.textContent = recordingEvent.recordingEventLocation;
+    recordingEventLocationNode.textContent = recordingEvent.recordingEventLocationHref;
     //any text-overflow elements should have a title with the whole string
-    recordingEventLocationNode.title = recordingEvent.recordingEventLocation;
+    recordingEventLocationNode.title = recordingEvent.recordingEventLocationHref;
     
     //<td data-field="recordingEventCreated">Some time</td>
     let recordingEventCreatedNode = tempNode.querySelector('td[data-label="recordingEventCreated"]');
