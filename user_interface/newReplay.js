@@ -519,8 +519,10 @@ function runExecutionMessageWithFailover(replayEvent) {
     //we will receive no response if we get no page navigation onCompleted event = timeout
     //so we need each event to have this promise
     return new Promise(resolve => {
+        //we need to report the time we have waited for the error
+        const errorString = `Unmatched URL Timeout (${replayEvent.waitForExecutionTime / 1000} seconds)`;
         //we need to have an error object with the crucial fields resolved by the timeout
-        const syntheticExecution = {replayEventReplayed: Date.now(), replayLogMessages: [], replayErrorMessages: ["Unmatched URL Timeout"], replayEventStatus: false };
+        const syntheticExecution = {replayEventReplayed: Date.now(), replayLogMessages: [], replayErrorMessages: [errorString], replayEventStatus: false };
         //we run a race between the messenger and our timeout to see which returns first
         Promise.race([
             //the messenger will resolve with a standard messaging response - we are interested in the response replayExecution only
@@ -600,8 +602,8 @@ function processReplayEvents(replay, tableSelector, containerSelector) {
                     .map(replayEvent => {
                         //if we have an assertion id, we should add the initialisation statement to the assertion log messages, otherwise normal logging
                         replayEvent.assertionId ? replayEvent.assertionLogMessages = ["Assertion Initialised"] : replayEvent.replayLogMessages = ["Replay Initialised"];
-                        //then we need to have an execution wait time, we need a long wait time for page actions as it waits for load, otherwise a shorter time to allow for scrol
-                        replayEvent.recordingEventAction == "Page" ? replayEvent.waitForExecutionTime = 60000 : replayEvent.waitForExecutionTime = 2000;
+                        //then we need to have an execution wait time, we need a long wait time for page actions as it waits for load, otherwise a shorter time to allow for scroll
+                        replayEvent.recordingEventAction == "Page" ? replayEvent.waitForExecutionTime = 20000 : replayEvent.waitForExecutionTime = 2000;
                         //then return the replay event
                         return replayEvent; 
                     })

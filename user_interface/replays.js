@@ -337,7 +337,7 @@ function updateReplayEventsTableCodeReports(replay) {
                 let tempCard = targetCard.cloneNode(true);
                 //<div class="right floated meta timeFailed">14h</div>
                 let failTimeNode = tempCard.querySelector('.timeFailed');
-                let failTime = failedReplayEventArray[errorEvent].assertionEventReplayed || failedReplayEventArray[errorEvent].assertionEventReplayed;
+                let failTime = failedReplayEventArray[errorEvent].assertionEventReplayed || failedReplayEventArray[errorEvent].replayEventReplayed;
                 failTimeNode.textContent = new Date(failTime).toLocaleString();
                 //<i class="recordingOrAssertionEventActionIcon" style="color:#6435c9"></i> 
                 let iconNode = tempCard.querySelector('.recordingOrAssertionEventActionIcon');

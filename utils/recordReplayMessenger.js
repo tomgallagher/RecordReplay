@@ -69,7 +69,8 @@ class RecordReplayMessenger {
             chrome.runtime.sendMessage(message, response => {
                 //the extension structure, with no message responses sent if correct replay environment is not found, means we have to check the error
                 //As long as Chrome sees that you checked the value when there is an error (that is, evaluated it within your callback), the error will not be thrown.
-                if (chrome.runtime.lastError) { console.info(chrome.runtime.lastError.message); }
+                //WORTH NOTING THAT WITH MESSAGES BEING RELAYED BETWEEN INDEX.HTML AND CONTENT SCRIPTS, WE WILL USUALLY GET THE ERROR IN DUPLICATE 
+                if (chrome.runtime.lastError) { console.info(chrome.runtime.lastError.message); console.info(JSON.stringify(message)); }
                 response ? resolve(response) : null;
             })
         });
@@ -80,7 +81,8 @@ class RecordReplayMessenger {
             chrome.tabs.sendMessage(tabId, message, response => {
                 //the extension structure, with no message responses sent if correct replay environment is not found, means we have to check the error
                 //As long as Chrome sees that you checked the value when there is an error (that is, evaluated it within your callback), the error will not be thrown.
-                if (chrome.runtime.lastError) { console.info(chrome.runtime.lastError.message); }
+                //WORTH NOTING THAT WITH MESSAGES BEING RELAYED BETWEEN INDEX.HTML AND CONTENT SCRIPTS, WE WILL USUALLY GET THE ERROR IN DUPLICATE 
+                if (chrome.runtime.lastError) { console.info(chrome.runtime.lastError.message); console.info(JSON.stringify(message)); }
                 response ? resolve(response) : null;
             })
         });
