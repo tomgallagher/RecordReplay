@@ -219,8 +219,17 @@ class JestTranslator {
             outputString += this.chosenTranslator.standardOpeningComment;
             //add the standard Jest test function
             outputString += this.openJestReplay(replay);
-            //if we are in puppeteer then we need to open the page
-            if(this.chosenTranslator instanceof PuppeteerTranslator) outputString += `${this.tabIndex(0)}${this.chosenTranslator.openPage()}`;
+            //then we need to add some special stuff for puppeteer
+            if (this.chosenTranslator instanceof PuppeteerTranslator) {
+                //if we are in puppeteer then we need to open the page
+                outputString += `${this.tabIndex(0)}${this.chosenTranslator.openPage()}`;
+                //then we need to create the cdp session
+                outputString += `${this.tabIndex(0)}${this.chosenTranslator.connectToChromeDevtools()}`;
+                //then we need to do the network emulation
+                outputString += `${this.tabIndex(0)}${this.chosenTranslator.emulateNetworkConditions(false, replay.recordingTestBandwidthValue, replay.recordingTestBandwidthValue, replay.recordingTestLatencyValue)}`;
+                //then the mobile emulation, if required
+                if (replay.recordingIsMobile) { outputString += `${this.tabIndex(0)}${this.chosenTranslator.emulateDevice(replay)}`; }
+            }
             //add the open page function
             outputString += `${this.tabIndex(0)}${this.chosenTranslator.navigateToUrl(replay.recordingTestStartUrl)}`;
             //then we determine if we are working with a replay that has been run or not, we start with the replay event array by default
