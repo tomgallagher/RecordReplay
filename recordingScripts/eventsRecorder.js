@@ -340,6 +340,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A'),
                 //information specific to text select events
                 recordingEventTextSelectTextContent: selectEndObject.selectionString,
                 recordingEventTextSelectTargetAsJSON: EventRecorder.domToJSON(selectEndObject.mouseEvent.target)
@@ -373,6 +374,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A')
             });
             //then only return the event if the same element has not recorded a text selection event
             if (currentTextSelection.recordingEventCssSelectorPath != newEvent.recordingEventCssSelectorPath) {
@@ -415,6 +417,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A'),
                 //information specific to text select events
                 recordingEventHoverTargetAsJSON: EventRecorder.domToJSON(mouseLocatorEvent.eventTarget)
             });
@@ -449,6 +452,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A')
             });
             return newEvent;
         });
@@ -497,6 +501,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A'),
                 //information specific to input events
                 recordingEventInputType: inputType,
                 recordingEventInputValue: inputValue,
@@ -549,6 +554,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A'),
                 //information specific to keyboard events
                 recordingEventKey: actionEvent.key,
                 recordingEventCode: actionEvent.code,
@@ -583,6 +589,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A'),
                 //information specific to scroll events
                 recordingEventXPosition: Math.round(actionEvent.target.scrollingElement.scrollLeft),
                 recordingEventYPosition: Math.round(actionEvent.target.scrollingElement.scrollTop),
@@ -613,6 +620,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A'),
                 //information specific to scroll events
                 recordingEventXPosition: Math.round(actionEvent.target.scrollLeft),
                 recordingEventYPosition: Math.round(actionEvent.target.scrollTop),

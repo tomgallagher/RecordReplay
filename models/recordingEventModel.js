@@ -19,6 +19,7 @@ class RecordingEvent {
             recordingEventLocation: 'N/A',
             recordingEventLocationHref: 'N/A',
             recordingEventIsIframe: false,
+            recordingEventIframeName: 'N/A',
             recordingEventCreated: Date.now(),
             recordingEventTimestamp: performance.now(),
             recordingTimeSincePrevious: 0,

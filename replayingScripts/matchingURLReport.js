@@ -41,10 +41,33 @@ class MatchingUrlReport {
                     EventReplayer.logWithContext(`Not Replaying ${replayEvent.assertionId || replayEvent.replayEventId} from Unmatched Search Params`);
                 }
                 break;
-            //when we have no fails then we can just return true
-                default:
-                    EventReplayer.logWithContext(`Matched Location: Executing ${replayEvent.assertionId || replayEvent.replayEventId}`);
-                    this.matched = true;
+            //when we have no fails on the url we are left with the possibliliy that we are in the main page or we are in a vanilla iframe
+            //the problem we have is that the main page can contain many vanilla iframes
+            default:
+                //so we need to have a further level of nested logic here
+                switch(true){
+                    //we discard cases where the frame/main page context is different from the recorded context
+                    case EventReplayer.contextIsIframe() != replayEvent.recordingEventIsIframe:
+                        //no match so we just log this for debugging and then break
+                        EventReplayer.logWithContext(`Not Replaying ${replayEvent.assertionId || replayEvent.replayEventId} from Unmatched Main Page / Frame Context`);
+                        break;
+                    //we need to action events where the context indicates an iframe match
+                    case EventReplayer.contextIsIframe() && replayEvent.recordingEventIsIframe:
+                        //then we know we are in an iframe, which is where we want to be BUT we need to distinguish between iframes
+                        if (replayEvent.recordingEventIframeName ==  window.frameElement.name) {
+                            //we may have problems here if we get multiple vanilla iframes all with the same name
+                            EventReplayer.logWithContext(`Matched Vanilla Iframe on Name: Executing ${replayEvent.assertionId || replayEvent.replayEventId}`);
+                            this.matched = true;
+                        } else {
+                            //otherwise we need to report 
+                            EventReplayer.logWithContext(`Not Replaying ${replayEvent.assertionId || replayEvent.replayEventId} from Unmatched Vanilla Iframe Name`);
+                        }
+                        break;
+                    //we need to action events where the context indicates a main frame match
+                    case !EventReplayer.contextIsIframe() && !replayEvent.recordingEventIsIframe:
+                        EventReplayer.logWithContext(`Matched Main Frame Location: Executing ${replayEvent.assertionId || replayEvent.replayEventId}`);
+                        this.matched = true;
+                }
 
         }
 

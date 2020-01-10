@@ -69,8 +69,9 @@ class RecordingTabRunner {
             .concatMap(navObject => Rx.Observable.fromPromise(
                 new Promise(resolve => 
                     chrome.tabs.executeScript(this.browserTabId, 
-                        //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
-                        { code: this.injectedScriptString, runAt: "document_idle" },
+                        //If allFrames true and frameId is set, then the code is inserted in the selected frame and all of its child frames
+                        //THIS ONLY INCLUDES VANILLA IFRAMES - FOR CROSS ORIGIN IFRAMES WE NEED TO HAVE THE SEPARATE ROUTINE BELOW
+                        { code: this.injectedScriptString, allFrames: true, frameId: navObject.frameId, runAt: "document_idle" },
                         //log the script injection so we can see what's happening and resolve the promise 
                         () => { this.log(7, navObject.url); resolve(); } 
                     )
@@ -91,7 +92,7 @@ class RecordingTabRunner {
             .concatMap(navObject => Rx.Observable.fromPromise(
                 new Promise(resolve => 
                     chrome.tabs.executeScript(this.browserTabId, 
-                        //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
+                        //THIS WILL ONLY INJECT INTO CROSS ORIGIN IFRAMES AS THERE WILL BE NO NAVIGATION EVENT FOR SAME DOMAIN FRAMES
                         { code: this.injectedScriptString, frameId: navObject.frameId, runAt: "document_idle" },
                         //log the script injection so we can see what's happening and resolve the promise  
                         () => { this.log(8, navObject.url); resolve(); } 
