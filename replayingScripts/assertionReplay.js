@@ -21,6 +21,9 @@ class AssertionReplay {
         this.xpath = replayEvent.recordingEventXPath;
         //then we need to keep the messaging send response function attached to the class as the testing process relies on sending responses back to user interface
         this.sendResponse = replayEvent.sendResponse || null;
+        
+        //then we need to have a special marker for internal testing
+        this.assertionShouldFail = replayEvent.assertionShouldFail
 
         //then special properties for assertion checking
         //we need to have the kind of assertion, is it "Text Content", "Present" or "Content"
@@ -111,13 +114,17 @@ class AssertionReplay {
 
                 //create the assertion result we are going to be looking to report
                 let assertionResult = false;
+                //create the element variable we are going to be using
+                let element;
                 //then what we do depends whether it is being performed on the root element
                 if (this.assertionElement == "ROOT" && this.assertionNestedLevel == 0) {
                     //OPERATING ON ROOT ELEMENT - what we do depends on the kind of assertion we are performing
                     switch(this.assertionType) {
                         case "Visible":
                             //find the selected element
-                            const element = document.querySelector(this.chosenSelectorReport.selectorString);
+                            element = document.querySelector(this.chosenSelectorReport.selectorString);
+                            //then we have a deliberate fail for internal testing
+                            if (element && this.assertionShouldFail) element.style.visibility = "hidden";
                             //if we have the element then we need to check the style for visibility and then display properties indirectly by getBoundingClientRect
                             if (element) {
                                 //get the style of the selected element
@@ -127,41 +134,54 @@ class AssertionReplay {
                                 //then set the assertion result to the outcome of this
                                 assertionResult = style && style.visibility !== 'hidden' && hasVisibleBoundingBox();
                             }
-                            if (assertionResult) {
-                                this.replayLogMessages.push(`Asserted Visible`);
-                            } else {
-                                this.replayErrorMessages.push(`Failed to Assert Visible`);
-                            }
+                            //then we will have an assertion result if we have found the element and the element has the necessary visibility and display characteristics
+                            assertionResult ? this.replayLogMessages.push(`Asserted Visible`) : this.replayErrorMessages.push(`Failed to Assert Visible`);
+                            //and we're done
                             break;
                         case "Text Content":
-                            //see if the textcontent of the element matches the value we are expecting
-                            assertionResult = document.querySelector(this.chosenSelectorReport.selectorString).textContent == this.assertionValue;
-                            //logging success or failure
-                            if (assertionResult) {
-                                this.replayLogMessages.push(`Asserted Text Content: ${this.assertionValue}`);
-                            } else {
-                                this.replayErrorMessages.push(`Failed to Assert Text Content: ${this.assertionValue}`);
+                            //find the selected element
+                            element = document.querySelector(this.chosenSelectorReport.selectorString);
+                            //then we have a deliberate fail for internal testing
+                            if (element && this.assertionShouldFail) element.textContent = "FAIL";
+                            //then if we have the element we need to check the text content is OK
+                            if (element) {
+                                //see if the textcontent of the element matches the value we are expecting
+                                assertionResult = element.textContent == this.assertionValue;
                             }
+                            //logging success or failure
+                            if (assertionResult) { this.replayLogMessages.push(`Asserted Text: ${this.assertionValue}`) }
+                            else { this.replayErrorMessages.push(`Failed to Assert Text: ${this.assertionValue}`); }
+                            //and we're done
                             break;
                         case "Present":
-                            //see if the element has the attribute we are expecting
-                            assertionResult = document.querySelector(this.chosenSelectorReport.selectorString).hasAttribute(this.assertionAttribute);
-                            //logging success or failure
-                            if (assertionResult) {
-                                this.replayLogMessages.push(`Asserted Attribute: ${this.assertionAttribute}`);
-                            } else {
-                                this.replayErrorMessages.push(`Failed to Assert Attribute: ${this.assertionAttribute}`);
+                            //find the selected element
+                            element = document.querySelector(this.chosenSelectorReport.selectorString);
+                            //then we have a deliberate fail for internal testing
+                            if (element && this.assertionShouldFail) element.removeAttribute(this.assertionAttribute);
+                            //then if we have the element we need to check the attribute is present
+                            if (element) {
+                                //see if the element has the attribute we are expecting
+                                assertionResult = element.hasAttribute(this.assertionAttribute);
                             }
+                            //logging success or failure
+                            if (assertionResult) { this.replayLogMessages.push(`Asserted Attribute: ${this.assertionAttribute}`) }
+                            else { this.replayErrorMessages.push(`Failed to Assert Attribute: ${this.assertionAttribute}`); }
+                            //and we're done
                             break;
                         case "Content":
-                            //see if the elmeent has the the attribute we are expecting and the value is what we're expecting
-                            assertionResult = document.querySelector(this.chosenSelectorReport.selectorString).getAttribute(this.assertionAttribute) == this.assertionValue;
-                            //logging success or failure
-                            if (assertionResult) {
-                                this.replayLogMessages.push(`Asserted Attribute: ${this.assertionAttribute}, Asserted Value: ${this.assertionValue}`)
-                            } else {
-                                this.replayErrorMessages.push(`Failed to Assert Attribute: ${this.assertionAttribute}, Value: ${this.assertionValue}`)
+                            //find the selected element
+                            element = document.querySelector(this.chosenSelectorReport.selectorString);
+                            //then we have a deliberate fail for internal testing
+                            if (element && this.assertionShouldFail) element.setAttribute(this.assertionAttribute, '');
+                            //then if we have the element we need to check it has the attribute we are expecting and the value is what we're expecting
+                            if (element) {
+                                //set the assertion result to what we care about
+                                assertionResult = element.getAttribute(this.assertionAttribute) == this.assertionValue;
                             }
+                            //logging success or failure
+                            if (assertionResult) { this.replayLogMessages.push(`Asserted Attribute: ${this.assertionAttribute}, Asserted Value: ${this.assertionValue}`); } 
+                            else { this.replayErrorMessages.push(`Failed to Assert Attribute: ${this.assertionAttribute}, Value: ${this.assertionValue}`) }
+                            //and we're done
                             break;
                         default:
                             EventReplayer.logWithContext(`Unrecognised Assertion Type: ${this.assertionType}`);

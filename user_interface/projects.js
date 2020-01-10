@@ -132,7 +132,7 @@ function addProjectTableButtonListeners() {
     });
 
     //delete project button click handler
-    $('.ui.deleteProject.button').on('doubleclick', function(){
+    $('.ui.deleteProject.button').on('dblclick', function(){
         
         //delete the project in the database, using data-project-id from the template
         const projectKey = $(this).attr("data-project-id");

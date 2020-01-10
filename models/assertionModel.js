@@ -33,7 +33,10 @@ class Assertion extends RecordingEvent {
             //then we may need to know the type of element we are looking to assert on, in case of nested assertions, this allows further searching in target element
             assertionElement: "ROOT",
             //then we may need to know the nested level, in case we want to display an existing assertion in the user interface and check the checkbox
-            assertionNestedLevel: 0
+            assertionNestedLevel: 0,
+            //then we need to have a property for internal testing of assertions
+            //this should only be true for any assertions saved in test.json file
+            assertionShouldFail: false
         };
         // create a new object with the defaults over-ridden by the options passed in
         let opts = Object.assign({}, defaults, options);

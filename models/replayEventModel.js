@@ -20,7 +20,10 @@ class ReplayEvent extends RecordingEvent {
             //then we are going to want to know why the replay event has failed
             replayErrorMessages: [],
             //then we are going to want to know which selector was used in the replay
-            replayChosenSelectorString: ""
+            replayChosenSelectorString: "",
+            //then we need to have a property for internal testing of replays
+            //this should only be true for any replays saved in test.json file
+            replayShouldFail: false
         };
         // create a new object with the defaults over-ridden by the options passed in
         let opts = Object.assign({}, defaults, options);

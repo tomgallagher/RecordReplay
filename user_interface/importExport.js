@@ -10,6 +10,7 @@ $(document).ready (function(){
     });
 
     $('#ImportData').on('drop', async(event) => {
+        console.log(event);
         // Restrict handler to this one
         event.stopPropagation();
         // Prevent default behavior (Prevent file from being opened)
@@ -35,6 +36,7 @@ $(document).ready (function(){
             await StorageUtils.importDatabase('importExport.js', text);
             //then signal done
             $('.ui.file.segment .ui.import.form').removeClass('loading');
+            $('#ImportData textarea').css('color', "green");
             $('#ImportData textarea').val('Record/Replay File - Import Complete');
             //then report
             ga('send', { hitType: 'event', eventCategory: 'JSONImport', eventAction: 'Drop', eventLabel: 'JSONData'});
