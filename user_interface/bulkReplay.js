@@ -116,42 +116,78 @@ function populateBulkReplayTabs(replayStorageArray) {
 
 function refreshBulkReplayTestDropdown() {
 
-    //get the tests data from the database so we can have recordings linked to tests
-    StorageUtils.getAllObjectsInDatabaseTable('bulkReplay.js', 'tests')
+    Promise.all([
+            //get all the projects from the database
+            StorageUtils.getAllObjectsInDatabaseTable('bulkReplay.js', 'projects'),
+            //get the tests data from the database so we can have recordings linked to tests
+            StorageUtils.getAllObjectsInDatabaseTable('bulkReplay.js', 'tests')
+        ])
         //once we have the array then we can start populating the new test form projects dropdwon by looping through the array
-        .then(testStorageArray => {
+        .then(([projectStorageArray, testStorageArray]) => {
             
-            //filter tests for default project by fetching from local storage
+            //filter arrays for default project by fetching from local storage
             const defaultProjectId = Number(localStorage.getItem("DefaultProject"));
-            //if we have any number greater than zero, which indicates no default, then filter
+
+            //if we have any number greater than zero, which indicates no default, then filter the tests for the default project
+            defaultProjectId > 0 ? projectStorageArray = projectStorageArray.filter(test => test.id == defaultProjectId) : null;
+            //if we have any number greater than zero, which indicates no default, then filter the tests for the default project
             defaultProjectId > 0 ? testStorageArray = testStorageArray.filter(test => test.testProjectId == defaultProjectId) : null;
 
             //get a reference to the drop down in the bulk replay form
             var newRecordingDropDownMenu = $('.ui.fluid.selection.bulkReplay.test.dropdown .menu');
             //empty the dropdown of existing items
             newRecordingDropDownMenu.empty();
-            //use for-in loop as execution order is maintained to insert all the tests, with references, in the dropdown
+
+            //then we add the projects to the dropdown
+            for (let project in projectStorageArray) {     
+                //we are not going to use templates here as we are not dealing with complex html structures
+                newRecordingDropDownMenu.append(`<div class="item" data-value=${projectStorageArray[project].id} data-type="project">[Project] ${projectStorageArray[project].projectName}</div>`);
+            }
+
+            //then we add the tests to the dropdown
             for (let test in testStorageArray) {     
                 //we are not going to use templates here as we are not dealing with complex html structures
-                newRecordingDropDownMenu.append(`<div class="item" data-value=${testStorageArray[test].id}>${testStorageArray[test].testName}</div>`);
+                newRecordingDropDownMenu.append(`<div class="item" data-value=${testStorageArray[test].id} data-type="test">[Test] ${testStorageArray[test].testName}</div>`);
             }
+
             //then after the entire loop has been executed we need to initialise the dropdown with the updated items
             $('.ui.fluid.selection.bulkReplay.test.dropdown').dropdown({
-                onChange: function(value) {
-                    //update the start and stop buttons to contain the correct test id
-                    $('.ui.bulkReplay.form .ui.startBulkReplay.positive.button').attr('data-test-id', value);
-                    $('.ui.bulkReplay.form .ui.stopBulkReplay.negative.button').attr('data-test-id', value);
-                    //data value always returns a string and we need the id in number form
-                    const testId = Number(value);
-                    //find all the replays that have a matching id
+                onChange: function(value, text, $selectedItem) {
+                    //first we need to get all the replays
                     StorageUtils.getAllObjectsInDatabaseTable('bulkReplay.js', 'replays')
-                        //once we have the array of all the replays we need to start populating the tab control
+                        //then what we do with the replays depends upon whether we have selected a project or a test
                         .then(replayStorageArray => {
-                            //filter the replays for the matching test id
-                            replayStorageArray = replayStorageArray.filter(replay => replay.recordingTestId == testId);
-                            //then populate, activate and show each of the tabs using separate function
-                            populateBulkReplayTabs(replayStorageArray);
+                            //first we deal with projects
+                            if ($selectedItem.attr("data-type") == 'project') {
+                                //update the start and stop buttons to contain the correct project id
+                                $('.ui.bulkReplay.form .ui.startBulkReplay.positive.button').attr('data-project-id', value);
+                                $('.ui.bulkReplay.form .ui.stopBulkReplay.negative.button').attr('data-project-id', value);
+                                //remove the data-test-id attribute from the buttons
+                                $('.ui.bulkReplay.form .ui.startBulkReplay.positive.button').removeAttr("data-test-id");
+                                $('.ui.bulkReplay.form .ui.stopBulkReplay.negative.button').removeAttr("data-test-id");
+                                //data value always returns a string and we need the id in number form
+                                const projectId = Number(value);
+                                //filter the replays for the matching test id
+                                replayStorageArray = replayStorageArray.filter(replay => replay.recordingProjectId == projectId);
+                                //then populate, activate and show each of the tabs using separate function
+                                populateBulkReplayTabs(replayStorageArray);
+                            } else {
+                                //update the start and stop buttons to contain the correct test id
+                                $('.ui.bulkReplay.form .ui.startBulkReplay.positive.button').attr('data-test-id', value);
+                                $('.ui.bulkReplay.form .ui.stopBulkReplay.negative.button').attr('data-test-id', value);
+                                //remove the data-project-id attribute from the buttons
+                                $('.ui.bulkReplay.form .ui.startBulkReplay.positive.button').removeAttr("data-project-id");
+                                $('.ui.bulkReplay.form .ui.stopBulkReplay.negative.button').removeAttr("data-project-id");
+                                //data value always returns a string and we need the id in number form
+                                const testId = Number(value);
+                                //filter the replays for the matching test id
+                                replayStorageArray = replayStorageArray.filter(replay => replay.recordingTestId == testId);
+                                //then populate, activate and show each of the tabs using separate function
+                                populateBulkReplayTabs(replayStorageArray);
+                            }
+
                         });
+                        
                 }
 
             });
@@ -160,16 +196,16 @@ function refreshBulkReplayTestDropdown() {
 
 }
 
-function runBulkReplay(testID) {
+function runBulkReplay(projectOrTestID, bulkReplayType) {
 
     //we need to have the testID as a number
-    const testIDAsNumber = StorageUtils.standardiseKey(testID)
+    const projectOrTestIDAsNumber = StorageUtils.standardiseKey(projectOrTestID)
     //first we need to get all the replays from storage, delivered as an array
     Rx.Observable.fromPromise(StorageUtils.getAllObjectsInDatabaseTable('bulkReplay.js', 'replays'))
         //then we want to get each of the replays in the array as a separate entity that we can process
         .mergeAll()
         //then we want to filter each replay so we only process matching replays
-        .filter(replay => replay.recordingTestId == testIDAsNumber)
+        .filter(replay => bulkReplayType == 'project' ? replay.recordingProjectId == projectOrTestIDAsNumber : replay.recordingTestId == projectOrTestIDAsNumber)
         //then we want to process each replay in turn, waiting for it to finish before we move on
         .concatMap(replay => Rx.Observable.fromPromise(processEachReplay(replay)) )
         //then we have a variety of things we need to do when all the replays have completed
@@ -269,8 +305,8 @@ $(document).ready (function(){
         //remove all the indicators from the table rows, apart from disabled and assertion row
         $(`.ui.bulkReplayReplayEventsTable.table tr`).removeClass('positive');
         $(`.ui.bulkReplayReplayEventsTable.table tr`).removeClass('negative');
-        //then we want to pass the value of the test id to the function that runs the bulk replay
-        runBulkReplay(event.target.getAttribute('data-test-id'));
+        //then we want to pass the value of the project or test id to the function that runs the bulk replay
+        event.target.hasAttribute('data-project-id') ? runBulkReplay(event.target.getAttribute('data-project-id'), "project") : runBulkReplay(event.target.getAttribute('data-test-id'), "test");
         //then report to Google analytics so we can see how often bulk replays happen 
         ga('send', { hitType: 'event', eventCategory: 'BulkReplayRun', eventAction: `Click`, eventLabel: 'ReplayData'});
 
