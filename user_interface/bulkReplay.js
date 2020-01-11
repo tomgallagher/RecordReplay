@@ -122,14 +122,14 @@ function refreshBulkReplayTestDropdown() {
             //get the tests data from the database so we can have recordings linked to tests
             StorageUtils.getAllObjectsInDatabaseTable('bulkReplay.js', 'tests')
         ])
-        //once we have the array then we can start populating the new test form projects dropdwon by looping through the array
+        //once we have the array then we can start populating the bulk replay dropdown by looping through the array
         .then(([projectStorageArray, testStorageArray]) => {
             
             //filter arrays for default project by fetching from local storage
             const defaultProjectId = Number(localStorage.getItem("DefaultProject"));
 
-            //if we have any number greater than zero, which indicates no default, then filter the tests for the default project
-            defaultProjectId > 0 ? projectStorageArray = projectStorageArray.filter(test => test.id == defaultProjectId) : null;
+            //if we have any number greater than zero, which indicates no default, then filter the projects for the default project
+            defaultProjectId > 0 ? projectStorageArray = projectStorageArray.filter(project => project.id == defaultProjectId) : null;
             //if we have any number greater than zero, which indicates no default, then filter the tests for the default project
             defaultProjectId > 0 ? testStorageArray = testStorageArray.filter(test => test.testProjectId == defaultProjectId) : null;
 
