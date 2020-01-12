@@ -22,6 +22,9 @@ class TextSelectReplay {
         //then we need to keep the messaging send response function attached to the class as the testing process relies on sending responses back to user interface
         this.sendResponse = replayEvent.sendResponse || null;
 
+        //then we need to have a special marker for internal testing
+        this.replayShouldFail = replayEvent.replayShouldFail
+
         //then special property for text select checking
         this.selectedText = replayEvent.recordingEventTextSelectTextContent;
 
@@ -119,8 +122,13 @@ class TextSelectReplay {
                 let currentSelection = window.getSelection();
                 //clearing any existing ranges
                 currentSelection.removeAllRanges();
-                //and adding our existing range
-                currentSelection.addRange(range);
+                //then we need to set up a failing state
+                if (this.replayShouldFail) {
+                    //we just do nothing, we don't add the text of the element to the current selection
+                } else {
+                     //and adding our existing range
+                    currentSelection.addRange(range);
+                }
                 //then return the window selection is the same as our saved selection
                 resolve(window.getSelection().toString().trim() == this.selectedText);
 
