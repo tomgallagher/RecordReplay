@@ -384,7 +384,8 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A'),
                 //information specific to text select events
-                recordingEventTextSelectTextContent: selectEndObject.selectionString,
+                //if we have a partial text selection, we need to change it to the whole element text content, otherwise we will have replay fails
+                recordingEventTextSelectTextContent: (selectEndObject.selectionString == selectEndObject.mouseEvent.eventTarget.textContent ? selectEndObject.selectionString : selectEndObject.mouseEvent.eventTarget.textContent.trim()),
                 recordingEventTextSelectTargetAsJSON: EventRecorder.domToJSON(selectEndObject.mouseEvent.eventTarget)
             });
             return newEvent;
