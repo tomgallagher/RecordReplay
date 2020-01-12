@@ -300,10 +300,53 @@ EventRecorder.startRecordingEvents = () => {
             }
         });
     
-    //TEXT SELECT EVENTS
+    //MOUSE ACTIONS
+    //THERE IS SOME COMPLEXITY IN WORKING OUT WHAT IS A CLICK, WHAT IS A DOUBLE CLICK, WHAT IS A CONTEXTMENU CLICK AND WHAT IS A TEXT SELECT EVENT
+    //WHEN THE MOUSE GOES DOWN IT CAN BE ANY OF THE FOUR
+    EventRecorder.mouseActionObservable = Rx.Observable.merge(...EventRecorder.mouseActionEventObervables)
+        //so we start with the mousedown event, which can generate any of our events
+        .filter(event => event.type == "mousedown")
+        //but we ignore mouse down events in HTMLInputElement, HTMLTextAreaElement and isContentEditable elements - we use the input change event for that
+        .filter(event => EventRecorder.elementIsInput(event.target) == false)
+        //otherwise we then need to start listening to see what happens after the mousedown event
+        .switchMap( () =>
+            Rx.Observable.combineLatest(
+                //we need the standard click and context menu events with a delay to allow the emission of the double click event
+                Rx.Observable.merge(...EventRecorder.mouseActionEventObervables).filter(event => event.type == "click" || event.type == "contextmenu").delay(250),
+                //we need the double click events which may not happen, so we start with a default object
+                Rx.Observable.merge(...EventRecorder.mouseActionEventObervables).filter(event => event.type == "dblclick").startWith({type: null}),
+                //we need the text selection events which may not happen, so we start with a default object
+                Rx.Observable.merge(...EventRecorder.attentionActionEventObservables).filter(event => event.type == "selectstart").startWith({type: null})
+            ),
+            //then we need to process the events, using the original mousedown event and the unpacked combineLatestArray
+            (mouseDownEvent, [clickOrContextMenuEvent, doubleClickEvent, selectStartEvent]) => {
+                //then we need to know if we have a valid select start event by timestamp and value
+                const selectStartValid = selectStartEvent.timeStamp > mouseDownEvent.timeStamp && selectStartEvent.type != null;
+                //then we need to know if we have a valid double click event by timestamp and value
+                const doubleClickValid = doubleClickEvent.timeStamp > mouseDownEvent.timeStamp && doubleClickEvent.type != null;
+                //then we need to know if we have a valid click or contextmenu event
+                const clickValid = clickOrContextMenuEvent.timeStamp > mouseDownEvent.timeStamp;
+                //then we need to return the event accordingly
+                switch(true) {
+                    //first we need to return a text select event if the text select event has fired and double click has not fired
+                    case selectStartValid && !doubleClickValid: return selectStartEvent;
+                    //then we need to return a double click event if both have fired - we do not handle double clicking as a method of text selection
+                    case selectStartValid && doubleClickValid: return doubleClickEvent;
+                    //then we need to return a double click event if both the single click and double click have fired
+                    case clickValid && doubleClickValid: return doubleClickEvent;
+                    //then we need to return the normal click event as the default
+                    default: return clickOrContextMenuEvent;
+                }
+            }
+        )
+        //reporting for debugging
+        .do(event => console.log(`RECORDING MOUSE EVENT: ${event.type.toUpperCase()}`))
+        //and share amongst the text selection and mouse observables
+        .share();
+
     //as we do not have a select end event, we have to construct one
     //and we need to name this as it is used to prevent double recordings of text selection and clicks
-    EventRecorder.textSelectionObservable = Rx.Observable.merge(...EventRecorder.attentionActionEventObservables)
+    EventRecorder.textSelectionObservable = EventRecorder.mouseActionObservable
         //the selection observables are many - we currently only want the select start event
         .filter(event => event.type == "selectstart")
         //once we have a selectStart event, we then need to start listening to the mouseup event to work out when selection has finished
@@ -348,19 +391,12 @@ EventRecorder.startRecordingEvents = () => {
             return newEvent;
         });
 
-    
-    //MOUSE EVENTS
-    
     //MOUSE CLICK EVENTS
-    EventRecorder.mouseObservable = Rx.Observable.merge(...EventRecorder.mouseActionEventObervables)
-        //we don't care about mouseup or mousedown events here as we're covered with the click event
-        .filter(event => event.type != "mouseup" && event.type != "mousedown")
-        //there is no point in recording mouse clicks in HTMLInputElement, HTMLTextAreaElement and isContentEditable elements - we use the input change event for that
-        .filter(event => EventRecorder.elementIsInput(event.target) == false)
+    EventRecorder.mouseObservable = EventRecorder.mouseActionObservable
         //then as each action occurs, we want to know the state of the element BEFORE the action took place
-        .withLatestFrom(EventRecorder.MouseLocator, EventRecorder.textSelectionObservable.startWith({recordingEventCssSelectorPath: null}))
+        .withLatestFrom(EventRecorder.MouseLocator)
         //then map the event to the Recording Event type
-        .map(([actionEvent, locationEvent, currentTextSelection]) => {
+        .map(([actionEvent, locationEvent]) => {
             //create our event
             const newEvent = new RecordingEvent({
                 recordingEventAction: 'Mouse',
@@ -376,19 +412,9 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A')
             });
-            //then only return the event if the same element has not recorded a text selection event
-            if (currentTextSelection.recordingEventCssSelectorPath != newEvent.recordingEventCssSelectorPath) {
-                return newEvent;
-            } else { 
-                //if we have filtered it out then we need to report
-                console.log("Click Event Ignored As Action on Element is being Recorded as Text Selection Event");
-                //just return an empty observable as a placeholder which we can easily filter out
-                return false; 
-            }
-        })
-        //then a simple filter to ensure that the double counting events do not make it through to the final output
-        .filter(object => object != false);
-    
+            //then return the event
+            return newEvent;
+        });
 
     //MOUSE HOVER EVENTS
     EventRecorder.mouseHoverObservable = EventRecorder.MouseLocator

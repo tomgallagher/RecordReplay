@@ -26,6 +26,9 @@ class InputReplay {
         this.inputType = replayEvent.recordingEventInputType;
         this.inputValue = replayEvent.recordingEventInputValue;
         
+        //then we need to have a special marker for internal testing
+        this.replayShouldFail = replayEvent.replayShouldFail
+
         //then there are generic state properties that we need for reporting back to the user interface
         //log messages are displayed to the user in the case of success or failure
         this.replayLogMessages = [];
@@ -107,19 +110,31 @@ class InputReplay {
                 const inputEvent = new Event("change", {view: window, bubbles: true, cancelable: false}); 
                 //if we are talking about an input element or a text area element, then we know what we are doing
                 if (targetElement instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-                    //set the value of the input element to be our saved value
-                    targetElement.value = this.inputValue;
-                    //then report to the log messages array
-                    this.replayLogMessages.push(`${this.actionType.toUpperCase()} Value Executed`);
+                    //then we have a deliberate fail for internal testing
+                    if (this.replayShouldFail) {
+                        //so we can see the deliberate fail happening
+                        targetElement.value = "FAIL";
+                    } else {
+                        //set the value of the input element to be our saved value
+                        targetElement.value = this.inputValue;
+                        //then report to the log messages array
+                        this.replayLogMessages.push(`${this.actionType.toUpperCase()} Value Executed`);
+                    }
                     //then return the current input value is the same as our saved input value
                     resolve(targetElement.value == this.inputValue);
                 }
                 //if we are talking about a contentEditable element, then we do not use value but text content
                 if (targetElement.isContentEditable) {
-                    //set the value of the input element to be our saved value
-                    targetElement.textContent = this.inputValue;
-                    //then report to the log messages array
-                    this.replayLogMessages.push(`${this.actionType.toUpperCase()} Value Executed`);
+                    //then we have a deliberate fail for internal testing
+                    if (this.replayShouldFail) {
+                        //so we can see the deliberate fail happening
+                        targetElement.textContent = "FAIL";
+                    } else {
+                        //set the value of the input element to be our saved value
+                        targetElement.textContent = this.inputValue;
+                        //then report to the log messages array
+                        this.replayLogMessages.push(`${this.actionType.toUpperCase()} Value Executed`);
+                    }
                     //then return the current input value is the same as our saved input value
                     resolve(targetElement.textContent == this.inputValue);
                 }

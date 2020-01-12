@@ -22,6 +22,9 @@ class MouseReplay {
         //then we need to keep the messaging send response function attached to the class as the testing process relies on sending responses back to user interface
         this.sendResponse = replayEvent.sendResponse || null;
 
+        //then we need to have a special marker for internal testing
+        this.replayShouldFail = replayEvent.replayShouldFail
+
         //then there are generic state properties that we need for reporting back to the user interface
         //log messages are displayed to the user in the case of success or failure
         this.replayLogMessages = [];
@@ -99,25 +102,37 @@ class MouseReplay {
             setTimeout( () => {
                 //set up our event
                 var event;
+                //set up our deliberate fail event
+                const failEvent = new MouseEvent('mouseover', {view: window, bubbles: true, cancelable: false}); 
                 //for the mouse we have a variety of types that we need to handle when dispatching events
                 switch(this.actionType) {
                     case 'click':
                     case 'contextmenu':
                     case 'dblclick':
-                        //we can handle all the normal click functions with the same bit of code, first creating the event
-                        event = new MouseEvent(this.actionType, {view: window, bubbles: true, cancelable: false}); 
-                        //then dispatching the event
-                        document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( event );
-                        //then report to the log messages array
-                        this.replayLogMessages.push(`${this.actionType.toUpperCase()} Event Dispatched`);
+                        if (this.replayShouldFail) {
+                            //dispatching the deliberate fail event
+                            document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( failEvent );
+                        } else {
+                            //we can handle all the normal click functions with the same bit of code, first creating the event
+                            event = new MouseEvent(this.actionType, {view: window, bubbles: true, cancelable: false}); 
+                            //then dispatching the event
+                            document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( event );
+                            //then report to the log messages array
+                            this.replayLogMessages.push(`${this.actionType.toUpperCase()} Event Dispatched`);
+                        }
                         break;
                     case 'hover':
-                         //we can handle all the normal click functions with the same bit of code, first creating the event
-                         event = new MouseEvent('mouseenter', {view: window, bubbles: true, cancelable: false}); 
-                         //then dispatching the event
-                         document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( event );
-                         //then report to the log messages array
-                         this.replayLogMessages.push(`${this.actionType.toUpperCase()} Event Dispatched`);
+                        if (this.replayShouldFail) {
+                            //dispatching the deliberate fail event
+                            document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( failEvent );
+                        } else {
+                            //we can handle all the normal click functions with the same bit of code, first creating the event
+                            event = new MouseEvent('mouseenter', {view: window, bubbles: true, cancelable: false}); 
+                            //then dispatching the event
+                            document.querySelector(this.chosenSelectorReport.selectorString).dispatchEvent( event );
+                            //then report to the log messages array
+                            this.replayLogMessages.push(`${this.actionType.toUpperCase()} Event Dispatched`);
+                        }
                         break;
                     case 'recaptcha':
                          //we can handle all the normal click functions with the same bit of code, first creating the event
