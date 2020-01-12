@@ -349,22 +349,21 @@ EventRecorder.startRecordingEvents = () => {
     EventRecorder.textSelectionObservable = EventRecorder.mouseActionObservable
         //the selection observables are many - we currently only want the select start event
         .filter(event => event.type == "selectstart")
-        //once we have a selectStart event, we then need to start listening to the mouseup event to work out when selection has finished
-        .switchMap( () =>
-            Rx.Observable.merge(...EventRecorder.mouseActionEventObervables).filter(event => event.type == "mouseup").take(1),
-            //then we need a projection function to make sure we get only actionable information
-            (selectEvent, mouseUpEvent) => {
-                //get the current selection in the window to check that some text has been highlighted
-                const selection = window.getSelection()
-                //then return an object with properties that we need to filter and also to process a recording event
-                return {
-                    //we keep the event type although it's not selectStart that we are creating
-                    eventType: selectEvent.type,
-                    //we need the current selection as a string so we can filter zero selections
-                    selectionString: selection.toString(),
-                    //then we need to have the mouseup event so we can process the location of the selection
-                    mouseEvent: mouseUpEvent
-                }
+        //once we have a selectStart event, we then need to start listening to the mouse locator event to work out when selection has finished
+        .withLatestFrom(EventRecorder.MouseLocator)
+        //then map the event to the Recording Event type
+        .map(([selectEvent, locationEvent]) => {
+            //get the selection
+            const selection = window.getSelection();
+            //then return an object with properties that we need to filter and also to process a recording event
+            return {
+                //we keep the event type although it's not selectStart that we are creating
+                eventType: selectEvent.type,
+                //we need the current selection as a string so we can filter zero selections
+                selectionString: selection.toString(),
+                //then we need to have the mouseup event so we can process the location of the selection
+                mouseEvent: locationEvent
+            }
         })
         //then filter for empty strings as that's an indication that the user either pressed on the contextMenu or changed their mind
         .filter(selectEndObject => selectEndObject.selectionString.length > 0)
@@ -374,25 +373,27 @@ EventRecorder.startRecordingEvents = () => {
                 //general properties
                 recordingEventAction: 'TextSelect',
                 recordingEventActionType: selectEndObject.eventType,
-                recordingEventHTMLElement: selectEndObject.mouseEvent.target.constructor.name,
-                recordingEventHTMLTag: selectEndObject.mouseEvent.target.tagName,
-                recordingEventCssSelectorPath: EventRecorder.getCssSelectorPathWithFailover(selectEndObject.mouseEvent.target),
-                recordingEventCssDomPath: EventRecorder.getOptimalSelectPathWithFailover(selectEndObject.mouseEvent.target),
-                recordingEventCssFinderPath: EventRecorder.getRecordReplayPathWithFailover(selectEndObject.mouseEvent.target),
-                recordingEventXPath: EventRecorder.getXPath(selectEndObject.mouseEvent.target),
+                recordingEventHTMLElement: selectEndObject.mouseEvent.eventTarget.constructor.name,
+                recordingEventHTMLTag: selectEndObject.mouseEvent.eventTarget.tagName,
+                recordingEventCssSelectorPath: selectEndObject.mouseEvent.eventCssSelectorPath,
+                recordingEventCssDomPath: selectEndObject.mouseEvent.eventCssOptimalPath,
+                recordingEventCssFinderPath: selectEndObject.mouseEvent.eventRecordReplayPath,
+                recordingEventXPath: selectEndObject.mouseEvent.eventXPath,
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A'),
                 //information specific to text select events
                 recordingEventTextSelectTextContent: selectEndObject.selectionString,
-                recordingEventTextSelectTargetAsJSON: EventRecorder.domToJSON(selectEndObject.mouseEvent.target)
+                recordingEventTextSelectTargetAsJSON: EventRecorder.domToJSON(selectEndObject.mouseEvent.eventTarget)
             });
             return newEvent;
         });
 
     //MOUSE CLICK EVENTS
     EventRecorder.mouseObservable = EventRecorder.mouseActionObservable
+        //as we have text selection events now in the mouse action observable, we need to filter them out
+        .filter(event => event.type != "selectstart")
         //then as each action occurs, we want to know the state of the element BEFORE the action took place
         .withLatestFrom(EventRecorder.MouseLocator)
         //then map the event to the Recording Event type
