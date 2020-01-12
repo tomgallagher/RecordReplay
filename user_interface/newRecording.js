@@ -2,6 +2,7 @@
 //CHECK BOTH FILES BEFORE MAKING CHANGES
 function addNewRecordingEventToTable(recording, recordingEvent, table) {
 
+    console.log(recordingEvent);
     //target our table row template first, we only need to find the template once
     let targetNode = document.querySelector('.recordingEventTableRowTemplate');
     //we need to do more work as we have to save the template in a table, which we don't need, we just want the row
@@ -45,9 +46,9 @@ function addNewRecordingEventToTable(recording, recordingEvent, table) {
     
     //<td data-field="recordingEventInputValue" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">N/A</td>
     let recordingEventInputValueNode = tempNode.querySelector('td[data-label="recordingEventInputValue"]');
-    recordingEventInputValueNode.textContent = recordingEvent.recordingEventInputValue;
+    recordingEventInputValueNode.textContent = recordingEvent.recordingEventActionType == 'selectstart' ? recordingEvent.recordingEventTextSelectTextContent : recordingEvent.recordingEventInputValue;
     //any text-overflow elements should have a title with the whole string
-    recordingEventInputValueNode.title = recordingEvent.recordingEventInputValue;
+    recordingEventInputValueNode.title = recordingEvent.recordingEventActionType == 'selectstart' ? recordingEvent.recordingEventTextSelectTextContent : recordingEvent.recordingEventInputValue;
     
     //<td data-field="recordingEventLocation" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
     let recordingEventLocationNode = tempNode.querySelector('td[data-label="recordingEventLocation"]');

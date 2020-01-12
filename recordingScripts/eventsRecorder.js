@@ -315,8 +315,16 @@ EventRecorder.startRecordingEvents = () => {
                 Rx.Observable.merge(...EventRecorder.mouseActionEventObervables).filter(event => event.type == "click" || event.type == "contextmenu").delay(250),
                 //we need the double click events which may not happen, so we start with a default object
                 Rx.Observable.merge(...EventRecorder.mouseActionEventObervables).filter(event => event.type == "dblclick").startWith({type: null}),
-                //we need the text selection events which may not happen, so we start with a default object
-                Rx.Observable.merge(...EventRecorder.attentionActionEventObservables).filter(event => event.type == "selectstart").startWith({type: null})
+                //we need the text selection events which may not happen, so
+                Rx.Observable.merge(...EventRecorder.attentionActionEventObservables)
+                    //we are only interested in select start events
+                    .filter(event => event.type == "selectstart")
+                    //then wait and see if we get any selection appearing
+                    .delay(500)
+                    //we need to be able to distinguish between clicks and selectstart events, which we do by query the window selection half a second after
+                    .filter(() => window.getSelection().toString().length > 0)
+                    //we start with a default object
+                    .startWith({type: null})
             ),
             //then we need to process the events, using the original mousedown event and the unpacked combineLatestArray
             (mouseDownEvent, [clickOrContextMenuEvent, doubleClickEvent, selectStartEvent]) => {
@@ -339,6 +347,8 @@ EventRecorder.startRecordingEvents = () => {
                 }
             }
         )
+        //then we don't need duplicates of the double click events
+        .distinctUntilChanged()
         //reporting for debugging
         .do(event => console.log(`RECORDING MOUSE EVENT: ${event.type.toUpperCase()}`))
         //and share amongst the text selection and mouse observables

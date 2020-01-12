@@ -287,9 +287,9 @@ function addNewReplayEventToTable(replay, replayEvent, table) {
     //<td data-label="replay_recordingEventInputValue" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">N/A</td>
     let replayEventInputValueNode = tempNode.querySelector('td[data-label="replay_recordingEventInputValue"]');
     //then we need to handle both replays and assertions
-    replayEventInputValueNode.textContent = replayEvent.assertionValue || replayEvent.recordingEventInputValue;
+    replayEventInputValueNode.textContent = replayEvent.recordingEventActionType == 'selectstart' ? replayEvent.recordingEventTextSelectTextContent : replayEvent.assertionValue || replayEvent.recordingEventInputValue;
     //any text-overflow elements should have a title with the whole string
-    replayEventInputValueNode.title = replayEvent.assertionValue || replayEvent.recordingEventInputValue;
+    replayEventInputValueNode.title = replayEvent.recordingEventActionType == 'selectstart' ? replayEvent.recordingEventTextSelectTextContent : replayEvent.assertionValue || replayEvent.recordingEventInputValue;
                             
     //<td data-label="replay_recordingEventLocation" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;">https://www.example.com</td>
     let replayEventLocationNode = tempNode.querySelector('td[data-label="replay_recordingEventLocation"]');
