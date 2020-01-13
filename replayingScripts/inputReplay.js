@@ -109,7 +109,7 @@ class InputReplay {
                 //we fire the same event for any type - the artificial event so our playback can confirm
                 const inputEvent = new Event("change", {view: window, bubbles: true, cancelable: false}); 
                 //if we are talking about an input element or a text area element, then we know what we are doing
-                if (targetElement instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+                if (targetElement instanceof HTMLInputElement || targetElement instanceof HTMLTextAreaElement) {
                     //then we have a deliberate fail for internal testing
                     if (this.replayShouldFail) {
                         //so we can see the deliberate fail happening
