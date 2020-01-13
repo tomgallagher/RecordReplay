@@ -1,5 +1,10 @@
 //this is only used to translate key events etc. into a human readable string
 //for the actual commands we only need to have the key that's pressed and the target
+
+//YouTube keyboard shortcuts for testing keyboard record / replay in iframes
+//Press the spacebar or the 'K' key on your keyboard to play and pause a video.
+//Pressing the '0' (zero) key on your keyboard will jump to the beginning of a video. The Home key also works for jumping to the start of a video.
+//Pressing the End key on your keyboard will go to the end of the video.
 class KeyCodeDictionary {
 
     //pass in an options object which can take new languages

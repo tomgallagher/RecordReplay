@@ -43,7 +43,7 @@ class DomSelectorReport {
                     chrome.tabs.executeScript(this.browserTabId, 
                         //we need to inject our code into all the VANILLA iframes in the current page as well as the main frame 
                         { 
-                            code: `let element = document.querySelector('${this.selectorString}'); if (element) element.constructor.name;`, 
+                            code: `var element = document.querySelector('${this.selectorString}'); if (element) element.constructor.name;`, 
                             allFrames: true, 
                             frameId: 0, 
                             runAt: "document_idle" 
@@ -90,7 +90,7 @@ class DomSelectorReport {
                     chrome.tabs.executeScript(this.browserTabId, 
                         //frameId is set, so the code is inserted in the selected frame
                         { 
-                            code: `let element = document.querySelector('${this.selectorString}'); if (element) element.constructor.name;`, 
+                            code: `var element = document.querySelector('${this.selectorString}'); if (element) element.constructor.name;`, 
                             frameId: navObject.frameId, 
                             runAt: "document_idle" 
                         },

@@ -491,7 +491,7 @@ class ReplayTabRunner {
                 chrome.tabs.executeScript(this.browserTabId, 
                     //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
                     { 
-                        code: `let element = document.querySelector('${replayEvent.chosenSelectorReport.selectorString}'); if (element) { element.focus({ preventScroll: false }); }`,
+                        code: `var element = document.querySelector('${replayEvent.chosenSelectorReport.selectorString}'); if (element) { element.focus({ preventScroll: false }); }`,
                         allFrames: true, 
                         frameId: 0,
                         runAt: "document_idle" 
@@ -511,7 +511,7 @@ class ReplayTabRunner {
                 chrome.tabs.executeScript(this.browserTabId, 
                     //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
                     { 
-                        code: `let element = document.querySelector('${replayEvent.chosenSelectorReport.selectorString}'); if (element) { element.focus({ preventScroll: false }); }`,
+                        code: `var element = document.querySelector('${replayEvent.chosenSelectorReport.selectorString}'); if (element) { element.focus({ preventScroll: false }); }`,
                         //the successful frame id is saved as part of the chosenSelectorReport
                         frameId: replayEvent.chosenSelectorReport.successFrameId,
                         runAt: "document_idle" 

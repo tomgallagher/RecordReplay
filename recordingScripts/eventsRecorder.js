@@ -283,23 +283,6 @@ EventRecorder.startRecordingEvents = () => {
             }
         });
     
-    //then we also query the latest focus location, which we collect by referring to attention events
-    EventRecorder.FocusLocator = Rx.Observable.merge(...EventRecorder.attentionActionEventObservables)
-        //the attention observables are many - we currently only want the focus events
-        .filter(event => event.type == "focus")
-        //then log for useful debugging
-        //.do(x => console.log(x))
-        //then we get the selectors for the pre-action event element, so it is not mutated
-        .map(event => {
-            return {
-                eventTarget: event.target,
-                eventCssSelectorPath: EventRecorder.getCssSelectorPathWithFailover(event.target),
-                eventCssOptimalPath: EventRecorder.getOptimalSelectPathWithFailover(event.target),
-                eventRecordReplayPath: EventRecorder.getRecordReplayPathWithFailover(event.target),
-                eventXPath: EventRecorder.getXPath(event.target)
-            }
-        });
-    
     //MOUSE ACTIONS
     //THERE IS SOME COMPLEXITY IN WORKING OUT WHAT IS A CLICK, WHAT IS A DOUBLE CLICK, WHAT IS A CONTEXTMENU CLICK AND WHAT IS A TEXT SELECT EVENT
     //WHEN THE MOUSE GOES DOWN IT CAN BE ANY OF THE FOUR
@@ -392,7 +375,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
-                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A'),
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement ? window.frameElement.name: null : 'N/A'),
                 //information specific to text select events
                 //if we have a partial text selection, we need to change it to the whole element text content, otherwise we will have replay fails
                 recordingEventTextSelectTextContent: (selectEndObject.selectionString == selectEndObject.mouseEvent.eventTarget.textContent ? selectEndObject.selectionString : selectEndObject.mouseEvent.eventTarget.textContent.trim()),
@@ -422,7 +405,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
-                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A')
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement ? window.frameElement.name: null : 'N/A'),
             });
             //then return the event
             return newEvent;
@@ -455,7 +438,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
-                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A'),
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement ? window.frameElement.name: null : 'N/A'),
                 //information specific to text select events
                 recordingEventHoverTargetAsJSON: EventRecorder.domToJSON(mouseLocatorEvent.eventTarget)
             });
@@ -490,7 +473,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
-                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A')
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement ? window.frameElement.name: null : 'N/A'),
             });
             return newEvent;
         });
@@ -539,7 +522,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
-                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A'),
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement ? window.frameElement.name: null : 'N/A'),
                 //information specific to input events
                 recordingEventInputType: inputType,
                 recordingEventInputValue: inputValue,
@@ -553,10 +536,11 @@ EventRecorder.startRecordingEvents = () => {
         .filter(event => event.type == "keyup")
         //then we want to make sure that we do not get the modifier keys - the state of these is collected as part of the keystroke
         .filter(event => event.key != "Shift" && event.key != "Alt" && event.key != "Control")
-        //then we want to get the current focus event locator, starting with an empty object so we can test to see if focus event has emitted
-        .withLatestFrom(EventRecorder.FocusLocator.startWith({}))
+        //then we want to keep track of where the keydown event was pressed as the tab key, for example, can change location on the page
+        //this works the same as using the mouse locator, it gives us the state of the page before keypress complete
+        .withLatestFrom(Rx.Observable.merge(...EventRecorder.keyBoardActionEventObservables).filter(event => event.type == "keydown"))
         //then combine the two observables properties to create our RecordingEvent object
-        .map( ([actionEvent, focusEvent]) => {
+        .map( ([actionEvent, keydownEvent]) => {
             //lets get some information about the key that has been pressed
             const keyInfoObject = EventRecorder.keyCodeDictionary[actionEvent.keyCode];
             const descriptor = keyInfoObject.descriptor;
@@ -582,17 +566,17 @@ EventRecorder.startRecordingEvents = () => {
             const newEvent = new RecordingEvent({
                 //general properties
                 recordingEventAction: 'Keyboard',
-                recordingEventActionType: actionEvent.key,
-                recordingEventHTMLElement: actionEvent.target.constructor.name,
-                recordingEventHTMLTag: actionEvent.target.tagName,
-                recordingEventCssSelectorPath: focusEvent.eventCssSelectorPath || EventRecorder.getCssSelectorPathWithFailover(actionEvent.target),
-                recordingEventCssDomPath: focusEvent.eventCssOptimalPath || EventRecorder.getOptimalSelectPathWithFailover(actionEvent.target),
-                recordingEventCssFinderPath: focusEvent.eventRecordReplayPath || EventRecorder.getRecordReplayPathWithFailover(actionEvent.target),
-                recordingEventXPath: focusEvent.eventXPath || EventRecorder.getXPath(actionEvent.target),
+                recordingEventActionType: descriptor,
+                recordingEventHTMLElement: keydownEvent.target.constructor.name,
+                recordingEventHTMLTag: keydownEvent.target.tagName,
+                recordingEventCssSelectorPath: EventRecorder.getCssSelectorPathWithFailover(keydownEvent.target),
+                recordingEventCssDomPath: EventRecorder.getOptimalSelectPathWithFailover(keydownEvent.target),
+                recordingEventCssFinderPath: EventRecorder.getRecordReplayPathWithFailover(keydownEvent.target),
+                recordingEventXPath: EventRecorder.getXPath(keydownEvent.target),
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
-                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A'),
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement ? window.frameElement.name: null : 'N/A'),
                 //information specific to keyboard events
                 recordingEventKey: actionEvent.key,
                 recordingEventCode: actionEvent.code,
@@ -627,7 +611,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
-                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A'),
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement ? window.frameElement.name: null : 'N/A'),
                 //information specific to scroll events
                 recordingEventXPosition: Math.round(actionEvent.target.scrollingElement.scrollLeft),
                 recordingEventYPosition: Math.round(actionEvent.target.scrollingElement.scrollTop),
@@ -658,7 +642,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
-                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement.name : 'N/A'),
+                recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement ? window.frameElement.name: null : 'N/A'),
                 //information specific to scroll events
                 recordingEventXPosition: Math.round(actionEvent.target.scrollLeft),
                 recordingEventYPosition: Math.round(actionEvent.target.scrollTop),
