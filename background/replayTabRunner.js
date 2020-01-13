@@ -501,12 +501,14 @@ class ReplayTabRunner {
                     `if (frame) {`,
                     //report that we have found the iframe
                     `console.log('${replayEvent.recordingEventIframeName} FRAME FOUND in: ' + window.location.href);`,
-                    //then focus on the iframe body
+                    //then focus on the iframe body as the first attempt to focus
                     `frame.contentWindow.focus();`,
                     //then search the iframes content document for the particular element we want to focus
                     `var element = frame.contentDocument.querySelector('${replayEvent.chosenSelectorReport.selectorString}');`,
                     //only ever any point in reporting if we have found the element
                     `if (element) { console.log('${replayEvent.chosenSelectorReport.selectorString} ELEMENT FOUND: ' + window.location.href); element.focus(); }`,
+                    //KEY STEP: then get the bounding client rect, which works as a proxy for giving focus to troublesome iframes. Who knew?
+                    `frame.getBoundingClientRect();`,
                     //close the frame block
                     `}`
                 ];
@@ -529,6 +531,7 @@ class ReplayTabRunner {
                     } 
                 )
             )
+
 
         } else {
 
