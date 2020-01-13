@@ -107,38 +107,59 @@ class InputReplay {
                 //we have to be sensitive here to whether the input element is input, textarea or contenteditable as we change them in different ways
                 const targetElement = document.querySelector(this.chosenSelectorReport.selectorString);
                 //we fire the same event for any type - the artificial event so our playback can confirm
-                const inputEvent = new Event("change", {view: window, bubbles: true, cancelable: false}); 
-                //if we are talking about an input element or a text area element, then we know what we are doing
-                if (targetElement instanceof HTMLInputElement || targetElement instanceof HTMLTextAreaElement) {
-                    //then we have a deliberate fail for internal testing
-                    if (this.replayShouldFail) {
-                        //so we can see the deliberate fail happening
-                        targetElement.value = "FAIL";
-                    } else {
-                        //set the value of the input element to be our saved value
-                        targetElement.value = this.inputValue;
-                        //then report to the log messages array
-                        this.replayLogMessages.push(`${this.actionType.toUpperCase()} Value Executed`);
-                    }
-                    //then return the current input value is the same as our saved input value
-                    resolve(targetElement.value == this.inputValue);
+                const inputEvent = new Event("change", {view: window, bubbles: true, cancelable: false});
+                //handling different kinds of inputs
+                switch(true) {
+                    //if we are talking about an input element or a text area element, then we know what we are doing
+                    case targetElement instanceof HTMLInputElement || targetElement instanceof HTMLTextAreaElement:
+                        //then we have a deliberate fail for internal testing
+                        if (this.replayShouldFail) {
+                            //so we can see the deliberate fail happening
+                            targetElement.value = "FAIL";
+                        } else {
+                            //set the value of the input element to be our saved value
+                            targetElement.value = this.inputValue;
+                            //then report to the log messages array
+                            this.replayLogMessages.push(`${this.actionType.toUpperCase()} Value Executed`);
+                        }
+                        //then return the current input value is the same as our saved input value
+                        resolve(targetElement.value.trim() == this.inputValue);
+                        //and we're done
+                        break;
+                    //if we are talking about a contentEditable element, then we do not use value but text content
+                    case targetElement.isContentEditable:
+                        //then we have a deliberate fail for internal testing
+                        if (this.replayShouldFail) {
+                            //so we can see the deliberate fail happening
+                            targetElement.textContent = "FAIL";
+                        } else {
+                            //set the value of the input element to be our saved value
+                            targetElement.textContent = this.inputValue;
+                            //then report to the log messages array
+                            this.replayLogMessages.push(`${this.actionType.toUpperCase()} Value Executed`);
+                        }
+                        //then return the current input value is the same as our saved input value
+                        resolve(targetElement.textContent.trim() == this.inputValue);
+                        //and we're done
+                        break;
+                    //then we have the default, which is used for HTMLSelectElement
+                    default:
+                        //then we have a deliberate fail for internal testing
+                        if (this.replayShouldFail) {
+                            //so we can see the deliberate fail happening
+                            targetElement.value = "FAIL";
+                        } else {
+                            //set the value of the input element to be our saved value
+                            targetElement.value = this.inputValue;
+                            //then report to the log messages array
+                            this.replayLogMessages.push(`${this.actionType.toUpperCase()} Value Executed`);
+                        }
+                        //then return the current input value is the same as our saved input value
+                        resolve(targetElement.value.trim() == this.inputValue);
+                        //and we're done
+                        break;
                 }
-                //if we are talking about a contentEditable element, then we do not use value but text content
-                if (targetElement.isContentEditable) {
-                    //then we have a deliberate fail for internal testing
-                    if (this.replayShouldFail) {
-                        //so we can see the deliberate fail happening
-                        targetElement.textContent = "FAIL";
-                    } else {
-                        //set the value of the input element to be our saved value
-                        targetElement.textContent = this.inputValue;
-                        //then report to the log messages array
-                        this.replayLogMessages.push(`${this.actionType.toUpperCase()} Value Executed`);
-                    }
-                    //then return the current input value is the same as our saved input value
-                    resolve(targetElement.textContent == this.inputValue);
-                }
-                //then dispatching the same event for both
+                //then dispatching the same event for all
                 targetElement.dispatchEvent( inputEvent );
 
             }, 5);

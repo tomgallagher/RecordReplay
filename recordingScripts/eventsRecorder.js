@@ -215,7 +215,7 @@ var EventRecorder = {
     //we should always be in the context of a content script
     contextIsContentScript: () => { return typeof chrome.runtime.getManifest != 'undefined' },
     //we need to know if the element is an input element
-    elementIsInput: (element) => element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement  || element.isContentEditable,
+    elementIsInput: (element) => element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement || element.isContentEditable,
     //then we can do a timed function to measure the performance of CSS selector generators on mouse moves
     timed: (f) => (...args) => {
         let start = performance.now();
@@ -492,21 +492,39 @@ EventRecorder.startRecordingEvents = () => {
         .map(([actionEvent, locationEvent]) => {
             //we need to be sensitive to contenteditable events here, as the method of retrieving the value is different
             let inputType, inputValue;
-            //if the element is a contentEditable element then we have to use set the special input type and use textContent
-            if (actionEvent.target.isContentEditable) {
-                //add the special label for content editable actions
-                actionType = 'Content Edit'
-                //give the special label for contenteditable type so we can distinguish
-                inputType = 'contentEditable'
-                //then we go for the textcontent as the value of a contenteditable div, for example, is meaningless
-                //we trim the text here for presentation purposes - we do not assert on input elements so stripping whitespace and special characters should not cause problems
-                inputValue = actionEvent.target.textContent.trim(); 
-            }
-            //if the element is an input element or a text area element then we can just use the normal action type, input type and value
-            if (actionEvent.target instanceof HTMLInputElement || actionEvent.target instanceof HTMLTextAreaElement) { 
-                actionType = actionEvent.type;
-                inputType = actionEvent.target.type;
-                inputValue = actionEvent.target.value; 
+            //handling different kinds of inputs
+            switch(true) {
+                //if the element is an input element or a text area element then we can just use the normal action type, input type and value
+                case actionEvent.target instanceof HTMLInputElement || actionEvent.target instanceof HTMLTextAreaElement:
+                    //we need to define the action type so we know what kind of input action
+                    actionType = actionEvent.type;
+                    //we need to know what kind of input type
+                    inputType = actionEvent.target.type;
+                    //then we need to know the value of the input
+                    inputValue = actionEvent.target.value; 
+                    //and we're done
+                    break;
+                //if the element is a contentEditable element then we have to use set the special input type and use textContent
+                case actionEvent.target.isContentEditable:
+                    //add the special label for content editable actions
+                    actionType = 'Content Edit'
+                    //give the special label for contenteditable type so we can distinguish
+                    inputType = 'contentEditable'
+                    //then we go for the textcontent as the value of a contenteditable div, for example, is meaningless
+                    //we trim the text here for presentation purposes - when we replay, in the InputReplay class, we also need to trim for asserting 
+                    inputValue = actionEvent.target.textContent.trim();
+                    //and we're done
+                    break;
+                //then we have the default, which is used for HTMLSelectElement
+                default:
+                     //we need to define the action type so we know what kind of input action
+                     actionType = actionEvent.type;
+                     //we need to know what kind of input type
+                     inputType = actionEvent.target.type;
+                     //then we need to know the value of the input
+                     inputValue = actionEvent.target.value; 
+                     //and we're done
+                     break;
             }
             //then create the new event
             const newEvent = new RecordingEvent({
