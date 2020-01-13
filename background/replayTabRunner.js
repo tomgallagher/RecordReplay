@@ -12,6 +12,8 @@ class ReplayTabRunner {
             this.browserTabId = 0;
             //then we need to have tab state, so we can close the tab if required and also to prevent operations errors on closed tabs
             this.openState = false;
+            //then we need to have tab current url, starting with the activeReplay.recordingTestStartUrl
+            this.currentUrl = activeReplay.recordingTestStartUrl;
             //then we need to save the params for the debugger commands from the active replay
             //we need to know the desired latency value
             this.recordingTestLatencyValue = activeReplay.recordingTestLatencyValue;
@@ -98,6 +100,8 @@ class ReplayTabRunner {
             .filter(navObject => navObject.tabId == this.browserTabId)
             //then we only care about the main frame
             .filter(navObject => navObject.frameId == 0)
+            //then we need to update our current url
+            .do(navObject => this.currentUrl = navObject.url)
             //then we inject our collected string into the page
             .concatMap(navObject => Rx.Observable.fromPromise(
                 new Promise(resolve => 
@@ -339,9 +343,9 @@ class ReplayTabRunner {
             //then we want to run the DomSelectorReports, which return a CDP nodeId for searching the document
             .flatMap(replayEvent =>
                 Promise.all([
-                    new DomSelectorReport({key: "CssSelector", replayEvent: replayEvent, browserTabId: this.browserTabId}),
-                    new DomSelectorReport({key: "OptimalSelector", replayEvent: replayEvent, browserTabId: this.browserTabId}),
-                    new DomSelectorReport({key: "RecordReplaySelector", replayEvent: replayEvent, browserTabId: this.browserTabId})
+                    new DomSelectorReport({key: "CssSelector", replayEvent: replayEvent, browserTabId: this.browserTabId, currentUrl: this.currentUrl}),
+                    new DomSelectorReport({key: "OptimalSelector", replayEvent: replayEvent, browserTabId: this.browserTabId, currentUrl: this.currentUrl}),
+                    new DomSelectorReport({key: "RecordReplaySelector", replayEvent: replayEvent, browserTabId: this.browserTabId, currentUrl: this.currentUrl})
                 ]),
                 (replayEvent, selectorResultsArray) => {
   
@@ -480,13 +484,18 @@ class ReplayTabRunner {
 
     focus = async (replayEvent) => {
 
-        if (!replayEvent.recordingEventIsIframe) {
+        if (!replayEvent.recordingEventIsIframe || (replayEvent.recordingEventIsIframe && replayEvent.recordingEventLocationHref == this.currentUrl)) {
 
             //then we need to focus on the element which will allow us to start sending key commands
             await new Promise(resolve => 
                 chrome.tabs.executeScript(this.browserTabId, 
                     //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
-                    { code: `document.querySelector('${replayEvent.chosenSelectorReport.selectorString}').focus({ preventScroll: false });`, runAt: "document_idle" },
+                    { 
+                        code: `let element = document.querySelector('${replayEvent.chosenSelectorReport.selectorString}'); if (element) { element.focus({ preventScroll: false }); }`,
+                        allFrames: true, 
+                        frameId: 0,
+                        runAt: "document_idle" 
+                    },
                     //log the script injection so we can see what's happening and resolve the promise  
                     () => { 
                         this.log(14, replayEvent.recordingEventHTMLElement); 
@@ -502,7 +511,7 @@ class ReplayTabRunner {
                 chrome.tabs.executeScript(this.browserTabId, 
                     //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
                     { 
-                        code: `document.querySelector('${replayEvent.chosenSelectorReport.selectorString}').focus({ preventScroll: false });`,
+                        code: `let element = document.querySelector('${replayEvent.chosenSelectorReport.selectorString}'); if (element) { element.focus({ preventScroll: false }); }`,
                         //the successful frame id is saved as part of the chosenSelectorReport
                         frameId: replayEvent.chosenSelectorReport.successFrameId,
                         runAt: "document_idle" 

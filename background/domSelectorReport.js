@@ -12,6 +12,8 @@ class DomSelectorReport {
             this.selectorKey = options.key;
             //we need to have the browser tab id for the commands
             this.browserTabId = options.browserTabId;
+            //then we need the current url to ascertain vanilla iframes
+            this.currentUrl = options.currentUrl;
             //we need to have the target tag for double checking
             this.targetHtmlElement = options.replayEvent.recordingEventHTMLElement;
             //then we need to get the correct selector, according to the key
@@ -39,12 +41,21 @@ class DomSelectorReport {
             this.executeQuerySelector = () => {
                 return new Promise(resolve => 
                     chrome.tabs.executeScript(this.browserTabId, 
-                        //with no frameId set, then the code is inserted into main frame by default when possible.
-                        { code: `document.querySelector('${this.selectorString}').constructor.name;`, runAt: "document_idle" },
+                        //we need to inject our code into all the VANILLA iframes in the current page as well as the main frame 
+                        { 
+                            code: `let element = document.querySelector('${this.selectorString}'); if (element) element.constructor.name;`, 
+                            allFrames: true, 
+                            frameId: 0, 
+                            runAt: "document_idle" 
+                        },
                         //log the script injection so we can see what's happening and resolve the promise with the first, and only, element in array as only main frame injection
                         (array) => { 
-                            //console.log(`Executed Query Selector in Main Document`); 
-                            resolve(array[0]); 
+                            //console.log(`Executed Query Selector in Main Document and Child Vanilla Frames`);
+                            //we are likely to get an array mostly populated by undefined values, we need to be able to filter and extract the first good value
+                            //This is equivalent to making a new Boolean for each entry. If the given value is 0, null, false, NaN, undefined, or "", resulting Boolean is false.
+                            const filteredArray = array.filter(Boolean);
+                            //if we extract the first good value or null, then we can report
+                            resolve(filteredArray[0] || null); 
                         } 
                     )
                 )
@@ -54,12 +65,21 @@ class DomSelectorReport {
             this.executeQuerySelectorAll = () => {
                 return new Promise(resolve => 
                     chrome.tabs.executeScript(this.browserTabId, 
-                        //with no frameId set, then the code is inserted into main frame by default when possible.
-                        { code: `document.querySelectorAll('${this.selectorString}').length;`, runAt: "document_idle" },
+                        //we need to inject our code into all the VANILLA iframes in the current page as well as the main frame 
+                        { 
+                            code: `document.querySelectorAll('${this.selectorString}').length;`, 
+                            allFrames: true, 
+                            frameId: 0, 
+                            runAt: "document_idle" 
+                        },
                         //log the script injection so we can see what's happening and resolve the promise  
                         (array) => { 
-                            //console.log(`Executed Query Selector in Main Document`); 
-                            resolve(array[0]); 
+                            //console.log(`Executed Query Selector in Main Document and Child Vanilla Frames`);
+                            //we are likely to get an array mostly populated by zero values, we need to be able to filter and extract the first good value
+                            //This is equivalent to making a new Boolean for each entry. If the given value is 0, null, false, NaN, undefined, or "", resulting Boolean is false.
+                            const filteredArray = array.filter(Boolean);
+                            //if we extract the first good value or null, then we can report
+                            resolve(filteredArray[0] || null); 
                         } 
                     )
                 )
@@ -69,17 +89,27 @@ class DomSelectorReport {
                 return new Promise(resolve => 
                     chrome.tabs.executeScript(this.browserTabId, 
                         //frameId is set, so the code is inserted in the selected frame
-                        { code: `document.querySelector('${this.selectorString}').constructor.name;`, frameId: navObject.frameId, runAt: "document_idle" },
+                        { 
+                            code: `let element = document.querySelector('${this.selectorString}'); if (element) element.constructor.name;`, 
+                            frameId: navObject.frameId, 
+                            runAt: "document_idle" 
+                        },
                         //log the script injection so we can see what's happening and resolve the promise  
                         (array) => { 
                             //console.log(`Executed Query Selector in Iframe: ${navObject.url}`); 
-                            resolve({element: array[0], frameId: navObject.frameId}); 
+                            //we are likely to get an array mostly populated by undefined values, we need to be able to filter and extract the first good value
+                            //This is equivalent to making a new Boolean for each entry. If the given value is 0, null, false, NaN, undefined, or "", resulting Boolean is false.
+                            const filteredArray = array.filter(Boolean);
+                            //if we extract the first good value or null, then we can report
+                            resolve({element: filteredArray[0] || null, frameId: navObject.frameId}); 
                         } 
                     )
                 )
             }
             
-            if (!this.isIframe) {
+            //we run the same routine for main frames as we do for vanilla iframes or same domain iframes
+            //either way, we just have an injection into many frames and take the filtered results
+            if (!this.isIframe || (this.isIframe && options.replayEvent.recordingEventLocationHref == this.currentUrl)) {
 
                 //this delivers the constructor name if we find something - null if not
                 this.selectedItem = await this.executeQuerySelector();
@@ -134,7 +164,7 @@ class DomSelectorReport {
                 const resultArray = await Promise.all(iframeQuerySelectorExecutionArray);
 
                 //then we need to see if we have anything other than null values as the object element property
-                var outputArray = resultArray.filter(object => object.element);
+                var outputArray = resultArray.filter(object => object.element != null);
                 //then if we have an empty array we return zip
                 if (outputArray.length == 0) {
                     //so we need to report an invalid selector and return the object
