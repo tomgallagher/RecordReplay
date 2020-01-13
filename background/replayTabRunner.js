@@ -486,19 +486,45 @@ class ReplayTabRunner {
 
         if (!replayEvent.recordingEventIsIframe || (replayEvent.recordingEventIsIframe && replayEvent.recordingEventLocationHref == this.currentUrl)) {
 
+            //we need slightly different commands here to get the focus onto the iframe
+            let codeInstructionsArray;
+            if (!replayEvent.recordingEventIsIframe) {
+                codeInstructionsArray = [
+                    `var element = document.querySelector('${replayEvent.chosenSelectorReport.selectorString}');`,
+                    `if (element) { console.log('${replayEvent.chosenSelectorReport.selectorString} ELEMENT FOUND: ' + window.location.href); element.focus({ preventScroll: false }); }`
+                ];
+            } else {
+                codeInstructionsArray = [
+                    //first we need to find the frame
+                    `var frame = document.querySelector('iframe[name="${replayEvent.recordingEventIframeName}"]');`,
+                    //then there is only any point in reporting or acting on success
+                    `if (frame) {`,
+                    //report that we have found the iframe
+                    `console.log('${replayEvent.recordingEventIframeName} FRAME FOUND in: ' + window.location.href);`,
+                    //then focus on the iframe body
+                    `frame.contentWindow.focus();`,
+                    //then search the iframes content document for the particular element we want to focus
+                    `var element = frame.contentDocument.querySelector('${replayEvent.chosenSelectorReport.selectorString}');`,
+                    //only ever any point in reporting if we have found the element
+                    `if (element) { console.log('${replayEvent.chosenSelectorReport.selectorString} ELEMENT FOUND: ' + window.location.href); element.focus(); }`,
+                    //close the frame block
+                    `}`
+                ];
+            }
+
             //then we need to focus on the element which will allow us to start sending key commands
             await new Promise(resolve => 
                 chrome.tabs.executeScript(this.browserTabId, 
                     //If true and frameId is set, then the code is inserted in the selected frame and all of its child frames.
                     { 
-                        code: `var element = document.querySelector('${replayEvent.chosenSelectorReport.selectorString}'); if (element) { element.focus({ preventScroll: false }); }`,
-                        allFrames: true, 
-                        frameId: 0,
+                        code: codeInstructionsArray.join(' '),
                         runAt: "document_idle" 
                     },
                     //log the script injection so we can see what's happening and resolve the promise  
                     () => { 
-                        this.log(14, replayEvent.recordingEventHTMLElement); 
+                        //we also need to report context here
+                        const context = (!replayEvent.recordingEventIsIframe ? "main_frame" : "vanilla_iframe" );
+                        this.log(14, `${replayEvent.recordingEventHTMLElement} in ${context}`); 
                         resolve(); 
                     } 
                 )
@@ -647,7 +673,7 @@ class ReplayTabRunner {
         //then we need to detach the debugger so we can send commands
         if (this.openState) await new Promise(resolve => chrome.debugger.detach({ tabId: this.browserTabId }, () => { this.log(5); resolve(); } ));
         //then we need to close our curated tab
-        if (this.openState) await new Promise(resolve => chrome.tabs.remove(this.browserTabId, () => { this.log(6); resolve(); } ));
+        //if (this.openState) await new Promise(resolve => chrome.tabs.remove(this.browserTabId, () => { this.log(6); resolve(); } ));
         //and kill all the merged observables at one stroke to enable clean shut down
         this.startSubscription.unsubscribe();
         //return so the synthetic promise is resolved
