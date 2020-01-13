@@ -676,7 +676,7 @@ class ReplayTabRunner {
         //then we need to detach the debugger so we can send commands
         if (this.openState) await new Promise(resolve => chrome.debugger.detach({ tabId: this.browserTabId }, () => { this.log(5); resolve(); } ));
         //then we need to close our curated tab
-        //if (this.openState) await new Promise(resolve => chrome.tabs.remove(this.browserTabId, () => { this.log(6); resolve(); } ));
+        if (this.openState) await new Promise(resolve => chrome.tabs.remove(this.browserTabId, () => { this.log(6); resolve(); } ));
         //and kill all the merged observables at one stroke to enable clean shut down
         this.startSubscription.unsubscribe();
         //return so the synthetic promise is resolved
