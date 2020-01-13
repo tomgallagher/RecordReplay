@@ -4,6 +4,11 @@
     border-right: 2px solid white !important;
 }
 
+/*same for horizontal tabs in bulk replay*/
+.ui.tabular.menu .active.item {
+    border-bottom: 2px solid white;
+}
+
 /*need an override here so inverted vertical menu opening out to right works OK in black*/
 .ui.vertical.inverted.tabular.menu .active.item {
     border-right: 2px solid black !important;

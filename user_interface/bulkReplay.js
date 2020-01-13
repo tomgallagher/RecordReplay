@@ -210,7 +210,35 @@ function runBulkReplay(projectOrTestID, bulkReplayType) {
         .concatMap(replay => Rx.Observable.fromPromise(processEachReplay(replay)) )
         //then we have a variety of things we need to do when all the replays have completed
         .subscribe(
-            replay => console.log(replay),
+            replay => {
+                console.log(replay)
+                //see if we are running with an inverted theme
+                const inverted = localStorage.getItem("ThemeInverted");
+                //style the top tab according to the success or otherwise of the replay - if you have 20 tabs you want to see which one has failed quickly 
+                if (replay.replayStatus) {
+                    //if inverted is true, we need to to some special styling
+                    if (inverted == "true") {
+                        //this is just some styling to make the tab match the colour of the table two
+                        $(`.item[data-tab="${replay.id}"]`).css('background-color', '#54eb0747');
+                        //this removes the warning from the table rwo, which when mixed with the green looks too much like red
+                        $(`.ui.bottom.attached.tab.segment[data-tab="${replay.id}"] .ui.bulkReplayReplayEventsTable tr`).removeClass('warning');
+                    } else {
+                        //when it's not inverted it's more straightforward
+                        $(`.item[data-tab="${replay.id}"]`).css('background', '#04f73d17')
+                    }
+                } else {
+                    //again, more styling required for the inverted true option
+                    if (inverted == "true") {
+                        //make the top tab match the table row
+                        $(`.item[data-tab="${replay.id}"]`).css('background-color', '#bc1c1c63');
+                        //remove the warning class for iframes that muddies the picture
+                        $(`.ui.bottom.attached.tab.segment[data-tab="${replay.id}"] .ui.bulkReplayReplayEventsTable tr`).removeClass('warning');
+                    } else {
+                        //easy for the non-inverted white background
+                        $(`.item[data-tab="${replay.id}"]`).css('background-color', '#e57c7c45');
+                    }
+                }
+            },
             error => console.error(error),
             () => {
                 //hide the loader
