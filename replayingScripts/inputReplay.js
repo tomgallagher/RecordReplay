@@ -117,6 +117,13 @@ class InputReplay {
                             //so we can see the deliberate fail happening
                             targetElement.value = "FAIL";
                         } else {
+                            //we need to take special action with certain types of input
+                            if (this.inputType == 'checkbox' || this.inputType == 'radio' || this.inputType == 'button' || this.inputType == 'submit' || this.inputType == 'reset') {
+                                //we need to click on the element to make the screen event happen
+                                var event = new MouseEvent('click', {view: window, bubbles: true, cancelable: false}); 
+                                //then dispatching the event
+                                targetElement.dispatchEvent( event );
+                            }
                             //set the value of the input element to be our saved value
                             targetElement.value = this.inputValue;
                             //then report to the log messages array
