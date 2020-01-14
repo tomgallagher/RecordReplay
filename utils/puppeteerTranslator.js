@@ -117,10 +117,53 @@ class PuppeteerTranslator {
 
     recaptcha = (selector, index, target) => `await ${target}.click('${selector}', { button: 'left', clickCount: 1 } );`
 
-    //Note you should always focus before you type
-    typeText = (text, target) => `await ${target}.keyboard.type('${text}');`
-
-    inputContentEditable = (selector, text, target) => `await ${target}.evaluate( () => { document.querySelector('${selector}').textContent = '${text}'; });` 
+    //we need a parser for the different kinds of input
+    inputParser = (selector, recordingEvent, index, target) => {
+        //first we need to get the value we need to input
+        const value = recordingEvent.recordingEventInputValue;
+        //then we need a shorthand for the input type
+        const inputType = recordingEvent.recordingEventInputType;
+        //then we need to work differently for different kinds of inputs
+        switch(true) {
+            //if we are talking about a text area element, then we know what we are doing
+            case recordingEvent.recordingEventHTMLElement == "HTMLTextAreaElement":
+                //first we have to focus on the element and then we have to type the value
+                return `await ${target}.focus('${selector}'); await ${target}.keyboard.type('${value}');`;
+            //if we are dealing with an input element, things are a bit more complex
+            case recordingEvent.recordingEventHTMLElement == "HTMLInputElement":
+                //then we need to have a detailed method of dealing with the various types of input
+                switch(inputType) {
+                    //then we need to handle every single input type, starting with those we can handle with a single click
+                    case 'checkbox' || 'radio' || 'button' || 'submit' || 'reset':
+                        //a simple click will work for the radio buttons and checkboxes
+                        return `await ${target}.click(${selector});`;
+                    //certain types of text input can all be handled in the same way
+                    case 'text' || 'password' || 'url' || 'email' || 'number' || 'search' || 'tel':
+                        //first we have to focus on the element and then we have to type the value
+                        return `await ${target}.focus('${selector}'); await ${target}.keyboard.type('${value}');`;
+                    //then there are special HTML5 inputs that we need to shortcut
+                    default:
+                        //The <input type="color"> is used for input fields that should contain a color
+                        //The <input type="time"> allows the user to select a time (no time zone).
+                        //The <input type="date"> is used for input fields that should contain a date.
+                        //The <input type="week"> allows the user to select a week and year.
+                        //The <input type="month"> allows the user to select a month and year.
+                        //The <input type="range"> defines a control for entering a number whose exact value is not important (like a slider control).
+                        //FOR ALL THE ABOVE WE SHORTCUT
+                        return `await ${target}.evaluate( () => { document.querySelector('${selector}').value = '${value}'; });`;
+                }
+            //if we are dealing with an select element, puppeteer offers us a nice handler
+            case recordingEvent.recordingEventHTMLElement == "HTMLSelectElement":
+                return `await ${target}.select('${selector}', '${value}');`;
+            //if we are dealing with a standard HTMLElement with the contenteditable property, then we need to to something slightly different
+            case recordingEvent.recordingEventInputType == "contentEditable":
+                //with the content editable, we can't just type in as we have a final text result on blur, so we need to adjust the text directly
+                return `await ${target}.evaluate( () => { document.querySelector('${selector}').textContent = '${value}'; });`;
+            //then we have a default for when we have no clue
+            default:
+                return `await ${target}.evaluate( () => { document.querySelector('${selector}').value = '${value}'; });`;
+        }
+    }
 
     //Note you should always focus before you send key as tab, enter etc may only have meaning in the context of focus
     nonInputTyping = (selector, replayEvent, index, target) => {
@@ -257,11 +300,7 @@ class PuppeteerTranslator {
                 outputStringArray.push(this.nonInputTyping(this.getMostValidSelector(recordingEvent), recordingEvent, index, target));
                 break;
             case 'Input':
-                if (recordingEvent.recordingEventInputType == "contentEditable") {
-                    outputStringArray.push(this.inputContentEditable(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue, target));
-                } else {
-                    outputStringArray.push(this.focus(this.getMostValidSelector(recordingEvent), target) += this.tabIndex(index) + this.typeText(recordingEvent.recordingEventInputValue, target));
-                }
+                outputStringArray.push(this.inputParser(this.getMostValidSelector(recordingEvent), recordingEvent, index, target));
                 break;
             case 'Page':
                 //here we just do a simple return with the standard tabbing

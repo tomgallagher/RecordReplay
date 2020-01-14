@@ -66,6 +66,54 @@ class jQueryTranslator {
 
     inputContentEditable = (selector, text) => `$('${selector}').text('${text}');`
 
+    //we need a parser for the different kinds of input
+    inputParser = (selector, recordingEvent) => {
+        //first we need to get the value we need to input
+        const value = recordingEvent.recordingEventInputValue;
+        //then we need a shorthand for the input type
+        const inputType = recordingEvent.recordingEventInputType;
+        //then we need to work differently for different kinds of inputs
+        switch(true) {
+            //if we are talking about a text area element, then we know what we are doing
+            case recordingEvent.recordingEventHTMLElement == "HTMLTextAreaElement":
+                //first we have to focus on the element and then we have to type the value
+                return `$('${selector}').val('${value}');`;
+            //if we are dealing with an input element, things are a bit more complex
+            case recordingEvent.recordingEventHTMLElement == "HTMLInputElement":
+                //then we need to have a detailed method of dealing with the various types of input
+                switch(inputType) {
+                    //then we need to handle every single input type, starting with those we can handle with a single click
+                    case 'checkbox' || 'radio' || 'button' || 'submit' || 'reset':
+                        //a simple click will work for the radio buttons and checkboxes
+                        return `$('${selector}').click();`
+                    //certain types of text input can all be handled in the same way
+                    case 'text' || 'password' || 'url' || 'email' || 'number' || 'search' || 'tel':
+                        //first we have to focus on the element and then we have to type the value
+                        return `$('${selector}').val('${value}');`;
+                    //then there are special HTML5 inputs that we need to shortcut
+                    default:
+                        //The <input type="color"> is used for input fields that should contain a color
+                        //The <input type="time"> allows the user to select a time (no time zone).
+                        //The <input type="date"> is used for input fields that should contain a date.
+                        //The <input type="week"> allows the user to select a week and year.
+                        //The <input type="month"> allows the user to select a month and year.
+                        //The <input type="range"> defines a control for entering a number whose exact value is not important (like a slider control).
+                        //FOR ALL THE ABOVE WE SHORTCUT
+                        return `$('${selector}').val('${value}');`;
+                }
+            //if we are dealing with an select element, puppeteer offers us a nice handler
+            case recordingEvent.recordingEventHTMLElement == "HTMLSelectElement":
+                return `$('${selector}').val('${value}');`;
+            //if we are dealing with a standard HTMLElement with the contenteditable property, then we need to to something slightly different
+            case recordingEvent.recordingEventInputType == "contentEditable":
+                //with the content editable, we can't just type in as we have a final text result on blur, so we need to adjust the text directly
+                return `$('${selector}').text('${value}');`;
+            //then we have a default for when we have no clue
+            default:
+                return `$('${selector}').val('${value}');`;
+        }
+    }
+
     nonInputTyping = (selector, recordingEvent, index) => {
 
         //first we need a shorthand of our event
@@ -145,11 +193,7 @@ class jQueryTranslator {
             case "Keyboard": 
                 return this.nonInputTyping(this.getMostValidSelector(recordingEvent), recordingEvent, index);
             case 'Input':
-                if (recordingEvent.recordingEventInputType == "contentEditable") {
-                    return this.inputContentEditable(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue);
-                } else {
-                    return this.inputText(this.getMostValidSelector(recordingEvent), recordingEvent.recordingEventInputValue);
-                }
+                return this.inputParser(this.getMostValidSelector(recordingEvent), recordingEvent);
             case 'Page':
                 return `// Page navigated to ${recordingEvent.recordingEventLocationHref}`; 
             default:
