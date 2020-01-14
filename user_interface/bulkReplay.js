@@ -46,11 +46,14 @@ function populateBulkReplayTabs(replayStorageArray) {
         //<table class="ui small violet celled single line center aligned compact bulkReplayReplayEventsTable unstackable table" data-replay-id="">
         let tableNode = tempNode.querySelector('.ui.bulkReplayReplayEventsTable.table');
         tableNode.setAttribute('data-replay-id', replayStorageArray[replay].id);
+
+        let tableBodyNode = tempNode.querySelector('.ui.bulkReplayReplayEventsTable.table tbody');
+        tableBodyNode.setAttribute('data-replay-id', replayStorageArray[replay].id);
         
         //then we borrow the function from newReplay.js to populate the table
         for (let replayEvent in replayStorageArray[replay].replayEventArray) {   
             //add each event to the table using the function
-            addNewReplayEventToTable(replayStorageArray[replay], replayStorageArray[replay].replayEventArray[replayEvent], tableNode)
+            addNewReplayEventToTable(replayStorageArray[replay], replayStorageArray[replay].replayEventArray[replayEvent], tableBodyNode)
         }
 
         //<tr class="informationMessageRow" style="display: none;" data-replay-id="">
@@ -114,6 +117,116 @@ function populateBulkReplayTabs(replayStorageArray) {
 
 }
 
+function addShowAndDeleteClickHandlers() {
+
+    $('.ui.bulkReplayReplayEventsTable.table .showReplayEventRow').on('click', function(){
+
+        console.log("Firing Bulk Replay Table Row Show Link");
+        //we need to get the id of the replay so we can target the correct footer item in the right table of many
+        const replayId = $(this).attr("data-replay-id")
+        //here we deal with messages that are appended to the html as the replay is running
+        //we have log messages for all replay events
+        const logMessages = JSON.parse($(this).attr("data-log-messages"));
+        //we will have error messages for some replay events 
+        const errorMessages = JSON.parse($(this).attr("data-error-messages"));
+        //show the information row
+        $(`.informationMessageRow[data-replay-id="${replayId}"]`).css('display', 'table-row');
+        //then what we show depends on the content of the messages
+        switch(true) {
+            //then if it's empty then we have no messages because the event has been run
+            case logMessages.length == 0 && errorMessages.length == 0:
+                //show the warning message
+                $(`.ui.warning.noDetails.message[data-replay-id="${replayId}"]`).css('display', 'block');
+                break;
+            case logMessages.length > 0 && errorMessages.length == 0:
+                //empty the lists
+                $(`.logging.list[data-replay-id="${replayId}"]`).empty();
+                $(`.error.list[data-replay-id="${replayId}"]`).empty();
+                //hide the error section
+                $(`.ui.negative.error.message[data-replay-id="${replayId}"]`).css('display', 'none');
+                //loop through the log messages
+                for (let item in logMessages) {
+                    //attach the logging messages to the message list
+                    $(`.logging.list[data-replay-id="${replayId}"]`).append(`<li>${logMessages[item]}</li>`);
+                }
+                //show the logging message
+                $(`.ui.info.logging.message[data-replay-id="${replayId}"]`).css('display', 'block');
+                break;
+            case errorMessages.length > 0:
+                //empty the lists
+                $(`.logging.list[data-replay-id="${replayId}"]`).empty();
+                $(`.error.list[data-replay-id="${replayId}"]`).empty();
+                //loop through the log messages
+                for (let item in logMessages) {
+                    //attach the logging messages to the message list
+                    $(`.logging.list[data-replay-id="${replayId}"]`).append(`<li>${logMessages[item]}</li>`);
+                }
+                //loop through the error messages
+                for (let item in errorMessages) {
+                    //attach the error messages to the message list
+                    $(`.error.list[data-replay-id="${replayId}"]`).append(`<li>${errorMessages[item]}</li>`);
+                }
+                //show the logging message
+                $(`.ui.info.logging.message[data-replay-id="${replayId}"]`).css('display', 'block');
+                //show the error message
+                $(`.ui.negative.error.message[data-replay-id="${replayId}"]`).css('display', 'block');
+        }
+
+    });
+
+    $('.ui.bulkReplayReplayEventsTable.table .deleteReplayEventRow').on('click', function(){
+
+        console.log("Firing Bulk Replay Table Row Delete Link");
+        //find the replay in the database by id, using data-replay-id from the template
+        const replayKey = $(this).attr("data-replay-id");
+        //do the same with the replay event key
+        const replayEventKey = $(this).attr("data-replay-event-id");
+        //the replay key will be in string format - StorageUtils handles conversion
+        StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays')
+            //then we have a returned js object with the replay details
+            .then(replay => {
+                //first we need to create a new replay, with our recording properties and replay properties
+                const newReplay = new Replay(replay, replay);
+                //then we need to filter the new replay's event table
+                newReplay.replayEventArray = newReplay.replayEventArray
+                    //get rid of the element that has been deleted, by reference to the replay event id or the aeertion id
+                    .filter(item => item.replayEventId != replayEventKey && item.assertionId != replayEventKey)
+                //then we need to create a sorted array, which generates mixed replay events and assertion events in the correct order
+                //we also need the time since previous to be adjusted in cases where assertions share the same timestamp as the hover or text select event
+                newReplay.sortReplayEventsByTime();
+                //storage does not save replays with the class methods attached
+                //it is not clear why, as the recordings are saved OK with class methods attached
+                //probably something to do with extending the recording class with replay
+                delete newReplay.printExecutionTime;
+                delete newReplay.printStatus;
+                delete newReplay.sortReplayEventsByTime;
+                //then we just need to return the replay for saving in the database
+                return newReplay;
+            })
+            //then we need to save the updated replay to the database
+            .then(newReplay => StorageUtils.updateModelObjectInDatabaseTable('replays.js', replayKey, newReplay, 'replays') )
+            //then we need to retrieve the edited replay to update the table to reflect the deleted event
+            .then( () => StorageUtils.getSingleObjectFromDatabaseTable('replays.js', replayKey, 'replays') )
+            //then we need to do the update to the table 
+            .then(savedReplay => {
+                //empty the table body first
+                $(`.ui.bulkReplayReplayEventsTable.table tbody[data-replay-id="${replayKey}"]`).empty();
+                //get a reference to the table
+                const table = document.querySelector(`.ui.bulkReplayReplayEventsTable.table tbody[data-replay-id="${replayKey}"]`)
+                //then for each replayEvent we need to add it to the table and the textarea
+                for (let replayEvent in savedReplay.replayEventArray) { 
+                    //then borrow the function from newReplay.js
+                    addNewReplayEventToTable(savedReplay, savedReplay.replayEventArray[replayEvent], table);
+                }
+            })  
+            //the get single object function will reject if object is not in database
+            .catch(error => console.error(error));      
+
+
+    });
+
+}
+
 function refreshBulkReplayTestDropdown() {
 
     Promise.all([
@@ -171,6 +284,8 @@ function refreshBulkReplayTestDropdown() {
                                 replayStorageArray = replayStorageArray.filter(replay => replay.recordingProjectId == projectId);
                                 //then populate, activate and show each of the tabs using separate function
                                 populateBulkReplayTabs(replayStorageArray);
+                                //then add link handlers
+                                addShowAndDeleteClickHandlers();
                             } else {
                                 //update the start and stop buttons to contain the correct test id
                                 $('.ui.bulkReplay.form .ui.startBulkReplay.positive.button').attr('data-test-id', value);
@@ -184,6 +299,8 @@ function refreshBulkReplayTestDropdown() {
                                 replayStorageArray = replayStorageArray.filter(replay => replay.recordingTestId == testId);
                                 //then populate, activate and show each of the tabs using separate function
                                 populateBulkReplayTabs(replayStorageArray);
+                                //then add link handlers
+                                addShowAndDeleteClickHandlers();
                             }
 
                         });
