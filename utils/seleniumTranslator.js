@@ -252,11 +252,7 @@ class SeleniumTranslator {
                 outputString += this.nonInputTyping(this.getMostValidSelector(replayEvent), replayEvent, index);
                 break;
             case 'Input':
-                if (recordingEvent.recordingEventInputType == "contentEditable") {
-                    outputString += this.inputContentEditable(this.getMostValidSelector(replayEvent), replayEvent.recordingEventInputValue, target);
-                } else {
-                    outputString += this.focus(this.getMostValidSelector(replayEvent), target) += this.tabIndex(index) + this.typeText(replayEvent.recordingEventInputValue, target);
-                }
+                outputStringArray.push(this.inputParser(this.getMostValidSelector(replayEvent), recordingEvent, index));
                 break;
             case 'Page':
                 //here we just do a simple return with the standard tabbing
