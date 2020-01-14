@@ -4,7 +4,7 @@
   "name": "Record/Replay",
   "description": "Browser automation package. Easy to use and open source. Integrated functional testing framework.",
   "author": "Tom Gallagher",
-  "version": "1.0.1.1",
+  "version": "1.0.1.2",
   
   "incognito": "not_allowed",
   
