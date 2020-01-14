@@ -118,7 +118,7 @@ class InputReplay {
                             targetElement.value = "FAIL";
                         } else {
                             //we need to take special action with certain types of input
-                            if (this.inputType == 'checkbox' || this.inputType == 'radio' || this.inputType == 'button' || this.inputType == 'submit' || this.inputType == 'reset') {
+                            if (['checkbox', 'radio', 'button', 'submit', 'reset'].includes(this.inputType)) {
                                 //we need to click on the element to make the screen event happen
                                 var event = new MouseEvent('click', {view: window, bubbles: true, cancelable: false}); 
                                 //then dispatching the event
