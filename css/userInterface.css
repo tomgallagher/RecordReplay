@@ -4,9 +4,12 @@
     border-right: 2px solid white !important;
 }
 
-/*same for horizontal tabs in bulk replay*/
+/*same for horizontal tabs in bulk replay and we also adjust the padding slightly to enable more replays to fit in across the top*/
 .ui.tabular.menu .active.item {
     border-bottom: 2px solid white;
+}
+.ui.tabular.menu .item {
+    padding: .92857143em 1.14285714em;
 }
 
 /*need an override here so inverted vertical menu opening out to right works OK in black*/
