@@ -8,6 +8,8 @@
 
 * We aim to serve all developers, from those with no programming experience to those with experience of multiple testing frameworks. 
 
+* Check out Record/Replay in action on [Youtube](https://youtu.be/dXmjvsvPXIM) 
+
 # HOW DOES RECORD/REPLAY WORK? 
 
 __RECORD__ - Listens for all user interface interactions through keyboard and mouse, including steps required for key functionality, such as signup, login, add purchase to cart etc.

@@ -380,7 +380,7 @@ EventRecorder.startRecordingEvents = () => {
             const newEvent = new RecordingEvent({
                 //general properties
                 recordingEventAction: 'TextSelect',
-                recordingEventActionType: selectEndObject.eventType,
+                recordingEventActionType: selectEndObject.type,
                 recordingEventHTMLElement: selectEndObject.recordReplayEventTarget.constructor.name,
                 recordingEventHTMLTag: selectEndObject.recordReplayEventTarget.tagName,
                 recordingEventCssSelectorPath: selectEndObject.eventCssSelectorPath,
