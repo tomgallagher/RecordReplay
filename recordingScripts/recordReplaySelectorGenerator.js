@@ -87,6 +87,8 @@
 
             //at each stage in the process we need to know if we have a unique query
             function uniqueQuery() {
+                //we need to clean up the array for any falsey values
+                selectedArray = selectedArray.filter(Boolean);
                 //so we make quite an expensive call to query selector all with our current array and see if we get just the one match - unique if so
                 try {
                     const test = document.querySelectorAll(selectedArray.join('>') || null).length === 1;
