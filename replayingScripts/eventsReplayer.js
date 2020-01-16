@@ -224,7 +224,7 @@ EventReplayer.startReplayingEvents = () => {
                     typeReplayer.sendResponse({replayExecution: replayExecution});
                 }   
             },
-            error => EventReplayer.logWithContext(error),
+            error => EventReplayer.logWithContext(`Event Replayer Observable Chain Error: ${error}`),
             () => EventReplayer.logWithContext("EventReplayer.startReplayingEvents: COMPLETE")
         );
 

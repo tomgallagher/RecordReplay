@@ -1,3 +1,6 @@
+//THIS PERFORMS A COMPLICATED OPERATION
+//THIS SCRIPT RUNS IN EVERY SINGLE EXECUTION CONTEXT AND IT IS UP TO THIS LOGIC TO MAKE SURE IT ONLY RUNS REPLAY EVENTS THAT BELONG TO THIS CONTEXT
+
 class MatchingUrlReport {
 
     constructor(replayEvent) {
@@ -41,32 +44,42 @@ class MatchingUrlReport {
                     EventReplayer.logWithContext(`Not Replaying ${replayEvent.assertionId || replayEvent.replayEventId} from Unmatched Search Params`);
                 }
                 break;
-            //when we have no fails on the url we are left with the possibliliy that we are in the main page or we are in a vanilla iframe
-            //the problem we have is that the main page can contain many vanilla iframes
+            //when we have no fails on the url we are left with three options:
+            //it is the main frame with a perfect matching url
+            //it is a vanilla iframe with a perfect matching url - there can be many of these in the same page
+            //it is a cross-domain iframe with a perfect matching url
             default:
                 //so we need to have a further level of nested logic here
                 switch(true){
-                    //we discard cases where the frame/main page context is different from the recorded context
-                    case EventReplayer.contextIsIframe() != replayEvent.recordingEventIsIframe:
-                        //no match so we just log this for debugging and then break
-                        EventReplayer.logWithContext(`Not Replaying ${replayEvent.assertionId || replayEvent.replayEventId} from Unmatched Main Page / Frame Context`);
+                    //IF WE ARE IN THE MAIN FRAME AND THE EVENT WAS IN THE MAIN FRAME THEN WE WANT TO REPORT A MATCH - WE'RE DONE
+                    case !EventReplayer.contextIsIframe() && !replayEvent.recordingEventIsIframe:
+                        EventReplayer.logWithContext(`Matched Main Frame Location Href: Executing ${replayEvent.assertionId || replayEvent.replayEventId}`);
+                        this.matched = true;
                         break;
-                    //we need to action events where the context indicates an iframe match
+                    //IF WE ARE IN AN IFRAME AND THE EVENT WAS IN AN IFRAME WE NEED TO DO SOME MORE WORK TO DISTINGUISH BETWEEN CROSS-DOMAIN AND VANILLA IFRAMES
+                    //THE PROBLEM IS THAT BOTH WILL HAVE A PERFECT MATCHING URL 
                     case EventReplayer.contextIsIframe() && replayEvent.recordingEventIsIframe:
-                        //then we know we are in an iframe, which is where we want to be BUT we need to distinguish between iframes
-                        if (replayEvent.recordingEventIframeName ==  window.frameElement.name) {
-                            //we may have problems here if we get multiple vanilla iframes all with the same name
+                        //WE CAN OPERATE FROM THE BASIS THAT A VANILLA IFRAME HAS A NON-NULL VALUE FOR window.frameElement, as we do in the recording
+                        if (window.frameElement && window.frameElement.name == replayEvent.recordingEventIframeName) {
+                            //then we can say we are in the right context and we can carry on
                             EventReplayer.logWithContext(`Matched Vanilla Iframe on Name: Executing ${replayEvent.assertionId || replayEvent.replayEventId}`);
                             this.matched = true;
                         } else {
-                            //otherwise we need to report 
-                            EventReplayer.logWithContext(`Not Replaying ${replayEvent.assertionId || replayEvent.replayEventId} from Unmatched Vanilla Iframe Name`);
+                            //then we are in a cross-domain iframe and we can log accordingly
+                            EventReplayer.logWithContext(`Matched Cross-Domain Iframe Location Href: Executing ${replayEvent.assertionId || replayEvent.replayEventId}`);
+                            this.matched = true;
                         }
                         break;
-                    //we need to action events where the context indicates a main frame match
-                    case !EventReplayer.contextIsIframe() && !replayEvent.recordingEventIsIframe:
-                        EventReplayer.logWithContext(`Matched Main Frame Location: Executing ${replayEvent.assertionId || replayEvent.replayEventId}`);
+                    //IF WE HAVE A MISMATCH BETWEEN THE REPORTED FRAME TYPE AND THE CURRENT FRAME TYPE WE JUST SKIP
+                    case EventReplayer.contextIsIframe() != replayEvent.recordingEventIsIframe:
+                        EventReplayer.logWithContext(`Not Replaying ${replayEvent.assertionId || replayEvent.replayEventId} on Mismatch Frame Type Indication and Found`);
+                        break;
+                    //THIS NEEDS TO BE REPORTED AS AN EDGE CASE PROBLEM
+                    default:
+                        //then we are in a cross-domain iframe and we can log accordingly
+                        EventReplayer.logWithContext(`ALERT: Unrecognised Case for Matched Location Href: Executing ${replayEvent.assertionId || replayEvent.replayEventId}`);
                         this.matched = true;
+                    
                 }
 
         }

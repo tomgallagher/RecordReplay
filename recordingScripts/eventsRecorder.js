@@ -245,7 +245,7 @@ EventRecorder.startRecordingEvents = () => {
         //the mouse location observables are many - we currently only want the mouseover events
         .filter(event => event.type == "mouseover")
         //throttle but emit trailing value after time period
-        .throttleTime(750, Rx.Scheduler.async, {leading: true, trailing: true})
+        .throttleTime(250, Rx.Scheduler.async, {leading: true, trailing: true})
         //then we want to add a quick xpath calculation to the event so we can work out if we have a unqiue element
         .map(event => ({ event: event, xpath: xpathTimed(event.target) }))
         //then we only want to be taking elements that are unique as the css calculation can take a while, at least the CSS selector generator
@@ -257,7 +257,7 @@ EventRecorder.startRecordingEvents = () => {
         //then we get the selectors for the pre-action event element, so it is not mutated
         .map(event => {
             return {
-                eventTarget: event.target,
+                recordReplayEventTarget: event.target,
                 eventCssSelectorPath: cssSelectorTimed(event.target),
                 eventCssOptimalPath: optimalSelectTimed(event.target),
                 eventRecordReplayPath: recordReplayTimed(event.target),
@@ -291,6 +291,11 @@ EventRecorder.startRecordingEvents = () => {
         .filter(event => event.type == "mousedown")
         //but we ignore mouse down events in HTMLInputElement, HTMLTextAreaElement and isContentEditable elements - we use the input change event for that
         .filter(event => EventRecorder.elementIsInput(event.target) == false)
+        //at the point of the mouse down event, we need to save the unadulterated last emission from the mouse locator
+        .withLatestFrom(EventRecorder.MouseLocator)
+        //then we need to make sure we don't get double clicks, as we are handling the double click event
+        //this makes sure if we get a double click, we get the single mousedown emission which we then convert into the double click event
+        .throttleTime(500, Rx.Scheduler.async, {leading: true, trailing: true})
         //otherwise we then need to start listening to see what happens after the mousedown event
         .switchMap( () =>
             Rx.Observable.combineLatest(
@@ -309,8 +314,9 @@ EventRecorder.startRecordingEvents = () => {
                     //we start with a default object
                     .startWith({type: null})
             ),
-            //then we need to process the events, using the original mousedown event and the unpacked combineLatestArray
-            (mouseDownEvent, [clickOrContextMenuEvent, doubleClickEvent, selectStartEvent]) => {
+            //then we need to process the events, with the unpacked mousedown and mouselocator events from withLatestFrom and the unpacked combineLatestArray
+            //the first array contains 'live' events that are collected on mousedown and the second has 'delayed' and processed events
+            ([mouseDownEvent, mouseLocatorEvent], [clickOrContextMenuEvent, doubleClickEvent, selectStartEvent]) => {
                 //then we need to know if we have a valid select start event by timestamp and value
                 const selectStartValid = selectStartEvent.timeStamp > mouseDownEvent.timeStamp && selectStartEvent.type != null;
                 //then we need to know if we have a valid double click event by timestamp and value
@@ -320,18 +326,24 @@ EventRecorder.startRecordingEvents = () => {
                 //then we need to return the event accordingly
                 switch(true) {
                     //first we need to return a text select event if the text select event has fired and double click has not fired
-                    case selectStartValid && !doubleClickValid: return selectStartEvent;
+                    case selectStartValid && !doubleClickValid:
+                        //then we need to assign all the  location properties of the mouselocator event to the delayed selectstart event
+                        //these are recordReplayEventTarget, eventCssSelectorPath, eventCssOptimalPath, eventRecordReplayPath, eventXPath
+                        return Object.assign({}, mouseLocatorEvent, { type: selectStartEvent.type});
                     //then we need to return a double click event if both have fired - we do not handle double clicking as a method of text selection
-                    case selectStartValid && doubleClickValid: return doubleClickEvent;
+                    case selectStartValid && doubleClickValid: 
+                        //ditto here
+                        return Object.assign({}, mouseLocatorEvent, { type: doubleClickEvent.type});
                     //then we need to return a double click event if both the single click and double click have fired
-                    case clickValid && doubleClickValid: return doubleClickEvent;
+                    case clickValid && doubleClickValid:
+                        //ditto here
+                        return Object.assign({}, mouseLocatorEvent, { type: doubleClickEvent.type});
                     //then we need to return the normal click event as the default
-                    default: return clickOrContextMenuEvent;
+                    default: 
+                        return Object.assign({}, mouseLocatorEvent, { type: clickOrContextMenuEvent.type});
                 }
             }
         )
-        //then we don't need duplicates of the double click events
-        .distinctUntilChanged()
         //reporting for debugging
         .do(event => console.log(`RECORDING MOUSE EVENT: ${event.type.toUpperCase()}`))
         //and share amongst the text selection and mouse observables
@@ -341,45 +353,47 @@ EventRecorder.startRecordingEvents = () => {
     //and we need to name this as it is used to prevent double recordings of text selection and clicks
     EventRecorder.textSelectionObservable = EventRecorder.mouseActionObservable
         //the selection observables are many - we currently only want the select start event
-        .filter(event => event.type == "selectstart")
-        //once we have a selectStart event, we then need to start listening to the mouse locator event to work out when selection has finished
-        .withLatestFrom(EventRecorder.MouseLocator)
+        .filter(selectWithLocationEvent => selectWithLocationEvent.type == "selectstart")
         //then map the event to the Recording Event type
-        .map(([selectEvent, locationEvent]) => {
+        .map(selectWithLocationEvent => {
             //get the selection
             const selection = window.getSelection();
             //then return an object with properties that we need to filter and also to process a recording event
-            return {
-                //we keep the event type although it's not selectStart that we are creating
-                eventType: selectEvent.type,
-                //we need the current selection as a string so we can filter zero selections
-                selectionString: selection.toString(),
-                //then we need to have the mouseup event so we can process the location of the selection
-                mouseEvent: locationEvent
-            }
+            return Object.assign({}, selectWithLocationEvent, {selectionString: selection.toString() });
         })
         //then filter for empty strings as that's an indication that the user either pressed on the contextMenu or changed their mind
         .filter(selectEndObject => selectEndObject.selectionString.length > 0)
         //then process selectEndObject into a recording object
         .map(selectEndObject => {
+            //we need to do a bit of work on the text selection
+            var selectionString;
+            //the problem here comes on replays - you can have a partial text selection but it's no good saving that because the replay is looking for equality of ALL text
+            //so we see if all the text has been selected            
+            if (selectEndObject.selectionString == selectEndObject.recordReplayEventTarget.textContent) {
+                //if it has then the selection string can be saved as it is
+                selectionString = selectEndObject.selectionString;
+            } else {
+                //if we have a partial text selection, we need to change it to the whole element text content, otherwise we will have replay fails
+                selectionString = selectEndObject.recordReplayEventTarget.textContent.trim();
+            }
+            //then we just need to create the recording event
             const newEvent = new RecordingEvent({
                 //general properties
                 recordingEventAction: 'TextSelect',
                 recordingEventActionType: selectEndObject.eventType,
-                recordingEventHTMLElement: selectEndObject.mouseEvent.eventTarget.constructor.name,
-                recordingEventHTMLTag: selectEndObject.mouseEvent.eventTarget.tagName,
-                recordingEventCssSelectorPath: selectEndObject.mouseEvent.eventCssSelectorPath,
-                recordingEventCssDomPath: selectEndObject.mouseEvent.eventCssOptimalPath,
-                recordingEventCssFinderPath: selectEndObject.mouseEvent.eventRecordReplayPath,
-                recordingEventXPath: selectEndObject.mouseEvent.eventXPath,
+                recordingEventHTMLElement: selectEndObject.recordReplayEventTarget.constructor.name,
+                recordingEventHTMLTag: selectEndObject.recordReplayEventTarget.tagName,
+                recordingEventCssSelectorPath: selectEndObject.eventCssSelectorPath,
+                recordingEventCssDomPath: selectEndObject.eventCssOptimalPath,
+                recordingEventCssFinderPath: selectEndObject.eventRecordReplayPath,
+                recordingEventXPath: selectEndObject.eventXPath,
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement ? window.frameElement.name: null : 'N/A'),
                 //information specific to text select events
-                //if we have a partial text selection, we need to change it to the whole element text content, otherwise we will have replay fails
-                recordingEventTextSelectTextContent: (selectEndObject.selectionString == selectEndObject.mouseEvent.eventTarget.textContent ? selectEndObject.selectionString : selectEndObject.mouseEvent.eventTarget.textContent.trim()),
-                recordingEventTextSelectTargetAsJSON: EventRecorder.domToJSON(selectEndObject.mouseEvent.eventTarget)
+                recordingEventTextSelectTextContent: selectionString,
+                recordingEventTextSelectTargetAsJSON: EventRecorder.domToJSON(selectEndObject.recordReplayEventTarget)
             });
             return newEvent;
         });
@@ -388,20 +402,18 @@ EventRecorder.startRecordingEvents = () => {
     EventRecorder.mouseObservable = EventRecorder.mouseActionObservable
         //as we have text selection events now in the mouse action observable, we need to filter them out
         .filter(event => event.type != "selectstart")
-        //then as each action occurs, we want to know the state of the element BEFORE the action took place
-        .withLatestFrom(EventRecorder.MouseLocator)
         //then map the event to the Recording Event type
-        .map(([actionEvent, locationEvent]) => {
+        .map(actionWithLocationEvent => {
             //create our event
             const newEvent = new RecordingEvent({
                 recordingEventAction: 'Mouse',
-                recordingEventActionType: actionEvent.type,
-                recordingEventHTMLElement: actionEvent.target.constructor.name,
-                recordingEventHTMLTag: actionEvent.target.tagName,
-                recordingEventCssSelectorPath: locationEvent.eventCssSelectorPath,
-                recordingEventCssDomPath: locationEvent.eventCssOptimalPath,
-                recordingEventCssFinderPath: locationEvent.eventRecordReplayPath,
-                recordingEventXPath: locationEvent.eventXPath,
+                recordingEventActionType: actionWithLocationEvent.type,
+                recordingEventHTMLElement: actionWithLocationEvent.recordReplayEventTarget.constructor.name,
+                recordingEventHTMLTag: actionWithLocationEvent.recordReplayEventTarget.tagName,
+                recordingEventCssSelectorPath: actionWithLocationEvent.eventCssSelectorPath,
+                recordingEventCssDomPath: actionWithLocationEvent.eventCssOptimalPath,
+                recordingEventCssFinderPath: actionWithLocationEvent.eventRecordReplayPath,
+                recordingEventXPath: actionWithLocationEvent.eventXPath,
                 recordingEventLocation: window.location.origin,
                 recordingEventLocationHref: window.location.href,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
@@ -429,8 +441,8 @@ EventRecorder.startRecordingEvents = () => {
                 //general properties
                 recordingEventAction: 'Mouse',
                 recordingEventActionType: 'hover',
-                recordingEventHTMLElement: mouseLocatorEvent.eventTarget.constructor.name,
-                recordingEventHTMLTag: mouseLocatorEvent.eventTarget.tagName,
+                recordingEventHTMLElement: mouseLocatorEvent.recordReplayEventTarget.constructor.name,
+                recordingEventHTMLTag: mouseLocatorEvent.recordReplayEventTarget.tagName,
                 recordingEventCssSelectorPath: mouseLocatorEvent.eventCssSelectorPath,
                 recordingEventCssDomPath: mouseLocatorEvent.eventCssOptimalPath,
                 recordingEventCssFinderPath: mouseLocatorEvent.eventRecordReplayPath,
@@ -440,7 +452,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement ? window.frameElement.name: null : 'N/A'),
                 //information specific to text select events
-                recordingEventHoverTargetAsJSON: EventRecorder.domToJSON(mouseLocatorEvent.eventTarget)
+                recordingEventHoverTargetAsJSON: EventRecorder.domToJSON(mouseLocatorEvent.recordReplayEventTarget)
             });
             return newEvent;
         });
