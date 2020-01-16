@@ -8,7 +8,7 @@
 
 * We aim to serve all developers, from those with no programming experience to those with experience of multiple testing frameworks. 
 
-* Check out Record/Replay in action on [Youtube](https://youtu.be/dXmjvsvPXIM) 
+* Check out Record/Replay in action on [YouTube](https://youtu.be/dXmjvsvPXIM) 
 
 # HOW DOES RECORD/REPLAY WORK? 
 
