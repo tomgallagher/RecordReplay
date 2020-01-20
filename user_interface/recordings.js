@@ -11,7 +11,7 @@ function addRecordingTableRowsFragment(recordingStorageArray) {
     //then create a document fragment that we will use as a container for each looped template
     let docFrag = document.createDocumentFragment();
 
-    //use for-in loop as execution order is maintained
+    //use for-of loop for easier reading
     for (let recording of recordingStorageArray) { 
 
         //then we make a clone of the row, that will serve the purpose
