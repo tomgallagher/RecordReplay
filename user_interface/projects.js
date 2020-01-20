@@ -12,34 +12,34 @@ function addProjectTableRowsFragment(projectStorageArray) {
     let docFrag = document.createDocumentFragment();
 
     //use for-in loop as execution order is maintained
-    for (let project in projectStorageArray) { 
+    for (let project of projectStorageArray) { 
 
         //first we make a clone of the row, that will serve the purpose
         let tempNode = targetRow.cloneNode(true);
         //then we need to find each of the elements of the template that need to be adjusted and input from the current project
         //tempNode child <td data-label="projectName"></td> needs to have text content set to database projectName
         let projectNameNode = tempNode.querySelector('td[data-label="projectName"]');
-        projectNameNode.textContent = projectStorageArray[project].projectName;
+        projectNameNode.textContent = project.projectName;
         //tempNode child <td data-label="projectDescription"></td> needs to have text content set to database projectDescription
         let projectDescriptionNode = tempNode.querySelector('td[data-label="projectDescription"]');
-        projectDescriptionNode.textContent = projectStorageArray[project].projectDescription;
+        projectDescriptionNode.textContent = project.projectDescription;
         //tempNode child <td data-label="projectAuthor"></td> needs to have text content set to database projectAuthor
         let projectAuthorNode = tempNode.querySelector('td[data-label="projectAuthor"]');
-        projectAuthorNode.textContent = projectStorageArray[project].projectAuthor;
+        projectAuthorNode.textContent = project.projectAuthor;
         //tempNode child <td data-label="projectCreated"></td> needs to have text content set to database projectCreated
         let projectCreatedNode = tempNode.querySelector('td[data-label="projectCreated"]');
-        projectCreatedNode.textContent = new Date(projectStorageArray[project].projectCreated).toLocaleString();
+        projectCreatedNode.textContent = new Date(project.projectCreated).toLocaleString();
         //tempNode child <button class="ui editProject button" data-project-id="0"></button> needs to have data-project-id set to the database id
         let projectEditButton = tempNode.querySelector('.ui.editProject.button');
-        projectEditButton.setAttribute('data-project-id', projectStorageArray[project].id);
+        projectEditButton.setAttribute('data-project-id', project.id);
         //tempNode child <button class="ui deleteProject negative button" data-project-id="0" data-tooltip="To delete project and all associated tests"></button> needs to have data-project-id set to the database id
         let projectDeleteButton = tempNode.querySelector('.ui.deleteProject.button');
-        projectDeleteButton.setAttribute('data-project-id', projectStorageArray[project].id);
+        projectDeleteButton.setAttribute('data-project-id', project.id);
         //then we need to attach the clone of the template node to our container fragment
         //<input type="checkbox" data-project-id="0" data-project-name="">
         let projectCheckbox = tempNode.querySelector('input[type="checkbox"]');
-        projectCheckbox.setAttribute('data-project-id', projectStorageArray[project].id);
-        projectCheckbox.setAttribute('data-project-name', projectStorageArray[project].projectName);
+        projectCheckbox.setAttribute('data-project-id', project.id);
+        projectCheckbox.setAttribute('data-project-name', project.projectName);
         docFrag.appendChild(tempNode);
 
     }

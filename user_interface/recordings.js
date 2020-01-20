@@ -12,38 +12,38 @@ function addRecordingTableRowsFragment(recordingStorageArray) {
     let docFrag = document.createDocumentFragment();
 
     //use for-in loop as execution order is maintained
-    for (let recording in recordingStorageArray) { 
+    for (let recording of recordingStorageArray) { 
 
         //then we make a clone of the row, that will serve the purpose
         let tempNode = targetRow.cloneNode(true);
         //then we need to find each of the elements of the template that need to be adjusted and input from the current project
         //<td data-label="recordingName"></td>
         let recordingNameNode = tempNode.querySelector('td[data-label="recordingName"]');
-        recordingNameNode.textContent = recordingStorageArray[recording].recordingName;
+        recordingNameNode.textContent = recording.recordingName;
         
         //<td data-label="recordingDescription" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;"></td>
         let recordingDescriptionNode = tempNode.querySelector('td[data-label="recordingDescription"]');
-        recordingDescriptionNode.textContent = recordingStorageArray[recording].recordingDescription;
+        recordingDescriptionNode.textContent = recording.recordingDescription;
         //any text-overflow elements should have a title with the whole string
-        recordingDescriptionNode.title = recordingStorageArray[recording].recordingDescription;
+        recordingDescriptionNode.title = recording.recordingDescription;
 
         //<td data-label="recordingAuthor"></td>
         let recordingAuthorNode = tempNode.querySelector('td[data-label="recordingAuthor"]');
-        recordingAuthorNode.textContent = recordingStorageArray[recording].recordingAuthor;
+        recordingAuthorNode.textContent = recording.recordingAuthor;
         
         //<td data-label="recordingProjectName"></td>
         let recordingProjectNode = tempNode.querySelector('td[data-label="recordingProjectName"]');
-        recordingProjectNode.textContent = recordingStorageArray[recording].recordingProjectName;
+        recordingProjectNode.textContent = recording.recordingProjectName;
         
         //<td data-label="recordingTestName"></td>
         let recordingTestNode = tempNode.querySelector('td[data-label="recordingTestName"]');
-        recordingTestNode.textContent = recordingStorageArray[recording].recordingTestName; 
+        recordingTestNode.textContent = recording.recordingTestName; 
         
         //<td data-label="recordingTestStartUrl" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;"></td>
         let recordingStartUrlNode = tempNode.querySelector('td[data-label="recordingTestStartUrl"]');
-        recordingStartUrlNode.textContent = recordingStorageArray[recording].recordingTestStartUrl;
+        recordingStartUrlNode.textContent = recording.recordingTestStartUrl;
         //any text-overflow elements should have a title with the whole string
-        recordingStartUrlNode.title = recordingStorageArray[recording].recordingTestStartUrl;
+        recordingStartUrlNode.title = recording.recordingTestStartUrl;
         
         //<td data-label="recordingAdditionalReporting"></td>
         let recordingAdditionalReportingNode = tempNode.querySelector('td[data-label="recordingAdditionalReporting"]');
@@ -51,21 +51,21 @@ function addRecordingTableRowsFragment(recordingStorageArray) {
         const mobileDevices = new MobileDeviceDictionary({});
         //create the array in which to push our reporting strings
         var additionalReportsArray = [];
-        recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push('Mobile') : additionalReportsArray.push('Computer');
-        recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push(mobileDevices[recordingStorageArray[recording].recordingMobileDeviceId].shortName) : null;
-        recordingStorageArray[recording].recordingIsMobile == true ? additionalReportsArray.push(recordingStorageArray[recording].recordingMobileOrientation) : null;
+        recording.recordingIsMobile == true ? additionalReportsArray.push('Mobile') : additionalReportsArray.push('Computer');
+        recording.recordingIsMobile == true ? additionalReportsArray.push(mobileDevices[recording.recordingMobileDeviceId].shortName) : null;
+        recording.recordingIsMobile == true ? additionalReportsArray.push(recording.recordingMobileOrientation) : null;
         recordingAdditionalReportingNode.textContent = additionalReportsArray.join(', ');
         
         //<td data-label="recordingCreated"></td>
         let recordingCreatedNode = tempNode.querySelector('td[data-label="recordingCreated"]');
-        recordingCreatedNode.textContent = new Date(recordingStorageArray[recording].recordingCreated).toLocaleDateString(); 
+        recordingCreatedNode.textContent = new Date(recording.recordingCreated).toLocaleDateString(); 
 
         let recordingShowLink = tempNode.querySelector('.showRecordingLink');
-        recordingShowLink.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
+        recordingShowLink.setAttribute('data-recording-id', `${recording.id}`);
         let recordingEditLink = tempNode.querySelector('.editRecordingLink');
-        recordingEditLink.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
+        recordingEditLink.setAttribute('data-recording-id', `${recording.id}`);
         let recordingDeleteLink = tempNode.querySelector('.deleteRecordingLink');
-        recordingDeleteLink.setAttribute('data-recording-id', `${recordingStorageArray[recording].id}`);
+        recordingDeleteLink.setAttribute('data-recording-id', `${recording.id}`);
         //then we need to attach the clone of the template node to our container fragment
         docFrag.appendChild(tempNode);
     
@@ -100,10 +100,10 @@ function refreshEditRecordingTestDropdown() {
             var editRecordingDropDownMenu = $('.ui.fluid.selection.editRecording.test.dropdown .menu');
             //empty the dropdown of existing items
             editRecordingDropDownMenu.empty();
-            //use for-in loop as execution order is maintained to insert all the tests, with references, in the dropdown
-            for (let test in testStorageArray) {     
+            //use for-of loop as execution order is maintained to insert all the tests, with references, in the dropdown
+            for (let test of testStorageArray) {     
                 //we are not going to use templates here as we are not dealing with complex html structures
-                editRecordingDropDownMenu.append(`<div class="item" data-value=${testStorageArray[test].id}>${testStorageArray[test].testName}</div>`);
+                editRecordingDropDownMenu.append(`<div class="item" data-value=${test.id}>${test.testName}</div>`);
             }
             //then after the entire loop has been executed we need to initialise the dropdown with the updated items
             $('.ui.fluid.selection.editRecording.test.dropdown').dropdown({direction: 'upward'});

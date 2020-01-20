@@ -52,45 +52,45 @@ function addReplayTableRowsFragment(replayStorageArray) {
     let docFrag = document.createDocumentFragment();
 
     //use for-in loop as execution order is maintained
-    for (let replay in replayStorageArray) { 
+    for (let replay of replayStorageArray) { 
 
         //then we make a clone of the row, that will serve the purpose
         let tempNode = targetRow.cloneNode(true);
         //<td data-label="replayName"></td>
         let replayNameNode = tempNode.querySelector('td[data-label="replayName"]');
-        replayNameNode.textContent = replayStorageArray[replay].replayName;
+        replayNameNode.textContent = replay.replayName;
         //<td data-label="replay_recordingProjectName"></td>
         let replayProjectNameNode = tempNode.querySelector('td[data-label="replay_recordingProjectName"]');
-        replayProjectNameNode.textContent = replayStorageArray[replay].recordingProjectName;
+        replayProjectNameNode.textContent = replay.recordingProjectName;
         //<td data-label="replay_recordingTestName"></td>
         let replayTestNameNode = tempNode.querySelector('td[data-label="replay_recordingTestName"]');
-        replayTestNameNode.textContent = replayStorageArray[replay].recordingTestName;
+        replayTestNameNode.textContent = replay.recordingTestName;
         //<td data-label="replayRecordingStartUrl" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis;"></td>
         let replayStartUrlNode = tempNode.querySelector('td[data-label="replayRecordingStartUrl"]');
-        replayStartUrlNode.textContent = replayStorageArray[replay].replayRecordingStartUrl;
+        replayStartUrlNode.textContent = replay.replayRecordingStartUrl;
         //any text-overflow elements should have a title with the whole string
-        replayStartUrlNode.title = replayStorageArray[replay].replayRecordingStartUrl;
+        replayStartUrlNode.title = replay.replayRecordingStartUrl;
         //<td data-label="replayAssertionsCount"></td>
         let replayAssertionsLengthNode = tempNode.querySelector('td[data-label="replayAssertionsCount"]');
-        replayAssertionsLengthNode.textContent = replayStorageArray[replay].replayEventArray.filter(item => item.hasOwnProperty('assertionId')).length;
+        replayAssertionsLengthNode.textContent = replay.replayEventArray.filter(item => item.hasOwnProperty('assertionId')).length;
         //<td data-label="replayCreated"></td>
         let replayCreatedNode = tempNode.querySelector('td[data-label="replayCreated"]');
-        replayCreatedNode.textContent = new Date(replayStorageArray[replay].replayCreated).toLocaleDateString();
+        replayCreatedNode.textContent = new Date(replay.replayCreated).toLocaleDateString();
         //<td data-label="replayExecuted"></td>
         let replayExecutedNode = tempNode.querySelector('td[data-label="replayExecuted"]');
         //this makes a copy of the replay WITH THE RIGHT RECORDING PARAMETERS to access the formatting functions
-        replayExecutedNode.textContent = new Replay(replayStorageArray[replay], replayStorageArray[replay]).printExecutionTime();
+        replayExecutedNode.textContent = new Replay(replay, replay).printExecutionTime();
         //<td data-label="replayStatus"></td>
         let replayStatusNode = tempNode.querySelector('td[data-label="replayStatus"]');
         //this makes a copy of the replay WITH THE RIGHT RECORDING PARAMETERS to access the formatting functions
-        replayStatusNode.textContent = new Replay(replayStorageArray[replay], replayStorageArray[replay]).printStatus();
+        replayStatusNode.textContent = new Replay(replay, replay).printStatus();
 
         let replayShowLink = tempNode.querySelector('.showReplayLink');
-        replayShowLink.setAttribute('data-replay-id', `${replayStorageArray[replay].id}`);
+        replayShowLink.setAttribute('data-replay-id', `${replay.id}`);
         let replayEditLink = tempNode.querySelector('.runReplayLink');
-        replayEditLink.setAttribute('data-replay-id', `${replayStorageArray[replay].id}`);
+        replayEditLink.setAttribute('data-replay-id', `${replay.id}`);
         let replayDeleteLink = tempNode.querySelector('.deleteReplayLink');
-        replayDeleteLink.setAttribute('data-replay-id', `${replayStorageArray[replay].id}`);
+        replayDeleteLink.setAttribute('data-replay-id', `${replay.id}`);
         //then we need to attach the clone of the template node to our container fragment
         docFrag.appendChild(tempNode);
     
