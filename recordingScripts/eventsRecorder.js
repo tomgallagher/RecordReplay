@@ -101,6 +101,13 @@ var EventRecorder = {
         //we map each string array item to an observable
         .map(eventName => Rx.Observable.fromEvent(document, eventName)),
 
+    //SELECT FILE DROP EVENTS FOR CONVERSION TO OBSERVABLES
+    fileDropActionEventObservables: EventRecorderEvents.mouseActionEvents
+        //then we are interested in only certain types of mouse events
+        .filter(item => item == "drop")
+        //we map each string array item to an observable
+        .map(eventName => Rx.Observable.fromEvent(document, eventName, true)),
+
     //we need to have an instance of the key code dictionary
     keyCodeDictionary: new KeyCodeDictionary({}),
     //we need to have instance of CSS selector generator class instantiated at the time of creation
@@ -653,7 +660,7 @@ EventRecorder.startRecordingEvents = () => {
     EventRecorder.scrollItemObservable = Rx.Observable.merge(...EventRecorder.scrollActionEventObservables)
         //then we are interested only in scroll events
         .filter(event => event.type == "scroll")
-        //then for the time being we only want to record scroll events on the document element
+        //then we are only listening for scroll events on individual elements, not the html document which is handled elsewhere
         .filter(event => event.target instanceof HTMLDocument == false)
         //then we only want to get the last event after scrolling has stopped for 1/2 second - longer and the scroll events can occur after the click that should follow
         .debounceTime(500)
@@ -679,6 +686,49 @@ EventRecorder.startRecordingEvents = () => {
             });
             return newEvent;
         });
+    
+    //FILE DROP EVENTS
+    EventRecorder.fileDropObservable = Rx.Observable.merge(...EventRecorder.fileDropActionEventObservables)
+        //then we are interested only in drop events
+        .filter(event => event.type == "drop")
+        //then we are interested only in drop events that contain files
+        .filter(event => event.dataTransfer.files.length > 0)
+        //then as each action occurs, we want to know the state of the element BEFORE the action took place
+        .withLatestFrom(EventRecorder.MouseLocator)
+        //then map the event to the Recording Event type
+        .flatMap(([dropEvent, locationEvent]) => {
+            //save a reference to the file, which is just a wrapper for the blob prototype so it has the blob methods
+            const file = dropEvent.dataTransfer.files[0];
+            //return an async function that gives us a chance to get the data from the file
+            return (async () => {
+                //first we define a variable to hold the data
+                let data;
+                //then we need to check to see if the data is binary or not, for the time being we need to do a mime type check
+                ["image", "video", "audio", "pdf", "octet-stream"].some(item => file.type.includes(item)) ? data = await file.arrayBuffer() : data = await file.text();
+                //then we construct the blob
+                const blob = new Blob([data], {type: file.type}); 
+                //then we create the recording event
+                const newEvent = new RecordingEvent({
+                    //general properties
+                    recordingEventAction: 'FileDrop',
+                    recordingEventActionType: file.type,
+                    recordingEventHTMLElement: locationEvent.recordReplayEventTarget.constructor.name,
+                    recordingEventHTMLTag: locationEvent.recordReplayEventTarget.tagName,
+                    recordingEventCssSelectorPath: EventRecorder.getCssSelectorPathWithFailover(locationEvent.recordReplayEventTarget),
+                    recordingEventCssDomPath: EventRecorder.getOptimalSelectPathWithFailover(locationEvent.recordReplayEventTarget),
+                    recordingEventCssFinderPath: EventRecorder.getRecordReplayPathWithFailover(locationEvent.recordReplayEventTarget),
+                    recordingEventXPath: EventRecorder.getXPath(locationEvent.recordReplayEventTarget),
+                    recordingEventLocation: window.location.origin,
+                    recordingEventLocationHref: window.location.href,
+                    recordingEventIsIframe: EventRecorder.contextIsIframe(),
+                    recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement ? window.frameElement.name: null : 'N/A'),
+                    //information specific to file drop events events
+                    recordingEventFileBlob: blob,
+                    recordingEventFileType: file.type,
+                });
+                return newEvent;
+            })();  
+        });
 
     //combine all our observables into a single subscription
     Rx.Observable.merge(
@@ -697,7 +747,9 @@ EventRecorder.startRecordingEvents = () => {
         //handles all window scroll events
         EventRecorder.scrollObservable,
         //handles all element scroll events
-        EventRecorder.scrollItemObservable
+        EventRecorder.scrollItemObservable,
+        //handles all file drop events
+        EventRecorder.fileDropObservable
     )
     //and log the output  
     .subscribe(recordingEvent => {

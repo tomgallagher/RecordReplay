@@ -39,7 +39,10 @@ class RecordingEvent {
             recordingEventHoverTargetAsJSON: {},
             //information specific to scroll events
             recordingEventXPosition: 0,
-            recordingEventYPosition: 0
+            recordingEventYPosition: 0,
+            //information specific to file drop events events
+            recordingEventFileBlob: null,
+            recordingEventFileType: 'N/A'
         };      
         
         // create a new object with the defaults over-ridden by the options passed in
