@@ -33,7 +33,7 @@ $(document).ready (function(){
             //get the text from the file
             const text = await file.text();
             //then update the database
-            //await StorageUtils.importDatabase('importExport.js', text);
+            await StorageUtils.importDatabase('importExport.js', text);
             //then signal done
             $('.ui.file.segment .ui.import.form').removeClass('loading');
             $('#ImportData textarea').css('color', "green");
