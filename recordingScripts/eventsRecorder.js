@@ -748,8 +748,8 @@ EventRecorder.startRecordingEvents = () => {
         EventRecorder.scrollObservable,
         //handles all element scroll events
         EventRecorder.scrollItemObservable,
-        //handles all file drop events
-        EventRecorder.fileDropObservable
+        //handles all file drop events - not yet ready to ship as simulating drop events not yet done
+        //EventRecorder.fileDropObservable
     )
     //and log the output  
     .subscribe(recordingEvent => {
