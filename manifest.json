@@ -32,13 +32,19 @@
       "open_in_tab": false
   },
   
+  "externally_connectable": {
+    "matches": ["*://*.vfs.cloud9.us-east-1.amazonaws.com/*"]
+  },
+
   "background": {
       "persistent": false,
       "scripts": [
           "third_party/Rx.min.js",
           "third_party/jquery-3.1.1.min.js",
+          "third_party/dexie.min.js",
           "utils/recordReplayMessenger.js",
           "utils/mobileDeviceDictionary.js",
+          "utils/storage.js",
           "models/recordingModel.js",
           "models/activeRecordingModel.js",
           "models/recordingEventModel.js",

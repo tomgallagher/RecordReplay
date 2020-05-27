@@ -130,7 +130,7 @@ class TextSelectReplay {
                     currentSelection.addRange(range);
                 }
                 //then return the window selection is the same as our saved selection
-                resolve(window.getSelection().toString().trim() == this.selectedText);
+                resolve(window.getSelection().toString().trim() == this.selectedText || window.getSelection().toString().toLowerCase().trim() == this.selectedText);
 
             }, 5);
         });

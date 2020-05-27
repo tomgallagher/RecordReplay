@@ -65,11 +65,11 @@ var EventRecorder = {
         .map(eventName => Rx.Observable.fromEvent(document, eventName)),
 
     //SELECT INPUT EVENTS FOR CONVERSION TO OBSERVABLES
-    inputLocationEventObservables: EventRecorderEvents.inputEvents
+    inputLocationEventObservables: EventRecorderEvents.attentionEvents
         //then we are only interests in certain types of input events
-        .filter(item => item == "input")
+        .filter(item => item == "focus")
         //we map each string array item to an observable
-        .map(eventName => Rx.Observable.fromEvent(window, eventName)),
+        .map(eventName => Rx.Observable.fromEvent(window, eventName, true)),
     inputActionEventObservables: EventRecorderEvents.inputEvents
         //then we are only interests in certain types of input events
         .filter(item => item == "change")
@@ -268,7 +268,8 @@ EventRecorder.startRecordingEvents = () => {
                 eventCssSelectorPath: cssSelectorTimed(event.target),
                 eventCssOptimalPath: optimalSelectTimed(event.target),
                 eventRecordReplayPath: recordReplayTimed(event.target),
-                eventXPath: xpathTimed(event.target)
+                eventXPath: xpathTimed(event.target),
+                eventHref: window.location.href
             }
         })
         //then it's very important that we share this one as three users currently and it is computationally costly
@@ -276,17 +277,20 @@ EventRecorder.startRecordingEvents = () => {
 
     //then we also query the latest input location, which we collect by referring to the input events
     EventRecorder.InputLocator = Rx.Observable.merge(...EventRecorder.inputLocationEventObservables)
-        //the input location observables are many - we currently only want the input events
-        .filter(event => event.type == "input")
+        //the input location observables are many - we currently only want the focus events
+        .filter(event => event.type == "focus")
+        .do(x => console.log( x.target))
         //then log for useful debugging
-        //.do(x => console.log(x))
+        .filter(event => EventRecorder.elementIsInput(event.target))
+        .do(x => console.log( x.target))
         //then we get the selectors for the pre-action event element, so it is not mutated
         .map(event => {
             return {
                 eventCssSelectorPath: EventRecorder.getCssSelectorPathWithFailover(event.target),
                 eventCssOptimalPath: EventRecorder.getOptimalSelectPathWithFailover(event.target),
                 eventRecordReplayPath: EventRecorder.getRecordReplayPathWithFailover(event.target),
-                eventXPath: EventRecorder.getXPath(event.target)
+                eventXPath: EventRecorder.getXPath(event.target),
+                eventHref: window.location.href
             }
         });
     
@@ -422,7 +426,7 @@ EventRecorder.startRecordingEvents = () => {
                 recordingEventCssFinderPath: actionWithLocationEvent.eventRecordReplayPath,
                 recordingEventXPath: actionWithLocationEvent.eventXPath,
                 recordingEventLocation: window.location.origin,
-                recordingEventLocationHref: window.location.href,
+                recordingEventLocationHref: actionWithLocationEvent.eventHref,
                 recordingEventIsIframe: EventRecorder.contextIsIframe(),
                 recordingEventIframeName: (EventRecorder.contextIsIframe() ? window.frameElement ? window.frameElement.name: null : 'N/A'),
             });

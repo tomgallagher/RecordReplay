@@ -452,7 +452,7 @@ class ReplayTabRunner {
                     width: device.width || 360, 
                     height: device.height || 640, 
                     mobile: true, 
-                    deviceScaleFactor: 1, 
+                    deviceScaleFactor: device.deviceScaleFactor, 
                     screenOrientation: this.recordingMobileOrientation == 'portrait' ? { angle: 0, type: 'portraitPrimary' } : { angle: 90, type: 'landscapePrimary' } 
                 }, 
                 () => { this.log(4); resolve(); } 

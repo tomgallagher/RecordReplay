@@ -16,3 +16,29 @@ chrome.browserAction.onClicked.addListener(function() {
         });
     }); 
 });
+
+chrome.runtime.onMessageExternal.addListener(function(request, sender, sendResponse) {
+    if (request.sayHello) {
+        console.log(sender);
+        console.log(request.sayHello);
+        sendResponse({sayHelloBack: "Greetings From Extension"});
+    }
+    if (request.command) {
+        switch(request.command) {
+            case "LoadAllProjects":
+                StorageUtils.getAllObjectsInDatabaseTable('External WebSite', 'projects')
+                    .then(projects => sendResponse({projects: projects}) );
+                return true;
+            case "LoadAllTests":
+                StorageUtils.getAllObjectsInDatabaseTable('External WebSite', 'tests')
+                    .then(tests => sendResponse({tests: tests}) ); 
+                return true;
+            case "LoadAllReplays":
+                StorageUtils.getAllObjectsInDatabaseTable('External WebSite', 'replays')
+                    .then(replays => sendResponse({replays: replays}) );
+                return true;
+            default:
+                console.log(`Unrecognised Command From External ${request.command}`);
+        }
+    }
+});

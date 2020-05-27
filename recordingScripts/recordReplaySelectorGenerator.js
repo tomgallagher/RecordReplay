@@ -35,7 +35,7 @@
                 //then we need to filter the array for valid classnames
                 classNameArray = classNameArray.filter(item => validClassName.test(item));
                 //if there is a remaining class name then we add all the classes with a leading dot
-                selectedArray[0] = baseNodeDescriptor += (classNameArray.length > 0 ? `.${classNameArray.join('.')}` : '');
+                selectedArray[0] = baseNodeDescriptor += (classNameArray.length > 0 ? ` .${classNameArray.join('.')}` : '');
                 //then we test to see if that gives us a unique value and, if so, we return true - we're done
                 if (uniqueQuery()) return true;
             }
