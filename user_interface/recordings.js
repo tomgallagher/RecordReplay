@@ -451,7 +451,10 @@ function loadRecordingCodeStringIntoTargetContainer(recordingKey, selector, tran
     StorageUtils.getSingleObjectFromDatabaseTable('recordings.js', recordingKey, 'recordings')
         //then build the string
         .then((recording) =>
-            translator instanceof PuppeteerTranslator
+            //Puppeteer, Cypress && Testing Library need to have the params of recording beyond the events - bandwidth, latency, mobile emulation etc
+            translator instanceof PuppeteerTranslator ||
+            translator instanceof CypressTranslator ||
+            translator instanceof TestingLibraryTranslator
                 ? translator.buildRecordingStringFromEvents(recording)
                 : translator.buildRecordingStringFromEvents(recording.recordingEventArray)
         )
@@ -627,6 +630,36 @@ $(document).ready(function () {
                     eventAction: 'TranslatePuppeteer',
                     eventLabel: 'RecordingUseData',
                 });
+                break;
+            case event.target.value == 'cypress':
+                loadRecordingCodeStringIntoTargetContainer(
+                    document.querySelector('.recordingCodeOutputTextArea').getAttribute('data-recording-id'),
+                    '.recordingCodeOutputTextArea',
+                    new CypressTranslator({})
+                );
+                /*
+                ga('send', {
+                    hitType: 'event',
+                    eventCategory: 'RecordingCodeLanguage',
+                    eventAction: 'TranslateCypress',
+                    eventLabel: 'RecordingUseData',
+                });
+                */
+                break;
+            case event.target.value == 'testingLibrary':
+                loadRecordingCodeStringIntoTargetContainer(
+                    document.querySelector('.recordingCodeOutputTextArea').getAttribute('data-recording-id'),
+                    '.recordingCodeOutputTextArea',
+                    new TestingLibraryTranslator({})
+                );
+            /*
+                ga('send', {
+                    hitType: 'event',
+                    eventCategory: 'RecordingCodeLanguage',
+                    eventAction: 'TranslateTestingLibrary',
+                    eventLabel: 'RecordingUseData',
+                });
+                */
         }
     });
 
