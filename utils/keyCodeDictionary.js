@@ -44,9 +44,19 @@ class KeyCodeDictionary {
             34: { value: null, descriptor: 'PageDown', cypressDescriptor: '{pagedown}' },
             35: { value: null, descriptor: 'End', cypressDescriptor: '{end}' },
             36: { value: null, descriptor: 'Home', cypressDescriptor: '{home}' },
-            37: { value: null, descriptor: 'ArrowLeft', cypressDescriptor: '{leftarrow}' },
+            37: {
+                value: null,
+                descriptor: 'ArrowLeft',
+                cypressDescriptor: '{leftarrow}',
+                testingLibraryDescriptor: '{arrowleft}',
+            },
             38: { value: null, descriptor: 'ArrowUp', cypressDescriptor: '{uparrow}' },
-            39: { value: null, descriptor: 'ArrowRight', cypressDescriptor: '{rightarrow}' },
+            39: {
+                value: null,
+                descriptor: 'ArrowRight',
+                cypressDescriptor: '{rightarrow}',
+                testingLibraryDescriptor: '{arrowright}',
+            },
             40: { value: null, descriptor: 'ArrowDown', cypressDescriptor: '{downarrow}' },
 
             44: { value: null, descriptor: 'PrintScreen' },

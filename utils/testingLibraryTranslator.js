@@ -184,8 +184,36 @@ class TestingLibraryTranslator {
         //then we need to warn that tabbing does not work in Cypress
         if (dictionaryEntry.descriptor == 'Tab') {
             return `userEvent.tab();`;
+        }
+        //then we need to warn if we do not have a Testing Library descriptor for a null value key
+        if (dictionaryEntry.value == null && !dictionaryEntry.hasOwnProperty('testingLibraryDescriptor')) {
+            return `// Testing Library does not currently support the use of ${dictionaryEntry.descriptor} key in tests`;
+        }
+
+        //then we want to know if there are any modifier keys pressed at the time
+        const modifiers = this.mapDispatchKeyEventModifer(replayEvent.recordingEventDispatchKeyEvent.modifiers);
+        //then we want know if there is any text attached to the keyboard event
+        const text = replayEvent.recordingEventDispatchKeyEvent.text;
+
+        //if the dictionary entry has a value of null, we need to send the Testing Library special character sequences, if it exists, with modifiers
+        if (dictionaryEntry.value == null) {
+            //how we execute this depends on whether the typing was done on an element or the main document
+            if (replayEvent.recordingEventHTMLTag == 'HTML') {
+                //Testing library should default to the container if there is no item in focus
+                return `userEvent.type(container, '${modifiers}${dictionaryEntry.testingLibraryDescriptor}');`;
+            } else {
+                //otherwise we use the main selector
+                return `userEvent.type(${selector}, '${modifiers}${dictionaryEntry.testingLibraryDescriptor}');`;
+            }
         } else {
-            return `// Record/Replay does not current support the non-input typing in Testing Library code output`;
+            //how we execute this depends on whether the typing was done on an element or the main document
+            if (replayEvent.recordingEventHTMLTag == 'HTML') {
+                //Cypress demands that the main document typing occurs on the body
+                return `userEvent.type(container, '${modifiers}${text}');`;
+            } else {
+                //otherwise we use the main selector
+                return `userEvent.type(${selector}, '${modifiers}${text}');`;
+            }
         }
     };
 
