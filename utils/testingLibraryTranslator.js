@@ -168,7 +168,7 @@ class TestingLibraryTranslator {
             //if we are dealing with a standard HTMLElement with the contenteditable property, then we need to to something slightly different
             case recordingEvent.recordingEventInputType == 'contentEditable':
                 //with the content editable, we can't just type in as we have a final text result on blur, so we need to adjust the text directly
-                return `userEvent.clear(${selector}).type(${selector}, '${value}');`;
+                return `// Testing Library does not currently support input in contenteditable html elements in tests`;
             //then we have a default for when we have no clue
             default:
                 return `fireEvent.change(${selector}, { target: { value: '${value}' } });`;
