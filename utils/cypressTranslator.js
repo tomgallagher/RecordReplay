@@ -296,7 +296,7 @@ class CypressTranslator {
             case 'Assertion':
                 //here we switch on type of assertion, this is determined by the clicks on the checkboxes
                 //checkboxes are created by nodebuilder and then added by listening to clicks on checboxes in newReplay.js
-                switch (replayEvent.assertionType) {
+                switch (replayOrRecordingEvent.assertionType) {
                     case 'Visible':
                         outputStringArray.push(
                             this.visibleAssertion(this.getMostValidSelector(replayOrRecordingEvent))

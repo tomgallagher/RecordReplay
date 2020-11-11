@@ -637,14 +637,12 @@ $(document).ready(function () {
                     '.recordingCodeOutputTextArea',
                     new CypressTranslator({})
                 );
-                /*
                 ga('send', {
                     hitType: 'event',
                     eventCategory: 'RecordingCodeLanguage',
                     eventAction: 'TranslateCypress',
                     eventLabel: 'RecordingUseData',
                 });
-                */
                 break;
             case event.target.value == 'testingLibrary':
                 loadRecordingCodeStringIntoTargetContainer(
@@ -652,14 +650,12 @@ $(document).ready(function () {
                     '.recordingCodeOutputTextArea',
                     new TestingLibraryTranslator({})
                 );
-            /*
                 ga('send', {
                     hitType: 'event',
                     eventCategory: 'RecordingCodeLanguage',
                     eventAction: 'TranslateTestingLibrary',
                     eventLabel: 'RecordingUseData',
                 });
-                */
         }
     });
 
