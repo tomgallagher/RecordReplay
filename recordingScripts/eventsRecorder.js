@@ -664,37 +664,6 @@ EventRecorder.startRecordingEvents = () => {
             //lets get some information about the key that has been pressed
             const keyInfoObject = EventRecorder.keyCodeDictionary[actionEvent.keyCode];
             const descriptor = keyInfoObject.descriptor;
-            //there is no point in recording text typing in HTMLInputElement, HTMLTextAreaElement and isContentEditable elements - we use the input change event for that
-            if (keyInfoObject.value != null && EventRecorder.elementIsInput(actionEvent.target)) {
-                console.log(
-                    `Keyboard: Not Recording Typed "${actionEvent.key}" on HTMLInputElement, HTMLTextAreaElement or isContentEditable Element`
-                );
-                //just return an empty observable as a placeholder which we can easily filter out
-                return false;
-            }
-            //there is no point in recording text editing in HTMLInputElement, HTMLTextAreaElement and isContentEditable elements - we use the input change event for that
-            if (
-                (descriptor == 'Backspace' || descriptor == 'Insert' || descriptor == 'Delete') &&
-                EventRecorder.elementIsInput(actionEvent.target)
-            ) {
-                console.log(
-                    `Keyboard: Not Recording Text Editing Key "${descriptor}" on HTMLInputElement, HTMLTextAreaElement or isContentEditable Element`
-                );
-                //just return an empty observable as a placeholder which we can easily filter out
-                return false;
-            }
-            //there is no point in recording text navigation in HTMLInputElement, HTMLTextAreaElement and isContentEditable elements - we use the input change event for that
-            //at the moment we only assume ArrowLeft and ArrowRight as text navigation - up and down can be used to select dropdown elements
-            if (
-                (descriptor == 'ArrowLeft' || descriptor == 'ArrowRight') &&
-                EventRecorder.elementIsInput(actionEvent.target)
-            ) {
-                console.log(
-                    `Keyboard: Not Recording Text Navigation Key "${descriptor}" on HTMLInputElement, HTMLTextAreaElement or isContentEditable Element`
-                );
-                //just return an empty observable as a placeholder which we can easily filter out
-                return false;
-            }
             const newEvent = new RecordingEvent({
                 //general properties
                 recordingEventAction: 'Keyboard',
