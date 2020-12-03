@@ -176,8 +176,14 @@ class RecordingTabRunner {
                         recordingEventLocationHref: navObject.url,
                     })
             )
+            .do((ev) => console.log(ev))
+            //then we need a small delay for the first page emission to give the user interface time to make the connection
+            .delay(200)
             //then each time we get an event that needs to be sent to the user interface
-            .flatMap((ev) => Rx.Observable.fromPromise(this.messenger.sendMessageGetResponse({ recordingEvent: ev })));
+            .switchMap(
+                (ev) => this.messenger.sendMessageGetResponse({ recordingEvent: ev }),
+                (event) => event
+            );
 
         //our observables need a start action as they are only defined in the handler
         this.startSubscription = Rx.Observable.merge(
