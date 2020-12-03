@@ -398,6 +398,13 @@ class ReplayTabRunner {
             .do((replay) =>
                 console.log(`Tab Runner: Work Keyboard ${replay.recordingEventActionType} Event in Keyboard Controls`)
             )
+            //first thing is to add the iframes to the replay, with default empty array to start
+            .withLatestFrom(frameContextObservable.startWith([]), (replayEvent, contextArray) => {
+                //just mutate the replay event and return
+                replayEvent.iframeContextArray = contextArray;
+                return replayEvent;
+            })
+            .do((x) => console.log(x))
             //and we want to assess the replay event in the context of the selectors
             .flatMap((replay) =>
                 Rx.Observable.fromPromise(assessKeyboardSelectors(replay, this.browserTabId, this.currentUrl))
