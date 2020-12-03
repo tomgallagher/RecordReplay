@@ -1,75 +1,67 @@
 {
-  "manifest_version": 2,
+    "manifest_version": 2,
 
-  "name": "Record/Replay",
-  "description": "Browser automation package. Easy to use and open source. Integrated functional testing framework.",
-  "author": "Tom Gallagher",
-  "version": "1.0.1.4",
-  
-  "incognito": "not_allowed",
-  
-  "icons": {
-      "16" : "images/robot_violet_16.png",
-      "48" : "images/robot_violet_48.png",
-      "128" : "images/robot_violet_128.png"
-  },
-  
-  "browser_action": {
-      "default_icon": {
-        "19": "images/robot_violet_19.png",
-        "38": "images/robot_violet_38.png"
-      },
-      "default_title": "Click to open Record/Replay user interface"
-  },
-  
-  "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
+    "name": "Record/Replay",
+    "description": "Browser automation package. Easy to use and open source. Integrated functional testing framework.",
+    "author": "Tom Gallagher",
+    "version": "1.0.1.5",
 
-  "options_page": "options.html",
-  
-  "options_ui": {
-      "page": "options.html",
-      "chrome_style": true,
-      "open_in_tab": false
-  },
-  
-  "externally_connectable": {
-    "matches": ["*://*.vfs.cloud9.us-east-1.amazonaws.com/*"]
-  },
+    "incognito": "not_allowed",
 
-  "background": {
-      "persistent": false,
-      "scripts": [
-          "third_party/Rx.min.js",
-          "third_party/jquery-3.1.1.min.js",
-          "third_party/dexie.min.js",
-          "utils/recordReplayMessenger.js",
-          "utils/mobileDeviceDictionary.js",
-          "utils/storage.js",
-          "models/recordingModel.js",
-          "models/activeRecordingModel.js",
-          "models/recordingEventModel.js",
-          "models/replayModel.js",
-          "models/activeReplayModel.js",
-          "models/replayEventModel.js",
-          "background/messageMonitor.js",
-          "background/recordingTabRunner.js",
-          "background/replayTabRunner.js",
-          "background/domSelectorReport.js",
-          "background/webNavigator.js",
-          "background/background.js"
-          
+    "icons": {
+        "16": "images/robot_violet_16.png",
+        "48": "images/robot_violet_48.png",
+        "128": "images/robot_violet_128.png"
+    },
+
+    "browser_action": {
+        "default_icon": {
+            "19": "images/robot_violet_19.png",
+            "38": "images/robot_violet_38.png"
+        },
+        "default_title": "Click to open Record/Replay user interface"
+    },
+
+    "content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'",
+
+    "options_page": "options.html",
+
+    "options_ui": {
+        "page": "options.html",
+        "chrome_style": true,
+        "open_in_tab": false
+    },
+
+    "externally_connectable": {
+        "matches": ["*://*.vfs.cloud9.us-east-1.amazonaws.com/*"]
+    },
+
+    "background": {
+        "persistent": false,
+        "scripts": [
+            "third_party/Rx.min.js",
+            "third_party/jquery-3.1.1.min.js",
+            "third_party/dexie.min.js",
+            "utils/recordReplayMessenger.js",
+            "utils/mobileDeviceDictionary.js",
+            "utils/storage.js",
+            "models/recordingModel.js",
+            "models/activeRecordingModel.js",
+            "models/recordingEventModel.js",
+            "models/replayModel.js",
+            "models/activeReplayModel.js",
+            "models/replayEventModel.js",
+            "background/messageMonitor.js",
+            "background/recordingTabRunner.js",
+            "background/replayTabRunner.js",
+            "background/domSelectorReport.js",
+            "background/webNavigator.js",
+            "background/debuggerControls.js",
+            "background/keyboardControls.js",
+            "background/tabControls.js",
+            "background/background.js"
         ]
-  },
+    },
 
-  "permissions": [
-    "storage",
-    "unlimitedStorage",
-    "downloads",
-    "webNavigation",
-    "activeTab",
-    "debugger",
-    "<all_urls>"
-  ]
-
+    "permissions": ["storage", "unlimitedStorage", "tabs", "downloads", "webNavigation", "debugger", "<all_urls>"]
 }
-
