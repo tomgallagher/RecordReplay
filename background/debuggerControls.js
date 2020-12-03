@@ -181,7 +181,7 @@ const executeScriptInMainFrame = (tabID, code) => {
     return new Promise((resolve, reject) => {
         chrome.tabs.executeScript(tabID, { code: code, runAt: 'document_idle' }, function (response) {
             if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError.message);
+                console.log(chrome.runtime.lastError.message);
                 return;
             }
             resolve(response);
@@ -193,7 +193,7 @@ const executeScriptInSubFrame = (tabID, code, frameId) => {
     return new Promise((resolve, reject) => {
         chrome.tabs.executeScript(tabID, { code: code, frameId: frameId, runAt: 'document_idle' }, function (response) {
             if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError.message);
+                console.log(chrome.runtime.lastError.message);
                 return;
             }
             resolve(response);

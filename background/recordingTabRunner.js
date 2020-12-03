@@ -19,18 +19,19 @@ class RecordingTabRunner {
             this.withLogging = withLogging;
             //then we need an instance of the webNavigator class
             this.webNavigator = new WebNavigator();
-            //THIS IS THE MOST IMPORTANT PIECE OF CODE AND THE REASON FOR THE ASYNC CONSTRUCTOR
-            //we need to have the browser tab id in the constructor
-            this.browserTabId = await new Promise((resolve) =>
-                chrome.tabs.create({ url: activeRecording.recordingTestStartUrl }, (tab) => {
-                    this.openState = true;
-                    setTimeout(() => {
-                        console.log('TabRunner: Browser Tab Open');
-                        resolve(tab.id);
-                    }, 1000);
-                })
-            );
-            //and we also want the tab runner to be able to tell the active recording when its tab has closed and also change its own tab state
+            //then we need acccess to the messaging
+            this.messenger = new RecordReplayMessenger({}).isAsync(true);
+            this.incomingMessages = this.messenger.chromeOnMessageObservable.share();
+            //then we need access to all the stop messages from the UI
+            this.stopProcessingMessageObservable = this.incomingMessages
+                .filter((msgObject) => msgObject.request.hasOwnProperty('stopNewRecording'))
+                //and then we need to send the response as base messaging is async and demands a sent response
+                .do((msgObject) =>
+                    msgObject.sendResponse({
+                        message: `BackgroundJS: Stopping Recording Processes for ${activeRecording.recordingID}`,
+                    })
+                );
+            //and all the tab closed events which are equivalent to stop messages
             this.tabClosedObservable = Rx.Observable.fromEventPattern(
                 (handler) => chrome.tabs.onRemoved.addListener(handler),
                 (handler) => chrome.tabs.onRemoved.removeListener(handler)
@@ -38,7 +39,22 @@ class RecordingTabRunner {
             )
                 .filter((tabId) => tabId == this.browserTabId)
                 .do(() => (this.openState = false));
+
+            //we need to set up all of our listeners before we open the tab - we need data about the page load
+            await this.setUpListeners();
+            //THIS IS THE MOST IMPORTANT PIECE OF CODE AND THE REASON FOR THE ASYNC CONSTRUCTOR
+            //first we create the tab and get all the information about it
+            const { tabId, pendingUrl, status } = await createTab(activeRecording.recordingTestStartUrl);
+            //then report
+            console.log(`Recording TabRunner: created new tab for ${pendingUrl} with status ${status}`);
+            //and save the tab is locally
+            this.browserTabId = tabId;
+            //then wait for the tab to load
+            await waitForLoad(this.browserTabId);
+            //then adjust the open state
+            this.openState = true;
             //and we're done - always remember to return this to the constructor in an async function or the whole thing is pointless
+            console.log('New Recording Tab Runner created');
             return this;
         })();
     }
@@ -46,16 +62,16 @@ class RecordingTabRunner {
     log = (index, message) => {
         //then we just need a list of log statements, add when necessary
         const logStatements = {
-            0: 'TabRunner: Debugger Attached',
-            1: 'TabRunner: Network Domain Enabled',
-            2: 'TabRunner: Page Domain Enabled',
-            3: 'TabRunner: Network Conditions Emulated',
-            4: 'TabRunner: Mobile Conditions Emulated',
-            5: 'TabRunner: Debugger Detached',
-            6: 'TabRunner: Curated Page Closed',
-            7: `TabRunner: Script Package Injected into main_frame ${message}`,
-            8: `TabRunner: Script Package Injected into sub_frame ${message}`,
-            9: `TabRunner Error: ${message}`,
+            0: 'Recording TabRunner: Debugger Attached',
+            1: 'Recording TabRunner: Network Domain Enabled',
+            2: 'Recording TabRunner: Page Domain Enabled',
+            3: 'Recording TabRunner: Network Conditions Emulated',
+            4: 'Recording TabRunner: Mobile Conditions Emulated',
+            5: 'Recording TabRunner: Debugger Detached',
+            6: 'Recording TabRunner: Curated Page Closed',
+            7: `Recording TabRunner: Script Package Injected into main_frame ${message}`,
+            8: `Recording TabRunner: Script Package Injected into sub_frame ${message}`,
+            9: `Recording TabRunner Error: ${message}`,
         };
         //gives the opportunity to switch off tab runner logging
         if (this.withLogging) {
@@ -63,9 +79,20 @@ class RecordingTabRunner {
         }
     };
 
-    run = async () => {
+    setUpListeners = async () => {
+        //this is when we need to stop all processing
+        const stopObservable = Rx.Observable.merge(this.stopProcessingMessageObservable, this.tabClosedObservable)
+            //we only need to stop it once
+            .take(1)
+            //then call the function to stop the debugger and close the tab
+            .do(() => this.stop())
+            //and share between many with the one call to stop
+            .share();
+
         //MAIN FRAME SCRIPT INJECTION OBSERVABLE DEFINITION
         const mainFrameScriptInjectionObservable = this.webNavigator.navigationEventsObservable
+            //we only need to keep processing these events while the tab is open
+            .takeUntil(stopObservable)
             //then we only care about the onDOMContentLoaded Event
             .filter((navObject) => navObject.recordReplayWebNavigationEvent == 'onDOMContentLoaded')
             //then we only care about events happening in our curated tab
@@ -98,6 +125,8 @@ class RecordingTabRunner {
 
         //IFRAME SCRIPT INJECTION OBSERVABLE DEFINITION
         const subFrameScriptInjectionObservable = this.webNavigator.navigationEventsObservable
+            //we only need to keep processing these events while the tab is open
+            .takeUntil(stopObservable)
             //then we only care about the onCommitted Event
             .filter((navObject) => navObject.recordReplayWebNavigationEvent == 'onDOMContentLoaded')
             //then we only care about events happening in our curated tab
@@ -124,8 +153,47 @@ class RecordingTabRunner {
                 )
             );
 
-        //CHROME REMOTE DEVTOOLS PROTOCOL COMMANDS
-        //then we need to attach the debugger so we can send commands
+        //then we need to have a routine that listens to the navigator and returns page navigation events to the UI
+        const pageNavigationEventObservable = this.webNavigator.navigationEventsObservable
+            //we only need to keep processing these events while the tab is open
+            .takeUntil(stopObservable)
+            //we only want to listen to the complete event
+            .filter((navObject) => navObject.recordReplayWebNavigationEvent == 'onCompleted')
+            //then we only care about the main frame
+            .filter((navObject) => navObject.frameId == 0)
+            //then we only care about events happening in our curated tab
+            .filter((navObject) => navObject.tabId == this.browserTabId)
+            //then we want to translate that event into a recordingEvent with a format we recognise
+            .map(
+                (navObject) =>
+                    new RecordingEvent({
+                        //these are the only fields we need to stipulate
+                        recordingEventOrigin: 'Browser',
+                        recordingEventAction: 'Page',
+                        recordingEventActionType: navObject.recordReplayWebNavigationEvent,
+                        recordingEventHTMLElement: 'N/A',
+                        recordingEventLocation: new URL(navObject.url).origin,
+                        recordingEventLocationHref: navObject.url,
+                    })
+            )
+            //then each time we get an event that needs to be sent to the user interface
+            .flatMap((ev) => Rx.Observable.fromPromise(this.messenger.sendMessageGetResponse({ recordingEvent: ev })));
+
+        //our observables need a start action as they are only defined in the handler
+        this.startSubscription = Rx.Observable.merge(
+            //we need to start the main frame script injection observable
+            mainFrameScriptInjectionObservable,
+            //then we need to start the sub frame script injection observable
+            subFrameScriptInjectionObservable,
+            //then the page event observable
+            pageNavigationEventObservable
+        ).subscribe();
+
+        return;
+    };
+
+    run = async () => {
+        //then once we have the listeners all set up we try to start the debugger
         try {
             //first we need to attach the debugger so we can send commands
             await attachDebugger(this.browserTabId);
@@ -148,26 +216,27 @@ class RecordingTabRunner {
                 await emulateDevice(this.recordingMobileDeviceId, this.recordingMobileOrientation);
                 this.log(4);
             }
+            //return so the synthetic promise is resolved
+            return 'Active Recording Ready for Recording Events';
         } catch (e) {
-            //then no point in carrying on if we are not attached
-            this.log(9, e);
+            //if this fails we need to return the error message
+            console.log(e);
+            if (e.includes('Cannot attach to this target')) {
+                this.stop();
+                return e;
+            }
         }
-        //our observables need a start action as they are only defined in the handler
-        this.startSubscription = Rx.Observable.merge(
-            //we need to start the main frame script injection observable
-            mainFrameScriptInjectionObservable,
-            //then we need to start the sub frame script injection observable
-            subFrameScriptInjectionObservable
-        ).subscribe();
-        //return so the synthetic promise is resolved
-        return;
     };
 
     stop = async () => {
+        const isAttached = await isDebuggerAttached(this.browserTabId);
         //then we need to detach the debugger so we can send commands
-        if (this.openState && isDebuggerAttached(this.browserTabId))
+        if (this.openState && isAttached)
             await new Promise((resolve) =>
                 chrome.debugger.detach({ tabId: this.browserTabId }, () => {
+                    if (chrome.runtime.lastError) {
+                        console.log(chrome.runtime.lastError.message);
+                    }
                     this.log(5);
                     resolve();
                 })
@@ -180,9 +249,9 @@ class RecordingTabRunner {
                     resolve();
                 })
             );
-        //we need to stop the observables to prevent memory leaks
-        this.startSubscription.unsubscribe();
+        //and kill all the merged observables, if they have been activated, at one stroke to enable clean shut down
+        if (this.startSubscription) this.startSubscription.unsubscribe();
         //return so the synthetic promise is resolved
-        return;
+        return this.browserTabId;
     };
 }
