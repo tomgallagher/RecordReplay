@@ -2414,6 +2414,18 @@
                                 <div class="content">
                                     <i class="angle right icon"></i>
 
+                                    When recording <strong>keyboard</strong> input, both <em>'Keyboard'</em> events and
+                                    <em>'Input'</em> events are logged. This ensures that recorded actions can be
+                                    replayed, even when simulated <em>'Input'</em> change events are disabled, e.g. on
+                                    login forms. If your replay fires all the relevant input change events, delete the
+                                    keystrokes from the replay. Otherwise, keep the keystrokes and delete input events.
+                                </div>
+                            </div>
+
+                            <div class="item">
+                                <div class="content">
+                                    <i class="angle right icon"></i>
+
                                     The mouse <em>'Hover'</em> action is fired during <strong>recording</strong> after
                                     hovering over an element for <strong>more than three seconds</strong>. This may be
                                     longer than you'd expect, so try counting slowly to three. Or quickly to five. Or
