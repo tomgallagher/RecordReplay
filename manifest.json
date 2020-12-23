@@ -57,7 +57,7 @@
             "background/domSelectorReport.js",
             "background/webNavigator.js",
             "background/debuggerControls.js",
-            "background/keyboardControls.js",
+            "background/keyBoardControls.js",
             "background/tabControls.js",
             "background/background.js"
         ]
